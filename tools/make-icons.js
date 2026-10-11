@@ -46,7 +46,7 @@ function splashHtml(){
   svg{width:40vw;height:40vw;margin-top:6vw}
   .boot{position:absolute;bottom:9vh;font-family:Plex;font-size:3.2vw;letter-spacing:.2em;color:${C.mute}}
   </style></head><body>
-  <div class="l1">TRI</div><div class="l2">TROUBLE</div><div class="rule">════════════════</div>
+  <div class="l1">LAST</div><div class="l2">VERTEX</div><div class="rule">════════════════</div>
   <svg viewBox="0 0 512 512"><defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/>
     <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>${emblem(.92)}</svg>
   <div class="boot">&gt; BOOTING_</div></body></html>`;

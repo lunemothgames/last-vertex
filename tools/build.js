@@ -40,8 +40,8 @@ const hash=crypto.createHash('sha1').update(out).digest('hex').slice(0,8);
 const swPath=path.join(root,'sw.js');
 const sw=fs.readFileSync(swPath,'utf8');
 const swNew=sw
-  .replace(/const CACHE='[^']*'/,`const CACHE='tri-trouble-${hash}'`)
+  .replace(/const CACHE='[^']*'/,`const CACHE='last-vertex-${hash}'`)
   .replace(/const ASSETS=\[[^\]]*\]/,`const ASSETS=${assetList}`);
-if(swNew!==sw){fs.writeFileSync(swPath,swNew);console.log(`sw.js cache → tri-trouble-${hash}, assets: ${rootFiles.length}`);}
+if(swNew!==sw){fs.writeFileSync(swPath,swNew);console.log(`sw.js cache → last-vertex-${hash}, assets: ${rootFiles.length}`);}
 
 console.log(`index.html built (${(out.length/1024).toFixed(0)} KB), syntax OK`);

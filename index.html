@@ -7,12 +7,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Tri-Trouble</title>
+<title>Last Vertex: Idle Defense</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon-32.png" sizes="32x32">
 <link rel="icon" href="icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-title" content="Tri-Trouble">
+<meta name="apple-mobile-web-app-title" content="Last Vertex">
 <!-- iPhone launch images (made by tools/make-icons.js); Android builds its splash from the manifest -->
 <link rel="apple-touch-startup-image" href="splash/launch-1320x2868.jpg" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/launch-1206x2622.jpg" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
@@ -483,7 +483,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 </svg>
 
 <div id="boot" aria-hidden="true">
-  <div class="l1">TRI</div><div class="l2">TROUBLE</div><div class="rule">════════════════</div>
+  <div class="l1">LAST</div><div class="l2">VERTEX</div><div class="rule">════════════════</div>
   <svg viewBox="0 0 512 512"><defs><filter id="bglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/>
     <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
     <g transform="translate(256 262) scale(.92)">
@@ -506,7 +506,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
     </div>
-    <div class="logo"><span class="l1">TRI</span><span class="l2">TROUBLE</span><span class="rule">════════════════</span></div>
+    <div class="logo"><span class="l1">LAST</span><span class="l2">VERTEX</span><span class="rule">════════════════</span></div>
     <div class="hero">
       <svg viewBox="-100 -100 200 200" width="142" height="142">
         <g class="dm" stroke-width="1"><line x1="-95" y1="0" x2="-60" y2="0"/><line x1="60" y1="0" x2="95" y2="0"/><line x1="0" y1="-95" x2="0" y2="-62"/><line x1="0" y1="60" x2="0" y2="95"/></g>
@@ -629,7 +629,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setDevTat" style="display:none"><div class="sl"><span>DEV</span><b>+1 OF EVERY TATTOO</b></div><svg class="i"><use href="#i-spark"/></svg></div>
-      <div class="ver">TRI-TROUBLE v0.6 // SYS OK</div>
+      <div class="ver">LAST VERTEX v0.6 // SYS OK</div>
     </div>
   </div>
 
@@ -655,7 +655,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <script>
 'use strict';
 // ── SAVE ─────────────────────────────────────────────────────────────────────
-const SAVE_KEY='tt3';
+const SAVE_KEY='tt3';   // keep: the key from the game's first name, renaming it would lose saves
 function defaultSave(){return{
   coins:0,gems:0,
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
@@ -2418,7 +2418,7 @@ function renderShop(){
       const cls=active?' max':owned?' ok':ask?' ask':save.gems>=t.price?'':' no';
       return `<div class="trow${active?' on':''}">
         <div class="tprev" style="background:radial-gradient(ellipse at 50% 40%,${bg2},${bg1} 85%);border-color:${dim};color:${a};text-shadow:0 0 6px ${a}">
-          <span>TRI_</span><i style="background:linear-gradient(90deg,${a} 0 45%,${a2} 45% 72%,${hot} 72%)"></i></div>
+          <span>LV_</span><i style="background:linear-gradient(90deg,${a} 0 45%,${a2} 45% 72%,${hot} 72%)"></i></div>
         <div class="info"><div class="nm">${t.name}</div><div class="fx">${t.note}</div></div>
         <button class="buy${cls}" data-theme="${t.id}">${btn}</button></div>`;
     }).join('');
@@ -2741,9 +2741,9 @@ setInterval(()=>{refreshQuests();if($('questPanel').classList.contains('open')&&
 
 // ── SAVE EXPORT / IMPORT ─────────────────────────────────────────────────────
 function checksum(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return(h>>>0).toString(16).padStart(8,'0');}
-function exportCode(){const b=btoa(unescape(encodeURIComponent(JSON.stringify(save))));return'TT3-'+b+'-'+checksum(b);}
+function exportCode(){const b=btoa(unescape(encodeURIComponent(JSON.stringify(save))));return'LVX-'+b+'-'+checksum(b);}
 function parseCode(code){
-  const m=/^TT3-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code.replace(/\s+/g,''));
+  const m=/^(?:LVX|TT3)-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code.replace(/\s+/g,''));   // TT3: codes from before the rename
   if(!m||checksum(m[1])!==m[2])return null;
   try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));return o&&typeof o==='object'&&o.perm?o:null;}catch(e){return null;}
 }

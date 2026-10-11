@@ -1,8 +1,8 @@
 {
-  "name": "tri-trouble",
+  "name": "last-vertex",
   "version": "0.6.0",
   "private": true,
-  "description": "Retro triangle survival PWA",
+  "description": "Last Vertex: Idle Defense — retro terminal idle defense PWA",
   "scripts": {
     "build": "node tools/build.js",
     "balance": "node tools/balance.js",

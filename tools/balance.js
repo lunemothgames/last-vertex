@@ -71,7 +71,7 @@ const waveRows=[1,5,10,15,20,25,30,40,50,60,75,100,150,200].map(w=>{
 }).join('');
 
 const html=`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tri-Trouble Balance</title>
+<title>Last Vertex Balance</title>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--a:#9fd8ff;--a2:#f0f9ff;--dim:#28506e;--mute:#6f9cc0;--bg:#02050b;--bg2:#0a1729;--hot:#ff7aa2;--r0:#7f9cb8;--r1:#bfe8ff;--r2:#7affd9;--r3:#ff7aa2}
@@ -106,7 +106,7 @@ tr.ck td{color:var(--a2);border-top:1px solid var(--dim)}
 .kv b{font-weight:400;color:var(--a2)}
 small{color:var(--mute)}
 </style></head><body><div class="wrap">
-<h1>TRI-TROUBLE <small>// BALANCE SHEET</small></h1>
+<h1>LAST VERTEX <small>// BALANCE SHEET</small></h1>
 <p class="n">Generated straight from the game's data (ECO, PERM_UPGRADES, TAT_TYPES…). If the code changes, regenerate this page.</p>
 <nav><a href="#core">CORE</a><a href="#tiers">TIERS</a><a href="#enemies">ENEMIES</a><a href="#quests">QUESTS</a><a href="#shop">SHOP</a><a href="#levels">SHOP LEVELS</a><a href="#temp">NEXT RUN</a><a href="#tat">TATTOOS</a><a href="#tatlv">TATTOO LEVELS</a><a href="#slots">SLOTS</a><a href="#themes">THEMES</a><a href="#waves">WAVES</a></nav>
 

@@ -374,10 +374,21 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .scat::before{content:'── '}.scat::after{content:' ──'}
 .sdesc{flex:1;font-size:10px;color:var(--mute);line-height:1.5;text-shadow:none}
 /* ── LOW FX: no glow, no flicker ── */
-.lowfx #wrap{animation:none}
-.lowfx #ui,.lowfx #ui *{text-shadow:none!important}
-.lowfx #crt{background:none}
-.lowfx .spin,.lowfx .look,.lowfx .eye,.lowfx .bob{animation:none}
+/* FX QUALITY · MID (body.fxmid): no glow, no flicker */
+.fxmid #wrap{animation:none}
+.fxmid #ui,.fxmid #ui *{text-shadow:none!important}
+.fxmid #crt{background:none}
+.fxmid .spin,.fxmid .look,.fxmid .eye,.fxmid .bob{animation:none}
+/* FX QUALITY · LOW (body.fxmid.fxlow): potato mode — flat colours, no overlays, shadows or decorative motion */
+.fxlow #crt{display:none}
+.fxlow *,.fxlow *::before,.fxlow *::after{animation:none!important;transition:none!important;box-shadow:none!important}
+.fxlow .gc{opacity:1}
+.fxlow .panel,.fxlow #boot{background:var(--bg1)}
+.fxlow svg *{filter:none!important}
+.fxlow canvas{image-rendering:pixelated}
+.fxseg{display:flex;gap:6px;margin-top:8px}
+.fxseg button{flex:1;height:32px;border:1px solid var(--dim);color:var(--mute);font-family:'VT323',monospace;font-size:20px;letter-spacing:.08em;text-shadow:none}
+.fxseg button.on{background:var(--a);border-color:var(--a);color:var(--ink)}
 /* ── info tip ── */
 #tipWrap{position:absolute;top:0;right:0;bottom:0;left:0;z-index:28;display:none;pointer-events:auto;background:rgba(var(--bg1-rgb),0.45)}
 #tipWrap.show{display:block}
@@ -621,8 +632,9 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <div class="sc"><input type="range" id="sfxVol" min="0" max="100"><button class="tog" id="sfxToggle">ON</button></div></div>
       <div class="srow"><div class="sl"><span>MUSIC</span><b id="musVal">55</b></div>
         <div class="sc"><input type="range" id="musVol" min="0" max="100"><button class="tog" id="musToggle">ON</button></div></div>
-      <div class="srow"><div class="sl"><span>LOW FX</span></div>
-        <div class="sc"><span class="sdesc">Turns off glow, flicker and most particles.</span><button class="tog" id="fxToggle">OFF</button></div></div>
+      <div class="srow"><div class="sl"><span>FX QUALITY</span></div>
+        <div class="sc"><span class="sdesc" id="fxDesc"></span></div>
+        <div class="fxseg" id="fxSeg"><button data-fx="high">HIGH</button><button data-fx="mid">MID</button><button data-fx="low">LOW</button></div></div>
       <div class="srow"><div class="sl"><span>DMG NUMBERS</span></div>
         <div class="sc"><span class="sdesc">Show floating damage values on hits.</span><button class="tog" id="dmgToggle">ON</button></div></div>
       <div class="srow"><div class="sl"><span>STAT OVERLAY</span></div>
@@ -663,7 +675,7 @@ function defaultSave(){return{
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
   temp:{},autoBoost:{},tatCol:{},tatSlots:1,equipped:[],pity:0,
-  settings:{sfxVol:80,sfxOn:true,musVol:55,musOn:true,lowFx:false,showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
+  settings:{sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
   lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],
@@ -690,6 +702,14 @@ try{
     if(!save.bestWave)save.bestWave=(save.lastRun&&save.lastRun.wave)||0;
   }
 }catch(e){}
+// FX QUALITY: high (everything) · mid (no glow / flicker, fewer particles) · low (potato phones)
+// older saves had a LOW FX on/off switch: on → mid, off → high
+if('lowFx' in save.settings){save.settings.fx=save.settings.lowFx?'mid':'high';delete save.settings.lowFx;}
+if(!['high','mid','low'].includes(save.settings.fx))save.settings.fx='high';
+const fxMid=()=>save.settings.fx!=='high',fxLow=()=>save.settings.fx==='low';
+const RES_LOW=.7,renderScale=()=>fxLow()?RES_LOW:1;
+const FX_DESC={high:'Full glow, CRT scanlines, flicker and particles.',mid:'No glow or flicker, fewer particles.',
+  low:'For weak phones: flat colours, no particles or scanlines, lower resolution, 30 FPS.'};
 // when the game was last open (read before anything saves again) — used for idle income
 const bootLastSeen=save.lastSeen||0,bootTimeHigh=save.timeHigh||0;
 // saveLocked: set right before a reload that must keep what is in storage (import), so pagehide can't overwrite it
@@ -789,7 +809,8 @@ function resize(){
   GW=vw;GH=vh;
   if(GW/GH>9/16)GW=Math.round(GH*9/16);
   else if(GW/GH<9/21)GH=Math.round(GW*21/9);
-  cv.width=GW;cv.height=GH;cv.style.width=GW+'px';cv.style.height=GH+'px';
+  // LOW renders at RES_LOW of the screen and lets the browser scale it up (big saving on weak GPUs)
+  const rs=renderScale();cv.width=Math.round(GW*rs);cv.height=Math.round(GH*rs);cv.style.width=GW+'px';cv.style.height=GH+'px';
   wrap.style.width=GW+'px';wrap.style.height=GH+'px';wrap.style.top=(sat+vh/2)+'px';
   // UI is authored at 320px wide and zoomed to fit
   const z=GW/320;
@@ -1235,7 +1256,7 @@ let actCD={};                           // active tattoo id → seconds until re
 function buildStars(){
   if(!GW||!GH)return;
   stars=[];
-  for(let i=0,n=save.settings.lowFx?45:130;i<n;i++){
+  for(let i=0,n=fxLow()?0:fxMid()?45:130;i<n;i++){
     stars.push({
       x:Math.random()*GW,y:Math.random()*GH,
       r:.35+Math.random()*1.4,
@@ -1369,7 +1390,7 @@ function triggerDeath(){
   const TRI_Y=GH*TRI_FRAC;
   // freeze the last frame for the CRT power-off animation
   deathShot=document.createElement('canvas');deathShot.width=GW;deathShot.height=GH;
-  deathShot.getContext('2d').drawImage(cv,0,0);
+  deathShot.getContext('2d').drawImage(cv,0,0,GW,GH);
   particles=[];burst(triX,TRI_Y,C.a,26,GH*.2);burst(triX,TRI_Y,C.hot,18,GH*.26);
   snd('die');setTimeout(()=>snd('crtoff'),700);
   screenFlash=0;shake={x:0,y:0,t:0};hudHidden=false;
@@ -1529,7 +1550,7 @@ function fireBullets(st){
     bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
-  muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
+  if(!fxLow())muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
   snd('shoot');
 }
 // ARC tattoo: lightning jumps from the target to the nearest enemies
@@ -1567,17 +1588,18 @@ function useActive(id){
 
 // ── PARTICLES ────────────────────────────────────────────────────────────────
 function burst(x,y,col,n,speed){
-  if(save.settings.lowFx)n=Math.ceil(n/3);
+  if(fxLow())return;                 // LOW: no particles at all
+  if(fxMid())n=Math.ceil(n/3);
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2,spd=(speed||GH*.12)*(0.3+Math.random()*.9);
     particles.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
       r:1.5+Math.random()*3,col,life:1,decay:.55+Math.random()*.55});
   }
 }
-function spawnText(x,y,txt,col){if(textParticles.length<40)textParticles.push({x,y,txt,col,life:1,vy:-GH*.055});}
+function spawnText(x,y,txt,col){if(textParticles.length<(fxLow()?12:40))textParticles.push({x,y,txt,col,life:1,vy:-GH*.055});}
 // damage numbers: normal hits on the same enemy add up into one number; crits stand alone
 function dmgText(e,dmg,crit){
-  if(!save.settings.showDmgNums)return;
+  if(!save.settings.showDmgNums||fxLow())return;
   const t=e.dmgTxt;
   if(!crit&&t&&t.life>.6&&textParticles.includes(t)){t.val+=dmg;t.txt=fmtN(Math.round(t.val));t.x=e.x;return;}
   if(textParticles.length>=30)return;
@@ -1589,7 +1611,9 @@ function dmgText(e,dmg,crit){
 let lastTime=0;
 function loop(ts){
   requestAnimationFrame(loop);
+  if(fxLow()&&ts-lastTime<30)return;   // LOW: 30 fps cap (less heat and battery on weak phones)
   frameDt=Math.min((ts-lastTime)/1000,.05);lastTime=ts;
+  const rs=renderScale();cx.setTransform(rs,0,0,rs,0,0);
   if(state===ST.MENU){updateMenu(frameDt);drawMenu();}
   else if(state===ST.PLAY){
     if(!paused)runPlayT+=frameDt;
@@ -1605,7 +1629,7 @@ function loop(ts){
 // ── UPDATE ───────────────────────────────────────────────────────────────────
 function updateMenu(dt){
   menuAnim+=dt;
-  if(menuParticles.length<7&&Math.random()<dt*.9)menuParticles.push({
+  if(!fxLow()&&menuParticles.length<7&&Math.random()<dt*.9)menuParticles.push({
     x:GW*(.05+Math.random()*.9),y:-GW*.06,s:GW*(.025+Math.random()*.025),
     vy:GH*(.018+Math.random()*.03),rot:Math.random()*6,vr:(Math.random()-.5)*.8,
   });
@@ -1633,7 +1657,7 @@ function updatePlay(dt){
   if(runFx.midT>0)runFx.midT-=dt;
   aegisT=Math.max(0,aegisT-dt);
 
-  if(Math.random()<dt*20){
+  if(!fxLow()&&Math.random()<dt*20){
     const spread=(Math.random()-.5)*GW*.025;
     thruster.push({x:triX+spread,y:TRI_Y+GW*.04,vx:spread*.5,vy:GH*.04+Math.random()*GH*.06,
       r:GW*.014+Math.random()*GW*.008,life:1,decay:2.5+Math.random()*1.5});
@@ -1841,6 +1865,7 @@ function updateParticles(dt){
 // ── DRAW HELPERS ─────────────────────────────────────────────────────────────
 const STAR_SPEEDS=[.2,.55,1.1];
 function drawStars(scrollMult){
+  if(!stars.length)return;
   const now=lastTime;
   cx.fillStyle=C.a2;
   stars.forEach(s=>{
@@ -1852,6 +1877,7 @@ function drawStars(scrollMult){
   cx.globalAlpha=1;
 }
 function drawBg(cxp,cyp){
+  if(fxLow()){cx.fillStyle=C.bg1;cx.fillRect(-6,-6,GW+12,GH+12);return;}
   const g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,GH*.8);
   g.addColorStop(0,C.bg2);g.addColorStop(1,C.bg1);
   cx.fillStyle=g;cx.fillRect(-6,-6,GW+12,GH+12);
@@ -1909,6 +1935,8 @@ function drawGemIcon(x,y,s,col){
   cx.restore();
 }
 function glowText(t,x,y,col,size,blur){
+  // MID/LOW have no glow, so skip the save/restore round trip (fill colour is restored by hand)
+  if(fxMid()){const f=cx.fillStyle;cx.font=fnt(size);cx.fillStyle=col;cx.fillText(t,x,y);cx.fillStyle=f;return;}
   cx.save();cx.font=fnt(size);cx.fillStyle=col;cx.shadowColor=col;cx.shadowBlur=blur==null?6:blur;cx.fillText(t,x,y);cx.restore();
 }
 
@@ -1930,9 +1958,11 @@ function drawPlay(){
   drawStars(2);
 
   // danger zone + perimeter
-  const zh=GH*.045,fg=cx.createLinearGradient(0,LINE_Y,0,LINE_Y+zh);
-  fg.addColorStop(0,hexA(C.hot,.08));fg.addColorStop(1,'rgba(0,0,0,0)');
-  cx.fillStyle=fg;cx.fillRect(0,LINE_Y,GW,zh);
+  if(!fxLow()){
+    const zh=GH*.045,fg=cx.createLinearGradient(0,LINE_Y,0,LINE_Y+zh);
+    fg.addColorStop(0,hexA(C.hot,.08));fg.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=fg;cx.fillRect(0,LINE_Y,GW,zh);
+  }
   cx.strokeStyle=hexA(C.hot,.45);cx.lineWidth=1;cx.setLineDash([6,6]);
   cx.beginPath();cx.moveTo(0,LINE_Y+.5);cx.lineTo(GW,LINE_Y+.5);cx.stroke();cx.setLineDash([]);
   // range line: the triangle only shoots below this
@@ -1990,7 +2020,7 @@ function drawPlay(){
     cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;cx.stroke();
     if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
     cx.shadowBlur=0;cx.globalAlpha=.6*fa;cx.lineWidth=1;
-    enemyInner(e.type,s);
+    if(!fxLow())enemyInner(e.type,s);
     cx.restore();
     // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
     if(e.shield>0){cx.save();cx.globalAlpha=fa*(.35+.55*e.shield/e.maxShield);cx.strokeStyle=C.a2;cx.lineWidth=2;cx.shadowColor=C.a2;cx.shadowBlur=8;
@@ -2007,7 +2037,8 @@ function drawPlay(){
   });
 
   // bullets
-  bullets.forEach(b=>{
+  if(fxLow()){cx.fillStyle=C.a2;bullets.forEach(b=>{const r=b.sz*1.6;cx.fillRect(b.x-r/2,b.y-r/2,r,r);});}
+  else bullets.forEach(b=>{
     cx.fillStyle=C.a;
     b.trail.forEach((pt,i)=>{
       cx.globalAlpha=(1-(i/b.trail.length))*.4;
@@ -2058,9 +2089,12 @@ function drawPlay(){
   // double-tap hides everything but the ad button
   if(!hudHidden){
     // HUD band: keeps the top readable over enemies and numbers
-    const hb=cx.createLinearGradient(0,0,0,TOP);
-    hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
-    cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
+    if(fxLow()){cx.fillStyle=hexA(C.bg1,.85);cx.fillRect(-6,-6,GW+12,TOP*.8+6);}
+    else{
+      const hb=cx.createLinearGradient(0,0,0,TOP);
+      hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
+      cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
+    }
   }
   drawAdButton();
   if(!hudHidden){drawHUD(st);if(!paused)drawWaveBanner();}
@@ -2118,7 +2152,9 @@ function drawHUD(st){
   const hcol=low?C.hot:C.a;
   cx.save();
   if(low)cx.globalAlpha=.6+.4*Math.sin(lastTime*.012);
-  for(let i=0;i<seg;i++){
+  if(fxLow()){   // LOW: two plain bars instead of 24 segments
+    cx.fillStyle=hexA(C.dim,.6);cx.fillRect(hbx,hby,hbw,hbh);cx.fillStyle=hcol;cx.fillRect(hbx,hby,hbw*hpf,hbh);
+  }else for(let i=0;i<seg;i++){
     if(i<on){cx.fillStyle=hcol;cx.shadowColor=hcol;cx.shadowBlur=4;}
     else{cx.fillStyle=hexA(C.dim,.6);cx.shadowBlur=0;}
     cx.fillRect(hbx+i*(sw+gap),hby,sw,hbh);
@@ -2911,9 +2947,15 @@ function menuHints(){
 // Glow (shadowBlur) is the most expensive canvas effect; LOW FX turns it off globally.
 {
   const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');
-  Object.defineProperty(cx,'shadowBlur',{get(){return d.get.call(cx);},set(v){d.set.call(cx,save.settings.lowFx?0:v);}});
+  Object.defineProperty(cx,'shadowBlur',{get(){return d.get.call(cx);},set(v){d.set.call(cx,fxMid()?0:v);}});
+  // LOW: dashed lines are drawn solid (dash patterns are slow to rasterise)
+  const dash=cx.setLineDash.bind(cx);cx.setLineDash=a=>dash(fxLow()?[]:a);
 }
-function applyLowFx(){document.body.classList.toggle('lowfx',!!save.settings.lowFx);buildStars();}
+function applyFx(){
+  document.body.classList.toggle('fxmid',fxMid());document.body.classList.toggle('fxlow',fxLow());
+  if(fxLow()){particles=[];thruster=[];muzzle=[];menuParticles=[];}
+  resize();          // canvas resolution depends on the level (also rebuilds the stars)
+}
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function rangeFill(el){el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%');}
@@ -2923,7 +2965,9 @@ function renderSettings(){
   $('musVol').value=s.musVol;$('musVal').textContent=s.musVol;
   ['sfxVol','musVol'].forEach(id=>rangeFill($(id)));
   const tg=(id,on)=>{$(id).className='tog'+(on?' on':'');$(id).textContent=on?'ON':'OFF';};
-  tg('sfxToggle',s.sfxOn);tg('musToggle',s.musOn);tg('fxToggle',!!s.lowFx);
+  tg('sfxToggle',s.sfxOn);tg('musToggle',s.musOn);
+  $('fxSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.fx===s.fx));
+  $('fxDesc').textContent=FX_DESC[s.fx]||'';
   tg('dmgToggle',s.showDmgNums!==false);tg('statOvToggle',!!s.statOverlay);
   const th=THEMES.find(x=>x.id===save.theme)||THEMES[0];
   $('themeName').textContent=th.name;
@@ -2936,7 +2980,10 @@ $('sfxVol').addEventListener('input',e=>{save.settings.sfxVol=+e.target.value;pe
 $('sfxVol').addEventListener('change',()=>snd('blip'));
 $('musVol').addEventListener('input',e=>{save.settings.musVol=+e.target.value;persist();updateMusicVolume();renderSettings();});
 $('sfxToggle').addEventListener('click',()=>{save.settings.sfxOn=!save.settings.sfxOn;persist();snd('click');renderSettings();});
-$('fxToggle').addEventListener('click',()=>{save.settings.lowFx=!save.settings.lowFx;persist();applyLowFx();snd('click');renderSettings();});
+$('fxSeg').addEventListener('click',e=>{
+  const b=e.target.closest('[data-fx]');if(!b||b.dataset.fx===save.settings.fx)return;
+  save.settings.fx=b.dataset.fx;persist();applyFx();snd('click');renderSettings();
+});
 $('musToggle').addEventListener('click',()=>{save.settings.musOn=!save.settings.musOn;persist();updateMusicVolume();snd('click');renderSettings();});
 $('dmgToggle').addEventListener('click',()=>{save.settings.showDmgNums=!save.settings.showDmgNums;persist();snd('click');renderSettings();});
 $('statOvToggle').addEventListener('click',()=>{save.settings.statOverlay=!save.settings.statOverlay;persist();snd('click');renderSettings();});
@@ -3051,7 +3098,7 @@ window.addEventListener('popstate',()=>{
   setTimeout(finish,1250);
   el.addEventListener('pointerdown',finish);
 })();
-applyLowFx();achCheck();
+applyFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 requestAnimationFrame(loop);

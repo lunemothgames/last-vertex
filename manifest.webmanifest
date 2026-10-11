@@ -1,6 +1,8 @@
 {
   "name": "Tri-Trouble",
   "short_name": "Tri-Trouble",
+  "description": "A retro-styled triangle survival game. Defend your perimeter, upgrade your build, and survive endless waves.",
+  "categories": ["games"],
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

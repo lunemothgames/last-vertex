@@ -8,13 +8,13 @@ const code=[
   cut('// ── ECONOMY','// ── STATS'),
   cut('const TEMP_UPGRADES=[','const tempCost='),
   cut('const QUEST=','const rint='),
-  'return{upCost,fmtN,THEMES,ECO,PERM_UPGRADES,TAT_TYPES,RAR_NAMES,TAT_MAX,tatReq,tatVal,TAT_SLOT_PRICES,TEMP_UPGRADES,TIERS,ENEMY_TYPES,QUEST,QUEST_DEFS};',
+  'return{upCost,fmtN,THEMES,ECO,PERM_UPGRADES,TAT_TYPES,RAR_NAMES,TAT_MAX,tatReq,tatFx,uVal,PITY,TAT_SLOT_PRICES,TEMP_UPGRADES,TIERS,ENEMY_TYPES,QUEST,QUEST_DEFS};',
 ].join('\n');
 const save={perm:{},tatCol:{},equipped:[],tatSlots:1,temp:{},tierBest:{1:0},tier:1,bestWave:0};
 const G=new Function('save','GH',code)(save,1);
-const {upCost,fmtN,THEMES,ECO,PERM_UPGRADES,TAT_TYPES,RAR_NAMES,TAT_MAX,tatReq,tatVal,TAT_SLOT_PRICES,TEMP_UPGRADES,TIERS,ENEMY_TYPES,QUEST,QUEST_DEFS}=G;
+const {upCost,fmtN,THEMES,ECO,PERM_UPGRADES,TAT_TYPES,RAR_NAMES,TAT_MAX,tatReq,tatFx,uVal,PITY,TAT_SLOT_PRICES,TEMP_UPGRADES,TIERS,ENEMY_TYPES,QUEST,QUEST_DEFS}=G;
 
-const val=(u,l)=>u.fx(u.start+u.step*l);
+const val=(u,l)=>u.fx(uVal(u,l));
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const N=n=>fmtN(n).replace('∞','>1e308');
 
@@ -25,7 +25,7 @@ PERM_UPGRADES.forEach(u=>{
   const fin=isFinite(u.max),top=fin?u.max:SHOW_INF;
   let total=0;const rows=[];
   // every level up to 100, then every 50th to 1000, then every 250th
-  const show=L=>L<=100||(L<=1000?L%50===0:L%250===0)||L===top;
+  const show=L=>L<=100||(L<=1000?L%50===0:L<=10000?L%250===0:L%10000===0)||L===top;
   for(let i=0;i<top;i++){const c=upCost(u,i);total+=c;if(show(i+1))rows.push([i+1,val(u,i+1),c,total]);}
   const extra=fin?[]:[150,200,300,500].map(L=>{let t=0;for(let i=0;i<L;i++)t+=upCost(u,i);return[L,val(u,L),upCost(u,L-1),t];});
   shopSummary+=`<tr><td class="nm">${u.name}</td><td>${val(u,0)}</td><td>+${esc(u.id==='multishot'?'1 bullet':u.fx(u.step).replace(/^\+|^x/,''))}</td>
@@ -48,14 +48,14 @@ const copiesTo=L=>{let c=1;for(let l=1;l<L;l++)c+=tatReq(l);return c;};
 const tatSummary=TAT_TYPES.map(t=>{
   const p=t.w/totW;
   return `<tr><td class="nm">${t.name}</td><td class="r${t.rar}">${RAR_NAMES[t.rar]}</td><td>${(p*100).toFixed(2)}%</td>
-    <td>${esc(t.desc(tatVal(1)))}</td><td>${esc(t.desc(tatVal(TAT_MAX)))}</td>
+    <td>${t.act?'ACTIVE · ':''}${esc(t.desc(tatFx(t,1)))}</td><td>${esc(t.desc(tatFx(t,TAT_MAX)))}</td>
     <td>${N(Math.ceil(copiesTo(TAT_MAX)/p))}</td><td>${N(Math.ceil(copiesTo(TAT_MAX)/p)*ECO.pullCost)}</td></tr>`;
 }).join('');
 let lvRows='';
-for(let L=1;L<=TAT_MAX;L++)lvRows+=`<tr><td>${L}</td><td>${(tatVal(L)*100).toFixed(1)}%</td><td>${L<TAT_MAX?tatReq(L):'MAX'}</td><td>${copiesTo(L)}</td></tr>`;
+for(let L=1;L<=TAT_MAX;L++)lvRows+=`<tr><td>${L}</td><td>${((L-1)/(TAT_MAX-1)*100).toFixed(0)}% of the way Lv1→Lv${TAT_MAX}</td><td>${L<TAT_MAX?tatReq(L):'MAX'}</td><td>${copiesTo(L)}</td></tr>`;
 const tatDetails=TAT_TYPES.map(t=>{
   const p=t.w/totW;
-  let r='';for(let L=1;L<=TAT_MAX;L++){const pulls=Math.ceil(copiesTo(L)/p);r+=`<tr><td>${L}</td><td>${esc(t.desc(tatVal(L)))}</td><td>${copiesTo(L)}</td><td>${N(pulls)}</td><td>${N(pulls*ECO.pullCost)}</td></tr>`;}
+  let r='';for(let L=1;L<=TAT_MAX;L++){const pulls=Math.ceil(copiesTo(L)/p);r+=`<tr><td>${L}</td><td>${esc(t.desc(tatFx(t,L)))}</td><td>${copiesTo(L)}</td><td>${N(pulls)}</td><td>${N(pulls*ECO.pullCost)}</td></tr>`;}
   return `<details><summary><b>${t.name}</b> <span class="r${t.rar}">${RAR_NAMES[t.rar]} · ${(p*100).toFixed(2)}% per pull</span></summary>
     <table class="lv"><tr><th>LV</th><th>EFFECT</th><th>COPIES OWNED</th><th>≈ PULLS</th><th>≈ GEMS</th></tr>${r}</table></details>`;
 }).join('');
@@ -67,7 +67,7 @@ const themeRows=THEMES.map(t=>`<tr><td class="nm"><i class="sw" style="backgroun
 const waveRows=[1,5,10,15,20,25,30,40,50,60,75,100,150,200].map(w=>{
   const hp=ECO.enemyHp*Math.pow(ECO.enemyHpGrowth,w-1),atk=ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,w-1),cv=ECO.coinBase*Math.pow(ECO.coinGrowth,w-1);
   const n=w%ECO.bossEvery===0?1:Math.min(3+Math.floor(w/4),16);
-  return`<tr><td>${w}${w%ECO.bossEvery===0?' ★':''}</td><td>${n}</td><td>${N(hp)}</td><td>${N(atk)}</td><td>${N(hp*ECO.bossHpMul)}</td><td>${N(atk*ECO.bossAtkMul)}</td><td>${N(cv)}</td><td>${N(cv*ECO.bossCoins)}</td><td>${N(cv*ECO.coinDropKills)}</td></tr>`;
+  return`<tr><td>${w}${w%ECO.bossEvery===0?' ★':''}</td><td>${n}</td><td>${N(hp)}</td><td>${N(atk)}</td><td>${N(hp*ECO.bossHpMul)}</td><td>${N(atk*ECO.bossAtkMul)}</td><td>${N(cv)}</td><td>${N(cv*ECO.bossCoins)}</td><td>${N(cv*ECO.coinDropMinKills)}+</td></tr>`;
 }).join('');
 
 const html=`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -116,8 +116,8 @@ small{color:var(--mute)}
 <div>Enemy attack (wave 1)<b>${ECO.enemyAtk}</b></div><div>Enemy attack growth / wave<b>×${ECO.enemyAtkGrowth}</b></div>
 <div>Boss every<b>${ECO.bossEvery} waves</b></div><div>Boss HP / attack<b>×${ECO.bossHpMul} / ×${ECO.bossAtkMul}</b></div>
 <div>Coin drop chance per kill<b>${ECO.coinChance*100}%</b></div><div>Coin value growth / wave<b>×${ECO.coinGrowth}</b></div>
-<div>Boss coins<b>×${ECO.bossCoins} kill value</b></div><div>Boss gem<b>none</b></div>
-<div>Coin drop on field<b>${ECO.coinDropKills} kills worth</b></div><div>Gem drop on field<b>+1</b></div>
+<div>Boss coins<b>×${ECO.bossCoins} kill value</b></div><div>Epic pity<b>${PITY} summons</b></div><div>Boss gem<b>none</b></div>
+<div>Coin drop on field<b>${ECO.coinDropSecs}s of run income (min ${ECO.coinDropMinKills} kills)</b></div><div>Gem drop on field<b>+1</b></div>
 <div>Drop cooldown after pickup<b>${ECO.pickupCooldown/60} min</b></div><div>Ad reward / cooldown<b>${ECO.adGems} gems / ${ECO.adCooldown/60} min</b></div>
 <div>Summon x1 / x10<b>${ECO.pullCost} / ${ECO.pull10Cost} gems</b></div><div>Range line start<b>${(ECO.rangeBase*100)}% from top</b></div>
 </div>
@@ -166,7 +166,7 @@ ${tatDetails}
 <h2 id="waves">WAVES & REWARDS</h2>
 <div class="tw"><table><tr><th>WAVE</th><th>ENEMIES</th><th>ENEMY HP</th><th>ENEMY ATK</th><th>BOSS HP</th><th>BOSS ATK</th><th>COIN / DROP</th><th>BOSS COINS</th><th>FIELD COIN</th></tr>${waveRows}</table></div>
 </div></body></html>`;
-const out=process.argv[2];
+const out=process.argv[2]||path.join(__dirname,'..','_docs','balance.html');
 fs.mkdirSync(path.dirname(out),{recursive:true});
 fs.writeFileSync(out,html);
 console.log('written',out,(html.length/1024).toFixed(0)+'KB');

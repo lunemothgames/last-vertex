@@ -1,0 +1,14 @@
+{
+  "name": "tri-trouble",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Retro triangle survival PWA",
+  "scripts": {
+    "build": "node tools/build.js",
+    "balance": "node tools/balance.js",
+    "sim": "node tools/sim.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

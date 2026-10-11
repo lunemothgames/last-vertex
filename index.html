@@ -36,7 +36,7 @@
   --a:#9fd8ff;--a2:#f0f9ff;--dim:#28506e;--bg1:#02050b;--bg2:#0a1729;--hot:#ff7aa2;--ink:#03101c;
   --r0:#4a6a88;--r1:#bfe8ff;--r2:#7affd9;--r3:#ff7aa2;
   --mute:#5f8fb3;
-  --glow:color-mix(in srgb,var(--a) 55%,transparent);
+  --a-rgb:159,216,255;--glow:rgba(var(--a-rgb),0.55);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg1);color:var(--a);
@@ -46,7 +46,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 @keyframes fl{0%,95%,100%{opacity:1}96%{opacity:.9}97%{opacity:1}98.5%{opacity:.94}}
 canvas{display:block;touch-action:manipulation}
 #ui{position:absolute;top:0;left:0;pointer-events:none;text-shadow:0 0 6px var(--glow)}
-#crt{position:absolute;inset:0;z-index:40;pointer-events:none;
+#crt{position:absolute;top:0;right:0;bottom:0;left:0;z-index:40;pointer-events:none;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
   box-shadow:inset 0 0 90px rgba(0,0,0,.92)}
 .H{font-family:'VT323',monospace;font-weight:400}
@@ -73,7 +73,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .btn:active,.buy:active,.pull:active,.bnav button:active,.play:active{transform:translateY(1px);filter:brightness(1.3)}
 
 /* ── layers ── */
-.layer{position:absolute;inset:0;display:none;flex-direction:column;z-index:5}
+.layer{position:absolute;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column;z-index:5}
 .layer.show{display:flex;pointer-events:auto;animation:lin .22s steps(4)}
 
 /* ── main menu ── */
@@ -85,7 +85,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 /* LAST is tracked out to exactly the width of VERTEX (VT323 glyphs are 0.4em wide); the negative right margins
    cancel the spacing after the last letter, and the cursor hangs outside so it never pushes the word off-centre */
 .logo .l1{font-size:44px;letter-spacing:.96em;margin-right:-.96em;color:var(--a2)}
-.logo .l2{display:inline-block;position:relative;font-size:76px;letter-spacing:.04em;margin-right:-.04em;text-shadow:0 0 14px color-mix(in srgb,var(--a) 80%,transparent),0 0 2px var(--a2)}
+.logo .l2{display:inline-block;position:relative;font-size:76px;letter-spacing:.04em;margin-right:-.04em;text-shadow:0 0 14px rgba(var(--a-rgb),0.8),0 0 2px var(--a2)}
 .logo .l2::after{content:'_';position:absolute;left:100%;animation:blink 1s steps(1) infinite}
 .logo .rule{font-size:18px;color:var(--dim);margin-top:4px}
 /* the hero triangle gives way first when the screen is short (9:16), so the menu always fits */
@@ -107,7 +107,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .bnav button.cool{color:var(--mute);text-shadow:none}
 
 /* ── pause ── */
-#pauseUI{justify-content:center;align-items:center;background:color-mix(in srgb,var(--bg1) 86%,transparent)}
+#pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
 .p-title{font-family:'VT323',monospace;font-size:60px;letter-spacing:.1em}
 .p-title span{animation:blink 1s steps(1) infinite}
 .p-sub{font-size:11px;color:var(--mute);margin:2px 0 26px;letter-spacing:.2em}
@@ -120,7 +120,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .row2 .btn{flex:1;min-width:0}
 
 /* ── dead ── */
-#deadUI{justify-content:center;padding:0 22px;background:color-mix(in srgb,var(--bg1) 82%,transparent)}
+#deadUI{justify-content:center;padding:0 22px;background:rgba(var(--bg1-rgb),0.82)}
 .d-title{font-family:'VT323',monospace;font-size:68px;color:var(--hot);text-shadow:0 0 16px var(--hot);text-align:center;letter-spacing:.06em;line-height:.85}
 .d-title span{animation:blink 1s steps(1) infinite}
 .d-sub{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 14px;letter-spacing:.06em}
@@ -134,7 +134,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .dr b{font-weight:400}
 
 /* ── panels ── */
-.panel{position:absolute;inset:0;display:none;flex-direction:column;z-index:10;
+.panel{position:absolute;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column;z-index:10;
   background:radial-gradient(ellipse at 50% 40%,var(--bg2) 0%,var(--bg1) 80%)}
 .panel.open{display:flex;pointer-events:auto;animation:lin .22s steps(5)}
 .ph{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid var(--dim);flex-shrink:0}
@@ -154,7 +154,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .note{font-size:10px;color:var(--mute);margin:10px 14px 0;letter-spacing:.06em;text-shadow:none}
 .list{display:flex;flex-direction:column;gap:8px;padding:8px 14px 0}
 .urow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px dashed var(--dim);position:relative}
-.urow.maxed{border-style:solid;border-color:color-mix(in srgb,var(--a) 35%,transparent)}
+.urow.maxed{border-style:solid;border-color:rgba(var(--a-rgb),0.35)}
 .ic{width:42px;height:42px;display:grid;place-items:center;flex-shrink:0;border:1px solid var(--dim)}
 .ic svg.i{width:22px;height:22px}
 .info{flex:1;min-width:0}
@@ -163,7 +163,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .fx b{color:var(--a2);font-weight:400}
 .pipr{display:flex;align-items:center;gap:6px;margin-top:5px}
 .pips{display:flex;gap:2px;flex:1}
-.pips i{flex:1;height:7px;background:color-mix(in srgb,var(--a) 10%,var(--bg1))}
+.pips i{flex:1;height:7px;background:var(--a10bg)}
 .pips i.on{background:var(--a);box-shadow:0 0 4px var(--a)}
 .pipr em{font-style:normal;font-family:'VT323',monospace;font-size:15px;color:var(--mute);text-shadow:none}
 /* every shop row: full-width bar, label underneath (milestone stats: bar = progress to the next bonus) */
@@ -184,7 +184,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
   padding-left:6px;font-family:'VT323',monospace;font-size:22px;line-height:.8;overflow:hidden}
 .tprev i{display:block;height:4px;width:44px}
 .trow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px dashed var(--dim)}
-.trow.on{border-style:solid;border-color:var(--a);box-shadow:inset 0 0 18px color-mix(in srgb,var(--a) 12%,transparent)}
+.trow.on{border-style:solid;border-color:var(--a);box-shadow:inset 0 0 18px rgba(var(--a-rgb),0.12)}
 
 /* ── tattoos ── */
 .portal{height:150px;display:grid;place-items:center}
@@ -199,29 +199,30 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .lab{margin:16px 14px 8px;font-family:'VT323',monospace;font-size:18px;color:var(--mute);letter-spacing:.15em;text-shadow:none}
 .lab::before{content:'== '}.lab::after{content:' =='}
 .slots{display:flex;gap:8px;margin:0 14px}
-.slot{flex:1;aspect-ratio:1;display:grid;place-items:center;position:relative;border:1px dashed var(--dim);color:var(--mute);
+.slot{flex:1;aspect-ratio:1;min-height:52px;display:grid;place-items:center;position:relative;border:1px dashed var(--dim);color:var(--mute);
   font-family:'VT323',monospace;font-size:22px;text-shadow:none}
-.slot.f,.tile{border:1px solid var(--rc);border-style:solid;color:var(--rc);background:color-mix(in srgb,var(--rc) 8%,transparent);text-shadow:0 0 6px var(--rc)}
+.slot.f,.tile{border:1px solid var(--rc);border-style:solid;color:var(--rc);background:rgba(var(--rc-rgb),0.08);text-shadow:0 0 6px var(--rc)}
 .slot svg.i,.tile svg.i{width:22px;height:22px}
 .slot b,.tile b{position:absolute;bottom:1px;right:4px;font-family:'VT323',monospace;font-weight:400;font-size:14px}
 .inv{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 14px}
 .tile{aspect-ratio:1;display:grid;place-items:center;position:relative;cursor:pointer;overflow:hidden}
 .tile.eq::after{content:'';position:absolute;top:3px;left:3px;width:5px;height:5px;background:var(--a2);box-shadow:0 0 5px var(--a2)}
-.tile.hold::before{content:'';position:absolute;inset:0;background:var(--rc);opacity:.3;transform-origin:bottom;animation:holdf .6s linear forwards}
+.tile.hold::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background:var(--rc);opacity:.3;transform-origin:bottom;animation:holdf .6s linear forwards}
 @keyframes holdf{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.tile.hi7{box-shadow:0 0 12px var(--rc),inset 0 0 10px color-mix(in srgb,var(--rc) 30%,transparent)}
+.tile.hi7{box-shadow:0 0 12px var(--rc),inset 0 0 10px rgba(var(--rc-rgb),0.3)}
 .empty{grid-column:1/-1;text-align:center;padding:14px 0;font-size:11px;color:var(--mute)}
 .hint{margin:14px 14px 0;font-size:10px;color:var(--mute);line-height:1.7;text-shadow:none;letter-spacing:.04em}
 
 /* ── gacha results ── */
-.gacha-overlay{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;
-  padding:20px 14px;background:color-mix(in srgb,var(--bg1) 95%,transparent)}
+.gacha-overlay{position:absolute;top:0;right:0;bottom:0;left:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px 14px;background:rgba(var(--bg1-rgb),0.95)}
 .gacha-overlay.show{display:flex;pointer-events:auto;animation:lin .2s steps(4)}
 .g-title{font-family:'VT323',monospace;font-size:30px;letter-spacing:.1em;margin-bottom:18px;text-align:center}
 .g-title.rare{color:var(--r2);text-shadow:0 0 12px var(--r2);animation:blink .9s steps(1) 3}
 .gcards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;margin-bottom:24px}
 .gcards.one{grid-template-columns:96px;justify-content:center}
-.gc{border:1px solid var(--rc);color:var(--rc);background:color-mix(in srgb,var(--rc) 8%,transparent);aspect-ratio:.7;
+.gcards.one .gc{min-height:136px}   /* min-heights: fallback where aspect-ratio isn't supported (Chrome < 88) */
+.gc{border:1px solid var(--rc);color:var(--rc);background:rgba(var(--rc-rgb),0.08);aspect-ratio:.7;min-height:72px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;opacity:0;
   animation:gcIn .3s steps(3) forwards;text-shadow:0 0 6px var(--rc)}
 @keyframes gcIn{0%{opacity:0}34%{opacity:1;background:var(--rc)}100%{opacity:1}}
@@ -231,7 +232,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .gc .lv{font-family:'VT323',monospace;font-size:14px;line-height:1}
 .gcards.one .gc .n{font-size:16px}.gcards.one .gc .lv{font-size:20px}
 .gc .new{position:absolute;top:-7px;right:-4px;background:var(--hot);color:var(--ink);font-family:'VT323',monospace;font-size:12px;padding:0 3px;text-shadow:none}
-.gc.r2,.gc.r3{box-shadow:0 0 12px color-mix(in srgb,var(--rc) 55%,transparent)}
+.gc.r2,.gc.r3{box-shadow:0 0 12px rgba(var(--rc-rgb),0.55)}
 .gacha-overlay .btn{width:220px}
 
 /* ── settings ── */
@@ -241,9 +242,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .sc{display:flex;align-items:center;gap:12px;margin-top:8px}
 input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:20px;background:transparent;cursor:pointer;--p:50%}
 input[type=range]::-webkit-slider-runnable-track{height:10px;border:1px solid var(--dim);
-  background:linear-gradient(var(--a),var(--a)) 0 0/var(--p) 100% no-repeat,repeating-linear-gradient(90deg,color-mix(in srgb,var(--a) 12%,transparent) 0 4px,transparent 4px 6px)}
+  background:linear-gradient(var(--a),var(--a)) 0 0/var(--p) 100% no-repeat,repeating-linear-gradient(90deg,rgba(var(--a-rgb),0.12) 0 4px,transparent 4px 6px)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:20px;margin-top:-6px;background:var(--a2);box-shadow:0 0 8px var(--a)}
-input[type=range]::-moz-range-track{height:10px;border:1px solid var(--dim);background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--a) 12%,transparent) 0 4px,transparent 4px 6px)}
+input[type=range]::-moz-range-track{height:10px;border:1px solid var(--dim);background:repeating-linear-gradient(90deg,rgba(var(--a-rgb),0.12) 0 4px,transparent 4px 6px)}
 input[type=range]::-moz-range-progress{height:10px;background:var(--a)}
 input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radius:0;background:var(--a2);box-shadow:0 0 8px var(--a)}
 .tog{width:58px;height:30px;border:1px solid var(--dim);color:var(--mute);font-family:'VT323',monospace;font-size:20px;text-shadow:none;flex-shrink:0}
@@ -262,7 +263,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 @keyframes blinky{0%,43%,45%,86%,88%,100%{transform:scaleY(1)}44%,87%{transform:scaleY(.15)}}
 /* ── menu ad button ── */
 .adbtn{display:flex;align-items:center;gap:4px;height:28px;padding:0 8px;border:1px solid var(--a2);color:var(--a2);
-  font-family:'VT323',monospace;font-size:21px;box-shadow:0 0 10px color-mix(in srgb,var(--a2) 35%,transparent);text-shadow:0 0 6px var(--a2)}
+  font-family:'VT323',monospace;font-size:21px;box-shadow:0 0 10px rgba(var(--a2-rgb),0.35);text-shadow:0 0 6px var(--a2)}
 .adbtn svg.i{width:16px;height:16px}
 .adbtn.cool{border-color:var(--dim);color:var(--mute);box-shadow:none;text-shadow:none}
 .bnav{grid-template-columns:1fr 1fr 1fr}
@@ -276,8 +277,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tinfo .dot{position:absolute;top:0;right:2px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
 /* ── quests ── */
 .qrow{border:1px dashed var(--dim);padding:9px 10px}
-.qrow.wk{border-color:color-mix(in srgb,var(--r2) 60%,transparent)}
-.qrow.done{border-style:solid;border-color:var(--a);box-shadow:inset 0 0 16px color-mix(in srgb,var(--a) 12%,transparent)}
+.qrow.wk{border-color:rgba(var(--r2-rgb),0.6)}
+.qrow.done{border-style:solid;border-color:var(--a);box-shadow:inset 0 0 16px rgba(var(--a-rgb),0.12)}
 .qtop{display:flex;justify-content:space-between;align-items:center;font-family:'VT323',monospace;font-size:17px}
 .qk{color:var(--mute);letter-spacing:.15em;text-shadow:none}
 .qrow.wk .qk{color:var(--r2)}
@@ -290,8 +291,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .qb em{font-style:normal;font-family:'VT323',monospace;font-size:16px;color:var(--mute);text-shadow:none;white-space:nowrap}
 .qb .buy{width:64px;min-height:30px;font-size:19px}
 /* ── modal (save export / import) ── */
-#modal,.ovl{position:absolute;inset:0;z-index:29;display:none;align-items:center;justify-content:center;padding:14px;pointer-events:auto;
-  background:color-mix(in srgb,var(--bg1) 80%,transparent)}
+#modal,.ovl{position:absolute;top:0;right:0;bottom:0;left:0;z-index:29;display:none;align-items:center;justify-content:center;padding:14px;pointer-events:auto;
+  background:rgba(var(--bg1-rgb),0.8)}
 #modal.show,.ovl.show{display:flex}
 /* weekly op button + panel, idle income popup */
 .wkbtn{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px auto 0;width:224px;height:34px;position:relative;
@@ -309,26 +310,26 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .mbox{width:100%;border:1px solid var(--a);background:var(--bg1);padding:14px;box-shadow:0 0 24px var(--glow);animation:lin .15s steps(3)}
 .mbox h4{font-family:'VT323',monospace;font-weight:400;font-size:28px;letter-spacing:.08em}
 .mbox p{font-size:11px;line-height:1.6;color:var(--mute);margin:4px 0 10px;text-shadow:none}
-.mbox textarea{width:100%;height:110px;resize:none;background:color-mix(in srgb,var(--a) 6%,var(--bg1));border:1px solid var(--dim);color:var(--a);
+.mbox textarea{width:100%;height:110px;resize:none;background:var(--a6bg);border:1px solid var(--dim);color:var(--a);
   font:11px/1.4 'IBM Plex Mono',monospace;padding:8px;word-break:break-all;margin-bottom:12px;user-select:text;-webkit-user-select:text}
 .mbox .btn{height:44px;font-size:22px}
 .urow .ic{cursor:pointer}
 /* ── tattoo collection ── */
 .inv{grid-template-columns:repeat(4,1fr)}
-.ctile{border:1px solid var(--rc);color:var(--rc);background:color-mix(in srgb,var(--rc) 7%,transparent);display:flex;flex-direction:column;
+.ctile{border:1px solid var(--rc);color:var(--rc);background:rgba(var(--rc-rgb),0.07);display:flex;flex-direction:column;
   align-items:center;gap:2px;padding:8px 4px 6px;position:relative;cursor:pointer;overflow:hidden;text-shadow:0 0 6px var(--rc);touch-action:manipulation}
 .ctile svg.i{width:24px;height:24px}
 .ctile .n{font-family:'VT323',monospace;font-size:15px;color:var(--a);white-space:nowrap;line-height:1}
 .ctile .lv{font-family:'VT323',monospace;font-size:17px;line-height:1}
-.ctile .pb{width:100%;height:4px;margin-top:2px;background:color-mix(in srgb,var(--rc) 18%,transparent)}
+.ctile .pb{width:100%;height:4px;margin-top:2px;background:rgba(var(--rc-rgb),0.18)}
 .ctile .pb i{display:block;height:100%;background:var(--rc)}
 .ctile .cp{font-family:'VT323',monospace;font-size:13px;color:var(--mute);text-shadow:none;line-height:1}
-.ctile.eq{box-shadow:inset 0 0 0 1px var(--rc),0 0 12px color-mix(in srgb,var(--rc) 45%,transparent)}
+.ctile.eq{box-shadow:inset 0 0 0 1px var(--rc),0 0 12px rgba(var(--rc-rgb),0.45)}
 .ctile.eq::after{content:'EQ';position:absolute;top:2px;left:3px;font-family:'VT323',monospace;font-size:12px;background:var(--rc);color:var(--ink);padding:0 2px;text-shadow:none}
 .ctile.locked{border-style:dashed;border-color:var(--dim);color:var(--mute);background:none;text-shadow:none}
 .ctile.locked .n{color:var(--mute)}
 .ctile.locked .lv{font-size:12px}
-.ctile.hold::before,.slot.hold::before{content:'';position:absolute;inset:0;background:var(--rc,var(--a));opacity:.3;transform-origin:bottom;animation:holdf .45s linear forwards}
+.ctile.hold::before,.slot.hold::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background:var(--rc,var(--a));opacity:.3;transform-origin:bottom;animation:holdf .45s linear forwards}
 .slot{overflow:hidden}
 .slot.buy-slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px dashed var(--a2);color:var(--a2);font-size:16px;cursor:pointer;text-shadow:0 0 6px var(--a2)}
 .slot.buy-slot span{display:flex;align-items:center;gap:2px}
@@ -338,23 +339,22 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .slot.locked svg.i{width:16px;height:16px}
 /* ── first-run hint banner ── */
 #hint{position:absolute;left:14px;right:14px;top:64px;z-index:9;display:none;pointer-events:auto;border:1px solid var(--a2);
-  background:color-mix(in srgb,var(--bg1) 92%,transparent);padding:10px 12px;font-size:11px;line-height:1.55;color:var(--a2);
-  text-shadow:0 0 6px var(--a2);box-shadow:0 0 18px color-mix(in srgb,var(--a2) 30%,transparent)}
+  background:rgba(var(--bg1-rgb),0.92);padding:10px 12px;font-size:11px;line-height:1.55;color:var(--a2);
+  text-shadow:0 0 6px var(--a2);box-shadow:0 0 18px rgba(var(--a2-rgb),0.3)}
 #hint.show{display:block;animation:lin .2s steps(4)}
-#hint.bot{top:auto;bottom:96px}
 /* ── in-run controls: active tattoo abilities + target priority ── */
 #playUI{pointer-events:none!important;animation:none!important}
 #abil{position:absolute;left:10px;bottom:calc(17% + 8px);display:flex;gap:5px}
 .ab{width:40px;height:40px;position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
-  background:color-mix(in srgb,var(--bg1) 70%,transparent);pointer-events:auto}
+  background:rgba(var(--bg1-rgb),0.7);pointer-events:auto}
 .ab svg.i{width:22px;height:22px}
-.ab i{position:absolute;left:0;right:0;bottom:0;height:0;background:color-mix(in srgb,var(--bg1) 78%,transparent);border-top:1px solid var(--dim)}
-.ab b{position:absolute;inset:0;display:grid;place-items:center;font-family:'VT323',monospace;font-weight:400;font-size:19px;color:var(--a2)}
-.ab.rdy{box-shadow:0 0 10px var(--glow),inset 0 0 8px color-mix(in srgb,var(--a) 30%,transparent)}
+.ab i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(var(--bg1-rgb),0.78);border-top:1px solid var(--dim)}
+.ab b{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;font-family:'VT323',monospace;font-weight:400;font-size:19px;color:var(--a2)}
+.ab.rdy{box-shadow:0 0 10px var(--glow),inset 0 0 8px rgba(var(--a-rgb),0.3)}
 .ab.cd{border-color:var(--dim);color:var(--mute);text-shadow:none}
 .ab.on{border-color:var(--a2);color:var(--a2);box-shadow:0 0 14px var(--a2)}
 #tgtBtn{position:absolute;top:6.4%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
-  border:1px solid var(--dim);background:color-mix(in srgb,var(--bg1) 72%,transparent);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
+  border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
 #tgtBtn svg.i{width:13px;height:13px}
 #playUI.nohud #tgtBtn{display:none}
 /* ── shop: collapsible categories, auto-rebuy toggle ── */
@@ -363,7 +363,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .ctabs button{height:38px;display:flex;align-items:center;justify-content:center;gap:5px;position:relative;margin-bottom:-1px;
   font-family:'VT323',monospace;font-size:18px;letter-spacing:0;color:var(--mute);text-shadow:none;border-bottom:2px solid transparent}
 .ctabs button svg.i{width:15px;height:15px}
-.ctabs button.on{color:var(--a);border-bottom-color:var(--a);text-shadow:0 0 6px var(--glow);background:linear-gradient(to top,color-mix(in srgb,var(--a) 12%,transparent),transparent)}
+.ctabs button.on{color:var(--a);border-bottom-color:var(--a);text-shadow:0 0 6px var(--glow);background:linear-gradient(to top,rgba(var(--a-rgb),0.12),transparent)}
 .ctabs b{position:absolute;top:2px;right:4px;font-weight:400;font-size:13px;line-height:1;min-width:13px;padding:1px 2px;background:var(--hot);color:var(--ink);text-shadow:none}
 .autot{font-family:'VT323',monospace;font-size:15px;line-height:1;border:1px solid var(--dim);padding:1px 5px;margin-left:6px;color:var(--mute);vertical-align:1px}
 .autot.on{border-color:var(--a);background:var(--a);color:var(--ink);text-shadow:none}
@@ -379,7 +379,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .lowfx #crt{background:none}
 .lowfx .spin,.lowfx .look,.lowfx .eye,.lowfx .bob{animation:none}
 /* ── info tip ── */
-#tipWrap{position:absolute;inset:0;z-index:28;display:none;pointer-events:auto;background:color-mix(in srgb,var(--bg1) 45%,transparent)}
+#tipWrap{position:absolute;top:0;right:0;bottom:0;left:0;z-index:28;display:none;pointer-events:auto;background:rgba(var(--bg1-rgb),0.45)}
 #tipWrap.show{display:block}
 #tip{position:absolute;left:14px;right:14px;bottom:22px;border:1px solid var(--a);background:var(--bg1);padding:12px 14px;
   box-shadow:0 0 24px var(--glow);animation:lin .15s steps(3)}
@@ -393,7 +393,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tlv td{text-align:right;padding:3px 4px;color:var(--a)}
 .tlv td.cp{color:var(--mute);font-size:14px;text-shadow:none}
 .tlv tr.past td{color:var(--mute);text-shadow:none}
-.tlv tr.now td{background:color-mix(in srgb,var(--rc,var(--a)) 18%,transparent);color:var(--a2);text-shadow:0 0 6px var(--glow)}
+.tlv tr.now td{background:rgba(var(--rc-rgb,var(--a-rgb)),0.18);color:var(--a2);text-shadow:0 0 6px var(--glow)}
 .tlv tr.now td:first-child::before{content:'▶ '}
 .tlv tr.next td.cp{color:var(--a2)}
 .tip-breakdown{width:100%;border-collapse:collapse;margin-top:4px}
@@ -405,7 +405,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #tip .x{position:absolute;top:8px;right:10px;font-family:'VT323',monospace;font-size:18px;color:var(--mute)}
 
 /* ── boot screen: same layout as the iPhone launch image, then a CRT power-on into the menu ── */
-#boot{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
+#boot{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
   --u:min(1vw,.5625vh);background:radial-gradient(ellipse at 50% 45%,#0a1729,#02050b 75%);font-family:'VT323',monospace;color:#9fd8ff;
   transition:opacity .35s steps(4)}
 #boot .l1{font-size:calc(var(--u)*12);letter-spacing:.91em;margin-right:-.91em;color:#f0f9ff;line-height:.9}
@@ -751,8 +751,12 @@ function applyTheme(id){
   const boss=readable('#ff3030',bg2,4.7,'#ffffff');
   Object.assign(C,{a,a2,dim,mute,bg1,bg2,hot,ink,r,boss});
   const s=document.documentElement.style;
-  [['--a',a],['--a2',a2],['--dim',dim],['--mute',mute],['--bg1',bg1],['--bg2',bg2],['--hot',hot],['--ink',ink]].forEach(([k,v])=>s.setProperty(k,v));
-  r.forEach((v,i)=>s.setProperty('--r'+i,v));
+  // every colour also as an "r,g,b" triplet (--a-rgb …) so CSS can use rgba(var(--a-rgb),.5):
+  // works on old phone browsers that don't know color-mix() (Chrome < 111)
+  const set=(k,v)=>{s.setProperty(k,v);s.setProperty(k+'-rgb',_rgb(v).join(','));};
+  [['--a',a],['--a2',a2],['--dim',dim],['--mute',mute],['--bg1',bg1],['--bg2',bg2],['--hot',hot],['--ink',ink]].forEach(([k,v])=>set(k,v));
+  r.forEach((v,i)=>set('--r'+i,v));
+  s.setProperty('--a10bg',mixHex(a,bg1,.1));s.setProperty('--a6bg',mixHex(a,bg1,.06));
   document.querySelector('meta[name=theme-color]').setAttribute('content',bg1);
 }
 if(!THEMES.some(t=>t.id===save.theme))save.theme='ice';
@@ -1343,7 +1347,7 @@ function startRun(weekly=false){
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;
   runTier=runWeekly?weeklyTier():save.tier;
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
-  getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();
+  getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
   if(activeIds().length)hint('active');
 }
 // best wave and tier unlocks are stored as they happen, so closing the app mid-run loses nothing
@@ -1381,14 +1385,42 @@ function triggerDeath(){
   // next-run boosts last exactly one run
   save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
-  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;
+  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;keepAwake(false);
+}
+// ── SLEEP / WAKE ──
+// Screen locked or app sent to the background: pause the run and silence everything (the music runs on
+// timers, so pausing the game alone kept it playing). Back in front: sound resumes, the run stays paused.
+function goBackground(){
+  if(state===ST.PLAY&&!paused)paused=true;
+  stopMusic();
+  if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
+  persist();
+}
+function goForeground(){
+  if(AC){AC.resume().catch(()=>{});startMusic(state!==ST.PLAY);}
+  if(state===ST.PLAY)keepAwake(true);   // the browser drops the wake lock while hidden
 }
 document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden){const since=save.lastSeen;withTimeout(syncServerTime(),2500).then(()=>checkAway(since));return;}
-  if(state===ST.PLAY&&!paused)paused=true;
-  persist();
+  if(document.hidden){goBackground();return;}
+  goForeground();
+  const since=save.lastSeen;withTimeout(syncServerTime(),2500).then(()=>checkAway(since));
 });
-window.addEventListener('pagehide',persist);
+window.addEventListener('pagehide',goBackground);
+
+// keep the screen on during a run (Screen Wake Lock, Chrome 84+); off again when the run ends
+let wakeLock=null,wakePending=false;
+function keepAwake(on){
+  if(!('wakeLock' in navigator))return;
+  if(on){
+    if(wakeLock||wakePending||document.hidden)return;
+    wakePending=true;
+    navigator.wakeLock.request('screen').then(l=>{
+      wakePending=false;
+      if(state!==ST.PLAY){l.release().catch(()=>{});return;}     // the run ended while we waited
+      wakeLock=l;l.addEventListener('release',()=>{if(wakeLock===l)wakeLock=null;});
+    }).catch(()=>{wakePending=false;});
+  }else if(wakeLock){const l=wakeLock;wakeLock=null;l.release().catch(()=>{});}
+}
 
 // ── ENEMIES ──────────────────────────────────────────────────────────────────
 const effWave=()=>Math.max(1,waveNum)+(runTier-1)*TIERS.offset;
@@ -1463,6 +1495,17 @@ const TARGET_MODES=['FRONT','STRONG','WEAK'];
 function targetOrder(list){
   const m=save.settings.target||0;
   return list.sort(m===1?(a,b)=>b.hp-a.hp||b.y-a.y:m===2?(a,b)=>a.hp-b.hp||b.y-a.y:(a,b)=>b.y-a.y);
+}
+// segment (x0,y0)→(x1,y1) against the square of half-size r around (cx,cy):
+// returns how far along the segment it first touches (0…1), or -1 if it misses
+function segBoxHit(x0,y0,x1,y1,cx,cy,r){
+  let t0=0,t1=1;
+  for(const [p,d,lo,hi] of [[x0,x1-x0,cx-r,cx+r],[y0,y1-y0,cy-r,cy+r]]){
+    if(Math.abs(d)<1e-9){if(p<lo||p>hi)return -1;continue;}
+    let a=(lo-p)/d,b=(hi-p)/d;if(a>b){const t=a;a=b;b=t;}
+    if(a>t0)t0=a;if(b<t1)t1=b;if(t0>t1)return -1;
+  }
+  return t0;
 }
 const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0);
 function cycleTarget(){
@@ -1657,44 +1700,51 @@ function updatePlay(dt){
   bullets.forEach(b=>{
     b.trail.unshift({x:b.x,y:b.y});
     if(b.trail.length>8)b.trail.pop();
+    b.px=b.x;b.py=b.y;               // start of this step: hits are tested along the whole path (no tunnelling at low fps)
     b.x+=b.vx*dt;b.y+=b.vy*dt;
   });
-  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60);
 
   for(let bi=bullets.length-1;bi>=0;bi--){
     const b=bullets[bi];let hit=false;
-    for(let ei=enemies.length-1;ei>=0;ei--){
-      const e=enemies[ei];
-      if(e.hp<=0||(b.hits&&b.hits.has(e)))continue;
-      const hitR=e.sz*.55;
-      if(Math.abs(b.x-e.x)<hitR&&Math.abs(b.y-e.y)<hitR){
-        const isCrit=Math.random()<st.crit;
-        const dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
-        // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
-        if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
-        else e.hp-=dmg;
-        runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
-        if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,'REAP',C.r[3]);}
-        if(isCrit){snd('crit');burst(b.x,b.y,C.r[2],10,GH*.1);qEvent('crit');}
-        else{snd('hit');burst(b.x,b.y,C.a2,5,GH*.06);}
-        dmgText(e,dmg,isCrit);
-        if(st.ls>0)hp=Math.min(st.maxHp,hp+dmg*st.ls);
-        if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
-        if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
-        if(e.hp<=0){killEnemy(e,st);enemies.splice(ei,1);}
-        if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);qEvent('pierce');continue;}
-        // ricochet: redirect into the nearest other enemy (chains with the RICOCHET tattoo)
-        if(b.bounces<st.chain&&Math.random()<st.bounce){
-          const hits=b.hits||(b.hits=new Set());hits.add(e);
-          let nx=null,nd=Infinity;
-          for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-b.x)**2+(o.y-b.y)**2;if(d<nd){nd=d;nx=o;}}
-          if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-b.x,dy=nx.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;continue;}
-        }
-        hit=true;break;
+    // walk along this step's path: always take the nearest enemy the path crosses; pierce keeps going
+    for(let guard=0;guard<12;guard++){
+      let e=null,tBest=2;
+      for(const o of enemies){
+        if(o.hp<=0||(b.hits&&b.hits.has(o)))continue;
+        const t=segBoxHit(b.px,b.py,b.x,b.y,o.x,o.y,o.sz*.55);
+        if(t>=0&&t<tBest){tBest=t;e=o;}
       }
+      if(!e)break;
+      const hx=b.px+(b.x-b.px)*tBest,hy=b.py+(b.y-b.py)*tBest;   // where the bullet touched the enemy
+      const isCrit=Math.random()<st.crit;
+      const dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+      // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
+      if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
+      else e.hp-=dmg;
+      runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
+      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,'REAP',C.r[3]);}
+      if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');}
+      else{snd('hit');burst(hx,hy,C.a2,5,GH*.06);}
+      dmgText(e,dmg,isCrit);
+      if(st.ls>0)hp=Math.min(st.maxHp,hp+dmg*st.ls);
+      if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
+      if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
+      if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
+      if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);qEvent('pierce');continue;}
+      // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
+      if(b.bounces<st.chain&&Math.random()<st.bounce){
+        const hits=b.hits||(b.hits=new Set());hits.add(e);
+        let nx=null,nd=Infinity;
+        for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
+        if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;break;}
+      }
+      hit=true;break;
     }
     if(hit)bullets.splice(bi,1);
   }
+  // off-screen bullets are dropped only after their last path was checked for hits
+  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60);
 
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];
@@ -2505,7 +2555,7 @@ function showGachaResults(results){
   title.textContent=results.some(r=>r.isNew)?'!! NEW TATTOO !!':'>> SUMMON RESULTS';
   title.className='g-title'+(hot?' rare':'');
   cards.className='gcards'+(results.length===1?' one':'');
-  cards.innerHTML=results.map((r,i)=>`<div class="gc r${r.t.rar}" style="--rc:var(--r${r.t.rar});animation-delay:${(i*.09).toFixed(2)}s">
+  cards.innerHTML=results.map((r,i)=>`<div class="gc r${r.t.rar}" style="--rc:var(--r${r.t.rar});--rc-rgb:var(--r${r.t.rar}-rgb);animation-delay:${(i*.09).toFixed(2)}s">
       <span class="new">${r.isNew?'NEW':r.lv>=TAT_MAX&&r.leveled?'MAX':r.leveled?'LV UP':'+1'}</span>${I(r.t.icon)}<span class="n">${r.t.name}</span><span class="lv">LV${r.lv}</span></div>`).join('');
   $('gachaOverlay').classList.add('show');
   results.forEach((r,i)=>setTimeout(()=>snd(r.isNew||r.leveled?'gem':'blip'),i*90));
@@ -2543,7 +2593,7 @@ function tatCell(v,f){
 // chart: every level's values; passed levels dim, current highlighted, copies needed on the right
 function tatChart(t,lv){
   const cols=TAT_COLS[t.id]||[],c=tatOf(t.id);
-  let h=`<table class="tlv" style="--rc:var(--r${t.rar})"><tr><th>LV</th>${cols.map(k=>`<th>${k[1]}</th>`).join('')}<th>COPIES</th></tr>`;
+  let h=`<table class="tlv" style="--rc:var(--r${t.rar});--rc-rgb:var(--r${t.rar}-rgb)"><tr><th>LV</th>${cols.map(k=>`<th>${k[1]}</th>`).join('')}<th>COPIES</th></tr>`;
   for(let L=1;L<=TAT_MAX;L++){
     const x=tatFx(t,L),cls=L<lv?'past':L===lv?'now':L===lv+1?'next':'';
     const cp=L===1?'1':L<=lv?'✓':L===lv+1?`${c.copies}/${tatReq(lv)}`:`+${tatReq(L-1)}`;
@@ -2582,7 +2632,7 @@ function renderTattoos(){
       const t=TAT_TYPES.find(x=>x.id===save.equipped[i]);
       if(t){
         const c=tatOf(t.id),rc=`var(--r${t.rar})`;
-        d.className='slot f';d.style.setProperty('--rc',rc);d.innerHTML=`${I(t.icon)}<b>${c.lv}</b>`;
+        d.className='slot f';d.style.setProperty('--rc',rc);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);d.innerHTML=`${I(t.icon)}<b>${c.lv}</b>`;
         attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
       }else{d.className='slot';d.textContent='+';}
     }else if(i===save.tatSlots){
@@ -2605,7 +2655,7 @@ function renderTattoos(){
     if(c.lv){
       found++;
       const isEq=save.equipped.includes(t.id),maxed=c.lv>=TAT_MAX,p=maxed?100:c.copies/tatReq(c.lv)*100;
-      d.className='ctile'+(isEq?' eq':'');d.style.setProperty('--rc',`var(--r${t.rar})`);
+      d.className='ctile'+(isEq?' eq':'');d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
       d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${t.name}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
     }else{
       d.className='ctile locked';
@@ -2845,8 +2895,7 @@ function hint(id){
 function nextHint(){
   const id=hintQueue.shift(),el=$('hint');
   if(!id){el.classList.remove('show');hintTO=null;return;}
-  // in the menu the banner sits above the nav so it never covers the logo
-  el.textContent=HINTS[id];el.classList.toggle('bot',state!==ST.PLAY);el.classList.add('show');snd('blip');
+  el.textContent=HINTS[id];el.classList.add('show');snd('blip');
   hintTO=setTimeout(nextHint,6500);
 }
 $('hint').addEventListener('click',()=>{clearTimeout(hintTO);nextHint();});
@@ -2952,6 +3001,44 @@ $('awGet').addEventListener('click',()=>collectAway(1));
 $('awAd').addEventListener('click',()=>{
   if(adCooldown()>0){snd('deny');return;}
   adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;collectAway(2);
+});
+
+// ── ANDROID BACK BUTTON ──────────────────────────────────────────────────────
+// An installed web app closes when Back runs out of history. We keep a few spare history entries
+// ("guards") and turn each Back press into "close whatever is on top". Chrome skips entries a page adds
+// without a user tap, so guards are only topped up from taps. At the bare menu, Back twice within 2s exits.
+const BACK_GUARDS=6;
+let guards=0,ignorePop=false,exitArmed=false,exitTO=null;
+function topUpGuards(){while(guards<BACK_GUARDS){history.pushState({lv:guards+1},'');guards++;}}
+document.addEventListener('pointerdown',topUpGuards,true);
+function handleBack(){
+  const on=(id,c='show')=>$(id).classList.contains(c);
+  if(on('tipWrap')){$('tipWrap').classList.remove('show');return true;}
+  if(on('modal')){$('mdClose').click();return true;}
+  if(on('away')){$('awGet').click();return true;}
+  if(on('weekUI')){$('wkClose').click();return true;}
+  if(on('gachaOverlay')){$('gachaCollect').click();return true;}
+  if(on('setPanel','open')){closeSettings();return true;}
+  if(on('shopPanel','open')){closeShop();return true;}
+  if(on('tatPanel','open')){closeTattoos();return true;}
+  if(on('questPanel','open')){closeQuests();return true;}
+  if(state===ST.PLAY){
+    if(!paused)paused=true;else if(confirmEndRun)confirmEndRun=false;else paused=false;
+    snd('click');return true;
+  }
+  if(state===ST.DEAD){if(deadTimer>2)$('dHome').click();return true;}
+  return false;
+}
+window.addEventListener('popstate',()=>{
+  if(ignorePop){ignorePop=false;return;}
+  guards=Math.max(0,guards-1);
+  if(handleBack()){exitArmed=false;return;}
+  // bare menu: warn first; if Back comes again soon, there's nothing left to stop it and the app closes
+  if(guards>0){ignorePop=true;history.go(-guards);guards=0;}
+  if(!exitArmed){
+    exitArmed=true;toast('PRESS BACK AGAIN TO EXIT');
+    clearTimeout(exitTO);exitTO=setTimeout(()=>{exitArmed=false;},2000);
+  }
 });
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────

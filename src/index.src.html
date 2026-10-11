@@ -2998,6 +2998,44 @@ $('awAd').addEventListener('click',()=>{
   adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;collectAway(2);
 });
 
+// ── ANDROID BACK BUTTON ──────────────────────────────────────────────────────
+// An installed web app closes when Back runs out of history. We keep a few spare history entries
+// ("guards") and turn each Back press into "close whatever is on top". Chrome skips entries a page adds
+// without a user tap, so guards are only topped up from taps. At the bare menu, Back twice within 2s exits.
+const BACK_GUARDS=6;
+let guards=0,ignorePop=false,exitArmed=false,exitTO=null;
+function topUpGuards(){while(guards<BACK_GUARDS){history.pushState({lv:guards+1},'');guards++;}}
+document.addEventListener('pointerdown',topUpGuards,true);
+function handleBack(){
+  const on=(id,c='show')=>$(id).classList.contains(c);
+  if(on('tipWrap')){$('tipWrap').classList.remove('show');return true;}
+  if(on('modal')){$('mdClose').click();return true;}
+  if(on('away')){$('awGet').click();return true;}
+  if(on('weekUI')){$('wkClose').click();return true;}
+  if(on('gachaOverlay')){$('gachaCollect').click();return true;}
+  if(on('setPanel','open')){closeSettings();return true;}
+  if(on('shopPanel','open')){closeShop();return true;}
+  if(on('tatPanel','open')){closeTattoos();return true;}
+  if(on('questPanel','open')){closeQuests();return true;}
+  if(state===ST.PLAY){
+    if(!paused)paused=true;else if(confirmEndRun)confirmEndRun=false;else paused=false;
+    snd('click');return true;
+  }
+  if(state===ST.DEAD){if(deadTimer>2)$('dHome').click();return true;}
+  return false;
+}
+window.addEventListener('popstate',()=>{
+  if(ignorePop){ignorePop=false;return;}
+  guards=Math.max(0,guards-1);
+  if(handleBack()){exitArmed=false;return;}
+  // bare menu: warn first; if Back comes again soon, there's nothing left to stop it and the app closes
+  if(guards>0){ignorePop=true;history.go(-guards);guards=0;}
+  if(!exitArmed){
+    exitArmed=true;toast('PRESS BACK AGAIN TO EXIT');
+    clearTimeout(exitTO);exitTO=setTimeout(()=>{exitArmed=false;},2000);
+  }
+});
+
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 // boot screen: a few log lines, then the CRT power-on; a tap skips it
 (()=>{

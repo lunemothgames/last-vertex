@@ -1,0 +1,18 @@
+{
+  "name": "last-vertex",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Last Vertex: Idle Defense — retro terminal idle defense PWA",
+  "scripts": {
+    "build": "node tools/build.js",
+    "balance": "node tools/balance.js",
+    "sim": "node tools/sim.js",
+    "icons": "node tools/make-icons.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
+  }
+}

@@ -1347,7 +1347,7 @@ function startRun(weekly=false){
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;
   runTier=runWeekly?weeklyTier():save.tier;
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
-  getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();
+  getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
   if(activeIds().length)hint('active');
 }
 // best wave and tier unlocks are stored as they happen, so closing the app mid-run loses nothing
@@ -1385,14 +1385,42 @@ function triggerDeath(){
   // next-run boosts last exactly one run
   save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
-  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;
+  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;keepAwake(false);
+}
+// ── SLEEP / WAKE ──
+// Screen locked or app sent to the background: pause the run and silence everything (the music runs on
+// timers, so pausing the game alone kept it playing). Back in front: sound resumes, the run stays paused.
+function goBackground(){
+  if(state===ST.PLAY&&!paused)paused=true;
+  stopMusic();
+  if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
+  persist();
+}
+function goForeground(){
+  if(AC){AC.resume().catch(()=>{});startMusic(state!==ST.PLAY);}
+  if(state===ST.PLAY)keepAwake(true);   // the browser drops the wake lock while hidden
 }
 document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden){const since=save.lastSeen;withTimeout(syncServerTime(),2500).then(()=>checkAway(since));return;}
-  if(state===ST.PLAY&&!paused)paused=true;
-  persist();
+  if(document.hidden){goBackground();return;}
+  goForeground();
+  const since=save.lastSeen;withTimeout(syncServerTime(),2500).then(()=>checkAway(since));
 });
-window.addEventListener('pagehide',persist);
+window.addEventListener('pagehide',goBackground);
+
+// keep the screen on during a run (Screen Wake Lock, Chrome 84+); off again when the run ends
+let wakeLock=null,wakePending=false;
+function keepAwake(on){
+  if(!('wakeLock' in navigator))return;
+  if(on){
+    if(wakeLock||wakePending||document.hidden)return;
+    wakePending=true;
+    navigator.wakeLock.request('screen').then(l=>{
+      wakePending=false;
+      if(state!==ST.PLAY){l.release().catch(()=>{});return;}     // the run ended while we waited
+      wakeLock=l;l.addEventListener('release',()=>{if(wakeLock===l)wakeLock=null;});
+    }).catch(()=>{wakePending=false;});
+  }else if(wakeLock){const l=wakeLock;wakeLock=null;l.release().catch(()=>{});}
+}
 
 // ── ENEMIES ──────────────────────────────────────────────────────────────────
 const effWave=()=>Math.max(1,waveNum)+(runTier-1)*TIERS.offset;
@@ -1467,6 +1495,17 @@ const TARGET_MODES=['FRONT','STRONG','WEAK'];
 function targetOrder(list){
   const m=save.settings.target||0;
   return list.sort(m===1?(a,b)=>b.hp-a.hp||b.y-a.y:m===2?(a,b)=>a.hp-b.hp||b.y-a.y:(a,b)=>b.y-a.y);
+}
+// segment (x0,y0)→(x1,y1) against the square of half-size r around (cx,cy):
+// returns how far along the segment it first touches (0…1), or -1 if it misses
+function segBoxHit(x0,y0,x1,y1,cx,cy,r){
+  let t0=0,t1=1;
+  for(const [p,d,lo,hi] of [[x0,x1-x0,cx-r,cx+r],[y0,y1-y0,cy-r,cy+r]]){
+    if(Math.abs(d)<1e-9){if(p<lo||p>hi)return -1;continue;}
+    let a=(lo-p)/d,b=(hi-p)/d;if(a>b){const t=a;a=b;b=t;}
+    if(a>t0)t0=a;if(b<t1)t1=b;if(t0>t1)return -1;
+  }
+  return t0;
 }
 const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0);
 function cycleTarget(){
@@ -1661,44 +1700,51 @@ function updatePlay(dt){
   bullets.forEach(b=>{
     b.trail.unshift({x:b.x,y:b.y});
     if(b.trail.length>8)b.trail.pop();
+    b.px=b.x;b.py=b.y;               // start of this step: hits are tested along the whole path (no tunnelling at low fps)
     b.x+=b.vx*dt;b.y+=b.vy*dt;
   });
-  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60);
 
   for(let bi=bullets.length-1;bi>=0;bi--){
     const b=bullets[bi];let hit=false;
-    for(let ei=enemies.length-1;ei>=0;ei--){
-      const e=enemies[ei];
-      if(e.hp<=0||(b.hits&&b.hits.has(e)))continue;
-      const hitR=e.sz*.55;
-      if(Math.abs(b.x-e.x)<hitR&&Math.abs(b.y-e.y)<hitR){
-        const isCrit=Math.random()<st.crit;
-        const dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
-        // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
-        if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
-        else e.hp-=dmg;
-        runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
-        if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,'REAP',C.r[3]);}
-        if(isCrit){snd('crit');burst(b.x,b.y,C.r[2],10,GH*.1);qEvent('crit');}
-        else{snd('hit');burst(b.x,b.y,C.a2,5,GH*.06);}
-        dmgText(e,dmg,isCrit);
-        if(st.ls>0)hp=Math.min(st.maxHp,hp+dmg*st.ls);
-        if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
-        if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
-        if(e.hp<=0){killEnemy(e,st);enemies.splice(ei,1);}
-        if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);qEvent('pierce');continue;}
-        // ricochet: redirect into the nearest other enemy (chains with the RICOCHET tattoo)
-        if(b.bounces<st.chain&&Math.random()<st.bounce){
-          const hits=b.hits||(b.hits=new Set());hits.add(e);
-          let nx=null,nd=Infinity;
-          for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-b.x)**2+(o.y-b.y)**2;if(d<nd){nd=d;nx=o;}}
-          if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-b.x,dy=nx.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;continue;}
-        }
-        hit=true;break;
+    // walk along this step's path: always take the nearest enemy the path crosses; pierce keeps going
+    for(let guard=0;guard<12;guard++){
+      let e=null,tBest=2;
+      for(const o of enemies){
+        if(o.hp<=0||(b.hits&&b.hits.has(o)))continue;
+        const t=segBoxHit(b.px,b.py,b.x,b.y,o.x,o.y,o.sz*.55);
+        if(t>=0&&t<tBest){tBest=t;e=o;}
       }
+      if(!e)break;
+      const hx=b.px+(b.x-b.px)*tBest,hy=b.py+(b.y-b.py)*tBest;   // where the bullet touched the enemy
+      const isCrit=Math.random()<st.crit;
+      const dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+      // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
+      if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
+      else e.hp-=dmg;
+      runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
+      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,'REAP',C.r[3]);}
+      if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');}
+      else{snd('hit');burst(hx,hy,C.a2,5,GH*.06);}
+      dmgText(e,dmg,isCrit);
+      if(st.ls>0)hp=Math.min(st.maxHp,hp+dmg*st.ls);
+      if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
+      if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
+      if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
+      if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);qEvent('pierce');continue;}
+      // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
+      if(b.bounces<st.chain&&Math.random()<st.bounce){
+        const hits=b.hits||(b.hits=new Set());hits.add(e);
+        let nx=null,nd=Infinity;
+        for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
+        if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;break;}
+      }
+      hit=true;break;
     }
     if(hit)bullets.splice(bi,1);
   }
+  // off-screen bullets are dropped only after their last path was checked for hits
+  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60);
 
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];

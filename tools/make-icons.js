@@ -40,8 +40,8 @@ function splashHtml(){
   @font-face{font-family:Plex;src:url(${font('IBMPlexMono-400-latin.woff2')}) format('woff2')}
   html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,${C.bg2},${C.bg1} 75%);overflow:hidden}
   body{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:VT323;color:${C.a}}
-  .l1{font-size:12vw;letter-spacing:.6em;margin-right:-.6em;color:${C.a2};line-height:.9}
-  .l2{font-size:20vw;letter-spacing:.04em;line-height:.9;text-shadow:0 0 4vw rgba(159,216,255,.8),0 0 .6vw ${C.a2}}
+  .l1{font-size:12vw;letter-spacing:.91em;margin-right:-.91em;color:${C.a2};line-height:.9}
+  .l2{font-size:20vw;letter-spacing:.04em;margin-right:-.04em;line-height:.9;text-shadow:0 0 4vw rgba(159,216,255,.8),0 0 .6vw ${C.a2}}
   .rule{font-size:5vw;color:${C.dim};margin-top:1vw}
   svg{width:40vw;height:40vw;margin-top:6vw}
   .boot{position:absolute;bottom:9vh;font-family:Plex;font-size:3.2vw;letter-spacing:.2em;color:${C.mute}}

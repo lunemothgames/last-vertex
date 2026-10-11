@@ -77,9 +77,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .plus{color:var(--ink);background:var(--a);text-shadow:none;padding:0 4px;line-height:1.1;font-family:'VT323',monospace;font-size:20px}
 .logo{text-align:center;margin-top:clamp(6px,4vh,30px);line-height:.92;font-family:'VT323',monospace}
 .logo span{display:block}
-.logo .l1{font-size:44px;letter-spacing:.6em;margin-right:-.6em;color:var(--a2)}
-.logo .l2{font-size:76px;letter-spacing:.04em;text-shadow:0 0 14px color-mix(in srgb,var(--a) 80%,transparent),0 0 2px var(--a2)}
-.logo .l2::after{content:'_';animation:blink 1s steps(1) infinite}
+/* LAST is tracked out to exactly the width of VERTEX (VT323 glyphs are 0.4em wide); the negative right margins
+   cancel the spacing after the last letter, and the cursor hangs outside so it never pushes the word off-centre */
+.logo .l1{font-size:44px;letter-spacing:.96em;margin-right:-.96em;color:var(--a2)}
+.logo .l2{display:inline-block;position:relative;font-size:76px;letter-spacing:.04em;margin-right:-.04em;text-shadow:0 0 14px color-mix(in srgb,var(--a) 80%,transparent),0 0 2px var(--a2)}
+.logo .l2::after{content:'_';position:absolute;left:100%;animation:blink 1s steps(1) infinite}
 .logo .rule{font-size:18px;color:var(--dim);margin-top:4px}
 /* the hero triangle gives way first when the screen is short (9:16), so the menu always fits */
 .hero{flex:1 1 140px;max-height:140px;min-height:56px;display:grid;place-items:center;margin-top:0;overflow:hidden}
@@ -401,8 +403,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #boot{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
   --u:min(1vw,.5625vh);background:radial-gradient(ellipse at 50% 45%,#0a1729,#02050b 75%);font-family:'VT323',monospace;color:#9fd8ff;
   transition:opacity .35s steps(4)}
-#boot .l1{font-size:calc(var(--u)*12);letter-spacing:.6em;margin-right:-.6em;color:#f0f9ff;line-height:.9}
-#boot .l2{font-size:calc(var(--u)*20);letter-spacing:.04em;line-height:.9;text-shadow:0 0 calc(var(--u)*4) rgba(159,216,255,.8),0 0 calc(var(--u)*.6) #f0f9ff}
+#boot .l1{font-size:calc(var(--u)*12);letter-spacing:.91em;margin-right:-.91em;color:#f0f9ff;line-height:.9}
+#boot .l2{font-size:calc(var(--u)*20);letter-spacing:.04em;margin-right:-.04em;line-height:.9;text-shadow:0 0 calc(var(--u)*4) rgba(159,216,255,.8),0 0 calc(var(--u)*.6) #f0f9ff}
 #boot .rule{font-size:calc(var(--u)*5);color:#28506e;margin-top:var(--u)}
 #boot svg{width:calc(var(--u)*40);height:calc(var(--u)*40);margin-top:calc(var(--u)*6)}
 #boot .log{position:absolute;bottom:9vh;font-family:'IBM Plex Mono',monospace;font-size:calc(var(--u)*3.2);letter-spacing:.2em;color:#5f8fb3;

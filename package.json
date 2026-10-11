@@ -6,9 +6,13 @@
   "scripts": {
     "build": "node tools/build.js",
     "balance": "node tools/balance.js",
-    "sim": "node tools/sim.js"
+    "sim": "node tools/sim.js",
+    "icons": "node tools/make-icons.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
   }
 }

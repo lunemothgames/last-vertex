@@ -9,8 +9,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Tri-Trouble</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="icon" href="icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Tri-Trouble">
+<!-- iPhone launch images (made by tools/make-icons.js); Android builds its splash from the manifest -->
+<link rel="apple-touch-startup-image" href="splash/launch-1320x2868.jpg" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1206x2622.jpg" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1290x2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1179x2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1284x2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1170x2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1125x2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1242x2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-828x1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-1242x2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/launch-750x1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <style>
 /*@@FONTS@@*/
 :root{
@@ -383,6 +397,18 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tip-breakdown tr.total td:last-child{font-size:20px}
 #tip .x{position:absolute;top:8px;right:10px;font-family:'VT323',monospace;font-size:18px;color:var(--mute)}
 
+/* ── boot screen: same layout as the iPhone launch image, then a CRT power-on into the menu ── */
+#boot{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  --u:min(1vw,.5625vh);background:radial-gradient(ellipse at 50% 45%,#0a1729,#02050b 75%);font-family:'VT323',monospace;color:#9fd8ff;
+  transition:opacity .35s steps(4)}
+#boot .l1{font-size:calc(var(--u)*12);letter-spacing:.6em;margin-right:-.6em;color:#f0f9ff;line-height:.9}
+#boot .l2{font-size:calc(var(--u)*20);letter-spacing:.04em;line-height:.9;text-shadow:0 0 calc(var(--u)*4) rgba(159,216,255,.8),0 0 calc(var(--u)*.6) #f0f9ff}
+#boot .rule{font-size:calc(var(--u)*5);color:#28506e;margin-top:var(--u)}
+#boot svg{width:calc(var(--u)*40);height:calc(var(--u)*40);margin-top:calc(var(--u)*6)}
+#boot .log{position:absolute;bottom:9vh;font-family:'IBM Plex Mono',monospace;font-size:calc(var(--u)*3.2);letter-spacing:.2em;color:#5f8fb3;
+  text-align:left;line-height:1.7;white-space:pre}
+#boot.on{animation:bootOn .45s steps(5) forwards}
+@keyframes bootOn{0%{filter:brightness(1)}30%{filter:brightness(2.2)}60%{clip-path:inset(49.5% 0 49.5% 0);filter:brightness(3)}100%{clip-path:inset(50% 0 50% 0);opacity:0}}
 /* ── toast ── */
 #toast{position:absolute;left:50%;top:44%;transform:translateX(-50%);z-index:30;padding:6px 14px;border:1px solid var(--a);
   background:var(--bg1);font-family:'VT323',monospace;font-size:22px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s}
@@ -451,6 +477,17 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 </defs>
 </svg>
 
+<div id="boot" aria-hidden="true">
+  <div class="l1">TRI</div><div class="l2">TROUBLE</div><div class="rule">════════════════</div>
+  <svg viewBox="0 0 512 512"><defs><filter id="bglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g transform="translate(256 262) scale(.92)">
+      <g stroke="#28506e" stroke-width="5"><line x1="-238" y1="0" x2="-170" y2="0"/><line x1="170" y1="0" x2="238" y2="0"/><line x1="0" y1="-244" x2="0" y2="-176"/><line x1="0" y1="164" x2="0" y2="232"/></g>
+      <circle r="196" fill="none" stroke="#9fd8ff" stroke-opacity=".5" stroke-width="6" stroke-dasharray="4 16"/>
+      <g filter="url(#bglow)"><polygon points="0,-128 116,76 -116,76" fill="none" stroke="#9fd8ff" stroke-width="26"/><polygon points="0,-36 40,36 -40,36" fill="#9fd8ff"/></g>
+    </g></svg>
+  <div class="log" id="bootLog">&gt; BOOTING_</div>
+</div>
 <div id="wrap">
 <canvas id="c"></canvas>
 <div id="ui">
@@ -2911,6 +2948,15 @@ $('awAd').addEventListener('click',()=>{
 });
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
+// boot screen: a few log lines, then the CRT power-on; a tap skips it
+(()=>{
+  const el=$('boot'),log=$('bootLog'),lines=['> BOOTING... OK',`> SAVE LOADED · TIER ${save.tier}`,'> SIGNAL LOCKED_'];
+  let i=0,done=false;
+  const step=setInterval(()=>{if(i<lines.length)log.textContent=lines.slice(0,++i).join('\n');},260);
+  const finish=()=>{if(done)return;done=true;clearInterval(step);el.classList.add('on');setTimeout(()=>el.remove(),480);};
+  setTimeout(finish,1250);
+  el.addEventListener('pointerdown',finish);
+})();
 applyLowFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});

@@ -22,6 +22,8 @@ Everything is served as plain static files; there is nothing to build on the ser
 | `sw.js` | Service worker: offline play and updates (cache name is set by the build) |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Home-screen app info and icons |
 | `splash/` | iPhone launch images |
+| `privacy.html` | Privacy policy (linked in Settings and the store listing) |
+| `store/` | Google Play listing text, store art, assetlinks template and the release guide (`store/README.md`) |
 | `tools/` | Build, balance simulation and icon scripts (not used by the game at runtime) |
 | `_docs/balance.html` | Generated balance reference |
 
@@ -38,4 +40,3 @@ npm run icons      # regenerate icons and launch images
 Gift codes (Settings → REDEEM GIFT CODE): `npm run code -- --gems 100 --coins 5000 --tattoo nova:3 --theme all --days 7`.
 Codes are signed with `keys/gift-private.pem`, which stays on this computer only (`keys/` is git-ignored). Back it up: without it no new codes can be made.
 
-Open the game with `?dev` at the end of the URL to show a developer button in Settings that grants one copy of every tattoo. Remove it before a store release.

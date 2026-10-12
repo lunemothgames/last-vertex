@@ -9,12 +9,14 @@
 const fs=require('fs'),path=require('path');
 const src=fs.readFileSync(path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
-const save={perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
+const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
   'return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;}};'].join('\n'))(save,1,1);
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
 Object.assign(ECO,JSON.parse(process.env.SIM_ECO||'{}'));
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_PU||'{}')))Object.assign(PU[id],o);
+// tattoo value what-ifs: SIM_TT='{"reaper":{"k":[0.15,0.4]}}' (each effect is [Lv1, Lv7])
+for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_TT||'{}')))Object.assign(TT[id].v,o);
 
 // ── builds: shop weights (higher = buy more of it) + tattoos ──
 const ECON={coinMult:1,lootChance:1,bounty:1,gameSpeed:1};
@@ -103,7 +105,7 @@ function run(tier,maxW=1e9){
           let taken=0;
           if(Math.random()<st.dodge){}
           else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;
-          else{taken=e.atk*st.dmgTaken;hp-=taken;}
+          else{taken=e.atk*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;}
           const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;
           if(taken>0)hp=Math.min(st.maxHp,hp+Math.min(th*st.ls,taken*ECO.thornHealCap));
           e.kb=-e.sp*3.5;e.y=LINE-.01;

@@ -73,6 +73,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 
 /* ── main menu ── */
 .topbar{display:flex;gap:8px;align-items:center;padding:14px 14px 0}
+.bugbtn{position:absolute;top:54px;right:14px}   /* under the settings gear: bug report / talk to dev */
 .topbar .sp{flex:1}
 .plus{color:var(--ink);background:var(--a);text-shadow:none;padding:0 4px;line-height:1.1;font-family:'VT323',monospace;font-size:20px}
 .logo{text-align:center;margin-top:clamp(6px,4vh,30px);line-height:.92;font-family:'VT323',monospace}
@@ -105,7 +106,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 #pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
 .p-title{font-family:'VT323',monospace;font-size:60px;letter-spacing:.1em}
 .p-title span{animation:blink 1s steps(1) infinite}
-.p-sub{font-size:11px;color:var(--mute);margin:2px 0 26px;letter-spacing:.2em}
+.p-title{margin-bottom:24px}
 .p-btns{display:flex;flex-direction:column;gap:12px;width:220px}
 #pauseUI .conf{display:none}
 #pauseUI.confirm .main{display:none}
@@ -351,7 +352,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #tgtBtn{position:absolute;top:6.4%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
   border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
 #tgtBtn svg.i{width:13px;height:13px}
-#playUI.nohud #tgtBtn{display:none}
+#playUI.nohud #tgtBtn,#playUI.nohud #spdCtl{display:none}
+#spdCtl{position:absolute;top:11.2%;right:2%;height:4.2%;min-height:22px;display:flex;align-items:stretch;pointer-events:auto;
+  border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px}
+#spdCtl button{width:24px;font-size:20px;line-height:1;color:var(--a)}
+#spdCtl span{min-width:34px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--dim);border-right:1px solid var(--dim)}
 /* ── shop: collapsible categories, auto-rebuy toggle ── */
 /* category bar: one category at a time, badge = upgrades you can afford right now */
 .ctabs{display:grid;grid-template-columns:repeat(3,1fr);margin:10px 14px 0;border-bottom:1px solid var(--dim);flex-shrink:0}
@@ -481,6 +486,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-midas" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7l4 5-4 5-4-5z"/><path d="M3 3l2 2M21 3l-2 2M3 21l2-2M21 21l-2-2"/></symbol>
 <symbol id="i-twin" viewBox="0 0 24 24"><path d="M8 21V7M5 10l3-3 3 3"/><path d="M16 21V3M13 6l3-3 3 3"/></symbol>
 <symbol id="i-arc" viewBox="0 0 24 24"><path d="M3 4l6 6-3 2 7 8"/><path d="M21 4l-5 5 3 2-5 6"/></symbol>
+<symbol id="i-bug" viewBox="0 0 24 24"><rect x="8" y="9" width="8" height="11" rx="4"/><path d="M9 9.5a3 3 0 0 1 6 0"/><path d="M12 12.5v7.5"/><path d="M8 13H4.5M8 17H4.5M16 13h3.5M16 17h3.5M9.8 6.6L8 4M14.2 6.6L16 4"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8.5 8.5 0 1 1 9 4a7 7 0 0 0 11 11z"/></symbol>
 <symbol id="i-aegis" viewBox="0 0 24 24"><path d="M12 6l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V8z"/><circle cx="12" cy="12" r="10.5" stroke-dasharray="3 2.5"/></symbol>
 </defs>
@@ -509,6 +515,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button class="adbtn" id="mAd"><svg class="i"><use href="#i-tv"/></svg><span id="mAdTxt">+5</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
+      <button class="icon-btn bugbtn" id="mBug" aria-label="Bug report / talk to dev"><svg class="i"><use href="#i-bug"/></svg></button>
     </div>
     <div class="logo"><span class="l1">LAST</span><span class="l2">VERTEX</span><span class="rule">════════════════</span></div>
     <div class="hero">
@@ -531,13 +538,13 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   <!-- IN-RUN CONTROLS -->
   <div class="layer" id="playUI">
     <button id="tgtBtn" aria-label="Target priority"><svg class="i"><use href="#i-target"/></svg><span id="tgtTxt">FRONT</span></button>
+    <div id="spdCtl"><button id="spdDn" aria-label="Slower">-</button><span id="spdTxt">x1.0</span><button id="spdUp" aria-label="Faster">+</button></div>
     <div id="abil"></div>
   </div>
 
   <!-- PAUSE -->
   <div class="layer" id="pauseUI">
     <div class="p-title">PAUSED<span>_</span></div>
-    <div class="p-sub" id="pSub">WAVE 0</div>
     <div class="p-btns main">
       <button class="btn pri" id="pResume"><svg class="i"><use href="#i-play"/></svg>RESUME</button>
       <button class="btn" id="pSet">SETTINGS</button>
@@ -631,7 +638,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="srow"><div class="sl"><span>STAT OVERLAY</span></div>
         <div class="sc"><span class="sdesc">In-game panel: kills/min, coins/min, enemies.</span><button class="tog" id="statOvToggle">OFF</button></div></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
-      <div class="srow link" id="setFeedback"><div class="sl"><span>BUG REPORT</span><b>TALK TO DEV</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setDevTat" style="display:none"><div class="sl"><span>DEV</span><b>+1 OF EVERY TATTOO</b></div><svg class="i"><use href="#i-spark"/></svg></div>
@@ -843,8 +849,15 @@ function sfxGain(){
   _sfxGain.gain.value=(save.settings.sfxOn?save.settings.sfxVol:0)/100;return _sfxGain;
 }
 function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
+// minimum ms between two plays of the same effect: dozens of oscillators a second clog weak phones'
+// audio thread, and then sounds arrive late and in bunches
+const SFX_GAP={shoot:70,hit:55,crit:80,coin:80,die:90,breach:120,dodge:100,gem:120,blip:30,click:30};
+const _sfxLast={};
+let _noiseBuf=null;
 function snd(type){
   if(!save.settings.sfxOn||!save.settings.sfxVol)return;
+  const now=performance.now();if(now-(_sfxLast[type]||0)<(SFX_GAP[type]||0))return;_sfxLast[type]=now;
+  if(AC&&AC.state!=='running'&&document.hidden)return;
   try{
     const a=getAC(),t=a.currentTime,g=sfxGain();
     const ramp=(n,v,d)=>{n.gain.setValueAtTime(v,t);n.gain.exponentialRampToValueAtTime(1e-4,t+d);};
@@ -857,8 +870,9 @@ function snd(type){
     if(type==='shoot')tone('square',700,.06,.04,300);
     else if(type==='hit')tone('sawtooth',180,.09,.06);
     else if(type==='die'){
-      const buf=a.createBuffer(1,a.sampleRate*.18,a.sampleRate),d=buf.getChannelData(0);
-      for(let i=0;i<d.length;i++)d[i]=Math.exp(-i/a.sampleRate*22)*(Math.random()*2-1);
+      if(!_noiseBuf){_noiseBuf=a.createBuffer(1,a.sampleRate*.18,a.sampleRate);const d=_noiseBuf.getChannelData(0);
+        for(let i=0;i<d.length;i++)d[i]=Math.exp(-i/a.sampleRate*22)*(Math.random()*2-1);}
+      const buf=_noiseBuf;
       const s=a.createBufferSource(),gn=a.createGain();gn.gain.value=.28;
       s.buffer=buf;s.connect(gn);gn.connect(g);s.start(t);
     }
@@ -1057,8 +1071,8 @@ const PERM_UPGRADES=[
    info:'Multiplies every coin you earn from kills, bosses, bounties and coin drops.'},
   {id:'lootChance',cat:'util',name:'LOOTER',     icon:'magnet',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
    info:'Chance that a normal enemy drops coins on death. Starts at 50%, caps at 100%.'},
-  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:150, g:1.06, max:200,  start:0,  step:.0065,fx:v=>v.toFixed(2)+'/s',
-   info:'Pays for the time you hold out: when the next wave starts you quietly get this many kills worth of coins for every second the last wave lasted.'},
+  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1)+' basic',
+   info:'A reward for surviving: every new wave (from wave 2) pays you this many basic enemies worth of coins the moment it starts.'},
   {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'clock', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'Speeds up the entire simulation: enemies, bullets, wave timers and drops all run faster. Earns coins faster too. Up to x5.'},
   {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),
@@ -1230,7 +1244,8 @@ function stats(){
     pierce:    Math.min(.75,v('pierce')+tb('piercer').p),
     waveHeal:  v('waveHeal')+(T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
-    speed:     v('gameSpeed'),
+    // game speed: the player's chosen speed, between x1 and what the shop has unlocked
+    speed:     Math.max(1,Math.min(v('gameSpeed'),save.settings.speed||Infinity)),
     aegisCD:   tb('aegis').cd,
     twin:      tb('twin').m,
     arcEvery:  arc.every?Math.round(arc.every):0, arcN:Math.round(arc.n), arcM:arc.m,
@@ -1249,7 +1264,6 @@ let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[];
 let actCD={};                           // active tattoo id → seconds until ready
-let runBounty=0;                        // bounty earned by the last wave, paid when the next one starts
 
 function buildStars(){
   if(!GW||!GH)return;
@@ -1272,7 +1286,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};runBounty=0;
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1303,6 +1317,7 @@ document.addEventListener('keydown',e=>{
   }
   if(paused)return;
   if(k==='t'||k==='T'){cycleTarget();return;}
+  if(k==='-'||k==='+'||k==='='){stepSpeed(k==='-'?-1:1);return;}
   const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=activeIds()[n-1];if(id)useActive(id);}
 });
 
@@ -1489,8 +1504,10 @@ function spawnEnemy(){
   }
 }
 function spawnWave(){
-  if(runBounty>0){const c=runBounty;runBounty=0;save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);}   // silent
   waveNum++;
+  // WAVE BOUNTY: surviving into a new wave (from wave 2) pays N basic enemies' worth of this wave's coins, silently
+  if(waveNum>1){const st=stats();if(st.bounty>0){const c=Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty);
+    if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);}}}
   if(waveNum===3)hint('hud');
   if(waveNum===6)hint('target');
   const boss=waveNum%((runMods&&runMods.bossEvery)||ECO.bossEvery)===0;
@@ -1700,8 +1717,7 @@ function updatePlay(dt){
     if(waveTimer<=0){
       wavePhase='between';waveTimer=2+Math.random()*.5;qReach('wave',waveNum);
       if(st.waveHeal>0)hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
-      // bounty for this wave's length, paid when the next wave starts
-      if(st.bounty>0)runBounty=Math.round(coinValueAt(effWave())*st.mult*st.bounty*waveDuration);
+
       saveProgress();
     }
   }
@@ -1840,8 +1856,29 @@ function updatePlay(dt){
     if(e.hp<=0){enemies.splice(i,1);killEnemy(e,st);}
   }
 
+  separateEnemies();
   if(hp<=0)triggerDeath();
   updateParticles(dt);
+}
+// Enemies are solid: overlapping ones are pushed apart, the lighter one more (bosses barely move).
+// Mostly sideways, so crowds spread out instead of shoving the front row into the perimeter.
+// Sweep over the list sorted by x, so it stays cheap with many enemies.
+function separateEnemies(){
+  const n=enemies.length;if(n<2)return;
+  const list=enemies.slice().sort((a,b)=>a.x-b.x);
+  let rmax=0;for(const e of list)if(e.sz>rmax)rmax=e.sz;rmax*=.5;
+  for(let i=0;i<n;i++){
+    const a=list[i];if(a.hp<=0)continue;const ra=a.sz*.5*a.scale;
+    for(let j=i+1;j<n;j++){
+      const b=list[j];if(b.x-a.x>ra+rmax)break;if(b.hp<=0)continue;
+      const rb=b.sz*.5*b.scale,dx=b.x-a.x,dy=b.y-a.y,min=(ra+rb)*.92,d2=dx*dx+dy*dy;
+      if(d2>=min*min)continue;
+      const d=Math.sqrt(d2),nx=d>.01?dx/d:(i%2?1:-1),ny=d>.01?dy/d:0,push=min-d;
+      const ma=a.sz*a.sz*(a.boss?4:1),mb=b.sz*b.sz*(b.boss?4:1),wa=mb/(ma+mb),wb=1-wa;
+      a.x-=nx*push*wa;a.y-=ny*push*wa*.5;b.x+=nx*push*wb;b.y+=ny*push*wb*.5;
+    }
+  }
+  for(const e of enemies){const m=e.sz*.5+2;if(e.x<m)e.x=m;else if(e.x>GW-m)e.x=GW-m;}
 }
 
 function updateDead(dt){
@@ -2107,7 +2144,7 @@ function drawAdButton(){
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
   // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
-  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
+  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:adsLeftToday()<=0?'DONE':fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
   cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
   drawTvIcon(x0+tv*.5,r.y+r.h*.5,tv,col);
   cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
@@ -2171,9 +2208,11 @@ function drawHUD(st){
 
   // stat strip
   const sy=GH*.985,sf=fs*.85;
-  cx.textAlign='left';glowText(`ATK ${fmtN(st.dmg)}`,GW*.04,sy,C.mute,sf,0);
+  // exact values (2 decimals) below 1000; suffixes (1.23K…) only above that
+  const exact=v=>v<1000?String(+v.toFixed(2)):fmtN(v);
+  cx.textAlign='left';glowText(`ATK ${exact(st.dmg)}`,GW*.04,sy,C.mute,sf,0);
   cx.textAlign='center';glowText(`SPD ${st.rate.toFixed(2)}/s`,GW*.5,sy,C.mute,sf,0);
-  cx.textAlign='right';glowText(`CRT ${Math.round(st.crit*100)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
+  cx.textAlign='right';glowText(`CRT ${+(st.crit*100).toFixed(1)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
 
   // stat overlay
   if(save.settings.statOverlay){
@@ -2270,13 +2309,13 @@ function syncUI(){
   $('deadUI').classList.toggle('show',k==='dead');
   $('playUI').classList.toggle('show',k==='play');
   if(k==='menu')renderMenu();
-  if(k==='pause')$('pSub').textContent=`WAVE ${waveNum} · ${runKills} KILLS · +${fmtC(runCoins)} ◆`;
   if(k==='dead')renderDead();
 }
 
 // in-run controls: one button per equipped active tattoo + target priority
 function renderPlayUI(){
   $('tgtTxt').textContent=TARGET_MODES[save.settings.target||0];
+  const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
   $('abil').innerHTML=activeIds().map((id,i)=>`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`).join('');
   _abState='';
 }
@@ -2300,6 +2339,16 @@ function updatePlayUI(){
 }
 $('abil').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b)useActive(b.dataset.act);});
 $('tgtBtn').addEventListener('click',cycleTarget);
+// speed steps of 0.5 from x1 up to the unlocked maximum (which is always reachable as the last step)
+function stepSpeed(dir){
+  const max=permVal('gameSpeed'),cur=stats().speed;
+  let next=dir>0?Math.floor(cur*2+1e-6)/2+.5:Math.ceil(cur*2-1e-6)/2-.5;
+  next=Math.round(Math.max(1,Math.min(max,next))*10)/10;
+  if(next===cur){snd('deny');return;}
+  save.settings.speed=next;persist();snd('blip');renderPlayUI();
+}
+$('spdDn').addEventListener('click',()=>stepSpeed(-1));
+$('spdUp').addEventListener('click',()=>stepSpeed(1));
 
 // menu
 function renderMenu(){
@@ -2345,10 +2394,10 @@ $('tNext').addEventListener('click',()=>{
 function renderMenuAd(){
   const cd=adCooldown();
   $('mAd').classList.toggle('cool',cd>0);
-  $('mAdTxt').textContent=cd>0?fmtCD(cd):`+${ECO.adGems}`;
+  $('mAdTxt').textContent=cd>0?(adsLeftToday()<=0?'DONE':fmtCD(cd)):`+${ECO.adGems}`;
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
-function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast(I('tv')+' READY IN '+fmtCD(adCooldown()),true,true);}
+function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast(adsLeftToday()<=0?I('tv')+` ${ECO.adDailyCap}/${ECO.adDailyCap} TODAY · MORE TOMORROW`:I('tv')+' READY IN '+fmtCD(adCooldown()),true,true);}
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
 $('mTat').addEventListener('click',openTattoos);
@@ -3032,7 +3081,7 @@ function showAway(){
   const secs=save.awaySecs||0,cd=adCooldown();
   $('awTxt').textContent=`${fmtDur(secs)} COUNTED · ${pc(permVal('offline'))} OF YOUR AVERAGE RATE (${fmtN(save.idleCps)}/S) · UP TO ${ECO.offlineDayH}H A DAY`;
   $('awCoins').textContent=fmtN(save.awayPending);
-  $('awAd').innerHTML=I('tv')+(cd>0?fmtCD(cd):'x2');$('awAd').style.opacity=cd>0?.4:1;
+  $('awAd').innerHTML=I('tv')+(cd>0?(adsLeftToday()<=0?'DONE':fmtCD(cd)):'x2');$('awAd').style.opacity=cd>0?.4:1;
   $('away').classList.add('show');
 }
 function collectAway(mult){
@@ -3063,7 +3112,7 @@ function openFeedback(){
   $('fbOpen').textContent=FEEDBACK.form?'OPEN FORM':'SOON';$('fbOpen').style.opacity=FEEDBACK.form?1:.4;
   $('fbUI').classList.add('show');snd('click');
 }
-$('setFeedback').addEventListener('click',openFeedback);
+$('mBug').addEventListener('click',openFeedback);
 $('fbClose').addEventListener('click',()=>{snd('click');$('fbUI').classList.remove('show');});
 $('fbOpen').addEventListener('click',()=>{
   if(!FEEDBACK.form){snd('deny');toast('FORM COMING SOON',true);return;}

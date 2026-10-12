@@ -137,7 +137,7 @@ function run(tier,maxW=1e9){
       for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){kill(E[i]);E.splice(i,1);}
       if(hp<=0||t>5400)return{w,coins,t:t/st.speed};
     }
-    coins+=cv*st.bounty*dur;hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);t+=2.3;
+    coins+=cv*st.bounty;hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);t+=2.3;
   }
 }
 

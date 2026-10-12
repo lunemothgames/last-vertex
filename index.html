@@ -162,6 +162,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .nm{font-family:'VT323',monospace;font-size:20px;line-height:1;white-space:nowrap;overflow:hidden}
 .fx{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;margin-top:2px}
 .fx b{color:var(--a2);font-weight:400}
+.mqw>span{display:inline-block}
+.mqw>span.mq{animation:mq 6s ease-in-out infinite}
+@keyframes mq{0%,18%{transform:translateX(0)}50%,68%{transform:translateX(var(--mq))}100%{transform:translateX(0)}}
 .pipr{display:flex;align-items:center;gap:6px;margin-top:5px}
 .pips{display:flex;gap:2px;flex:1}
 .pips i{flex:1;height:7px;background:var(--a10bg)}
@@ -2640,11 +2643,14 @@ function renderShop(){
       return `<div class="trow${active?' on':''}">
         <div class="tprev" style="background:radial-gradient(ellipse at 50% 40%,${bg2},${bg1} 85%);border-color:${dim};color:${a};text-shadow:0 0 6px ${a}">
           <span>LV_</span><i style="background:linear-gradient(90deg,${a} 0 45%,${a2} 45% 72%,${hot} 72%)"></i></div>
-        <div class="info"><div class="nm">${t.name}</div><div class="fx">${t.note}</div></div>
+        <div class="info"><div class="nm">${t.name}</div><div class="fx mqw"><span>${t.note}</span></div></div>
         <button class="buy${cls}" data-theme="${t.id}">${btn}</button></div>`;
     }).join('');
   }
   $('shopList').innerHTML=html;
+  // lines too long for the row scroll back and forth (marquee) instead of being cut off
+  $('shopList').querySelectorAll('.mqw').forEach(w=>{const sp=w.firstElementChild,d=sp.scrollWidth-w.clientWidth;
+    if(d>2){sp.style.setProperty('--mq',-d+'px');sp.style.animationDuration=(3+d/18).toFixed(1)+'s';sp.classList.add('mq');}});
 }
 
 $('shopList').addEventListener('click',e=>{

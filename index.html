@@ -1077,7 +1077,7 @@ const PERM_UPGRADES=[
   {id:'lootChance',cat:'util',name:'LOOTER',     icon:'magnet',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
    info:'Chance that a normal enemy drops coins on death. Starts at 50%, caps at 100%.'},
   {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1)+' basic',
-   info:'A reward for surviving: every new wave (from wave 2) pays you this many basic enemies worth of coins the moment it starts.'},
+   info:'A reward for surviving: every time you reach a new wave you get this many basic enemies worth of coins.'},
   {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'clock', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'Speeds up the entire simulation: enemies, bullets, wave timers and drops all run faster. Earns coins faster too. Up to x5.'},
   {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),

@@ -644,8 +644,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <div class="sc"><span class="sdesc">In-game panel: kills/min, coins/min, enemies.</span><button class="tog" id="statOvToggle">OFF</button></div></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
-      <div class="srow link" id="setRedeem"><div class="sl"><span>REDEEM CODE</span><b>GIFT CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
+      <div class="srow link" id="setRedeem" style="margin-top:34px"><div class="sl"><span>REDEEM GIFT CODE</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setDevTat" style="display:none"><div class="sl"><span>DEV</span><b>+1 OF EVERY TATTOO</b></div><svg class="i"><use href="#i-spark"/></svg></div>
       <div class="ver" id="verTxt">LAST VERTEX // SYS OK</div>
     </div>
@@ -2909,7 +2909,7 @@ function openModal(mode){
   modalMode=mode;
   const ta=$('mdText');
   if(mode==='redeem'){
-    $('mdTitle').textContent='REDEEM CODE';
+    $('mdTitle').textContent='REDEEM GIFT CODE';
     $('mdBody').textContent='Paste a gift code from the developer to receive its rewards. Each code works once.';
     ta.value='';ta.readOnly=false;$('mdAct').textContent='REDEEM';
   }else if(mode==='export'){
@@ -2944,7 +2944,7 @@ $('mdAct').addEventListener('click',()=>{
 });
 
 // ── GIFT CODES ───────────────────────────────────────────────────────────────
-// LVG-<payload>.<signature>: payload is base64url JSON {i:id, g:gems, c:coins, t:{tattoo:copies}, x:expiry day}.
+// LVG-<payload>.<signature>: payload is base64url JSON {i:id, g:gems, c:coins, t:{tattoo:copies}, th:[theme ids]|'all', x:expiry day}.
 // Signed with the developer's private key (tools/make-code.js); the game only has the public key to check it.
 const GIFT_PUBLIC_KEY='MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8ECbZdOSashFmBlSC83fKpyZdrBvw67/JNzRoGgZc9vKjaOJg6F9gceq7qHBKw7En9MyOSEz1zDBwQv98oDSPg==';
 const b64uDec=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)),c=>c.charCodeAt(0));
@@ -2972,6 +2972,11 @@ async function redeemGift(text){
   const got=[];
   if(r.g>0){save.gems+=Math.floor(r.g);got.push(`${fmtN(r.g)} GEMS`);}
   if(r.c>0){save.coins+=Math.floor(r.c);got.push(`${fmtN(r.c)} COINS`);}
+  // themes: a list of ids, or 'all'
+  const th=r.th==='all'?THEMES.map(t=>t.id):Array.isArray(r.th)?r.th:[];
+  const newTh=th.filter(id=>THEMES.some(t=>t.id===id)&&!save.themesOwned.includes(id));
+  newTh.forEach(id=>save.themesOwned.push(id));
+  if(th.length)got.push(newTh.length?`${newTh.length} THEME${newTh.length>1?'S':''}`:'THEMES (ALREADY OWNED)');
   const tats=[];
   for(const [id,n] of Object.entries(r.t||{})){
     const t=TT[id];if(!t)continue;

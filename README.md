@@ -35,7 +35,7 @@ npm install        # once, for the icon script
 npm run icons      # regenerate icons and launch images
 ```
 
-Gift codes (Settings → REDEEM CODE): `npm run code -- --gems 100 --coins 5000 --tattoo nova:3 --days 7`.
+Gift codes (Settings → REDEEM GIFT CODE): `npm run code -- --gems 100 --coins 5000 --tattoo nova:3 --theme all --days 7`.
 Codes are signed with `keys/gift-private.pem`, which stays on this computer only (`keys/` is git-ignored). Back it up: without it no new codes can be made.
 
 Open the game with `?dev` at the end of the URL to show a developer button in Settings that grants one copy of every tattoo. Remove it before a store release.

@@ -207,6 +207,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 @keyframes holdf{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .tile.hi7{box-shadow:0 0 12px var(--rc),inset 0 0 10px rgba(var(--rc-rgb),0.3)}
 .empty{grid-column:1/-1;text-align:center;padding:14px 0;font-size:11px;color:var(--mute)}
+.howto{display:grid;grid-template-columns:62px 1fr;gap:7px 10px;align-items:baseline;margin:0 14px;padding:10px 12px;border:1px dashed var(--dim)}
+.howto b{font-family:'VT323',monospace;font-weight:400;font-size:18px;letter-spacing:.06em;color:var(--a2);line-height:1}
+.howto span{font-size:11px;line-height:1.45;color:var(--a);text-shadow:none}
 .hint{margin:14px 14px 0;font-size:10px;color:var(--mute);line-height:1.7;text-shadow:none;letter-spacing:.04em}
 
 /* ── gacha results ── */
@@ -501,6 +504,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-ff" viewBox="0 0 24 24"><path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/></symbol>
 <symbol id="i-shock" viewBox="0 0 24 24"><path d="M7 20a5 5 0 0 1 10 0M2.5 20a9.5 9.5 0 0 1 19 0"/><path d="M12 3v4M5 6l2.2 2.2M19 6l-2.2 2.2"/></symbol>
 <symbol id="i-kb" viewBox="0 0 24 24"><rect x="7" y="9" width="10" height="9"/><path d="M8 3l4-2 4 2M8 6.5l4-2 4 2"/><path d="M3 22h18"/></symbol>
+<symbol id="i-shatter" viewBox="0 0 24 24"><path d="M12 3l5 7-5 4-5-4z"/><path d="M7 10l-3 1M17 10l3 1M12 14v3"/><path d="M5 16l-2 3M19 16l2 3M9 19l-1 3M15 19l1 3"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8.5 8.5 0 1 1 9 4a7 7 0 0 0 11 11z"/></symbol>
 <symbol id="i-aegis" viewBox="0 0 24 24"><path d="M12 6l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V8z"/><circle cx="12" cy="12" r="10.5" stroke-dasharray="3 2.5"/></symbol>
 </defs>
@@ -619,7 +623,16 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="slots" id="equippedSlots"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
       <div class="inv" id="invGrid"></div>
-      <div class="hint">TAP A TATTOO = WHAT IT DOES · HOLD = EQUIP / UNEQUIP<br>EXTRA COPIES LEVEL IT UP BY THEMSELVES: 2 → 3 → 4 → 6 → 8 → 11 COPIES TO LV7<br>LV7 TATTOOS LEAVE THE SUMMON POOL · AN EPIC IS GUARANTEED WITHIN 50 SUMMONS<br>◆ = ACTIVE: ADDS A BUTTON IN RUNS · MORE SLOTS COST GEMS</div>
+      <div class="lab">HOW TATTOOS WORK</div>
+      <div class="howto">
+        <b>TAP</b><span>See what a tattoo does, level by level</span>
+        <b>HOLD</b><span>Equip or unequip it</span>
+        <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
+        <b>LV7</b><span>Maxed tattoos leave the summon pool</span>
+        <b>EPIC</b><span>One is guaranteed within 50 summons</span>
+        <b>◆</b><span>Active tattoo: adds a button in runs</span>
+        <b>SLOTS</b><span>Unlock more slots with gems</span>
+      </div>
     </div>
   </div>
 
@@ -1134,6 +1147,8 @@ const TAT_TYPES=[
   {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>`bullets instantly kill normal enemies (not bosses) that drop below ${pc(x.k)} health`},
   {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>`+${pc(x.l)} of the damage your bullets deal heals you`},
   {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>`+${pc(x.p)} chance for a bullet to go through an enemy and keep flying (75% max)`},
+  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:2,w:3.5,v:{p:[.15,.4]},
+   desc:x=>`a slowed or frozen enemy that dies bursts into ice: enemies close by lose ${pc(x.p)} of its max health and get slowed (bosses take a quarter) · bursts can chain`},
   {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[6,18],cd:[50,30]},
    desc:x=>`ACTIVE · blasts every enemy on screen for ${x.m.toFixed(1)}x bullet damage and pushes them back`+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[1.8,3],dur:[8,12],cd:[45,30]},
@@ -1270,6 +1285,7 @@ function stats(){
     twin:      tb('twin').m,
     arcEvery:  arc.every?Math.round(arc.every):0, arcN:Math.round(arc.n), arcM:arc.m,
     shockM:    sw.m, shockCD:sw.cd,
+    shatter:   tb('shatter').p,
   };
 }
 
@@ -1284,6 +1300,8 @@ let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[];
 let actCD={};                           // active tattoo id → seconds until ready
+let shatterQ=[];                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
+const SHATTER_R=.2;                     // burst radius, share of screen width
 
 function buildStars(){
   if(!GW||!GH)return;
@@ -1306,7 +1324,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};shatterQ=[];
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1480,6 +1498,7 @@ function keepAwake(on){
 // ── ENEMIES ──────────────────────────────────────────────────────────────────
 const effWave=()=>Math.max(1,waveNum)+(runTier-1)*TIERS.offset;
 function killEnemy(e,st){
+  if(st.shatter>0&&(e.slowT>0||e.frozenT>0)&&!e.boss)shatterQ.push({x:e.x,y:e.y,dmg:e.maxHp*st.shatter});
   const v=coinValueAt(effWave())*st.mult*e.coin;
   let coins=e.boss?Math.max(1,Math.round(v)):(e.coin>0&&Math.random()<st.coinChance?Math.max(1,Math.round(v)):0);
   if(coins>0&&Math.random()<st.jackpot)coins*=3;
@@ -1884,9 +1903,21 @@ function updatePlay(dt){
     if(e.hp<=0){enemies.splice(i,1);killEnemy(e,st);}
   }
 
+  if(shatterQ.length)runShatter(st);
   separateEnemies();
   if(hp<=0)triggerDeath();
   updateParticles(dt);
+}
+// SHATTER: each burst hurts and slows enemies around it; enemies it kills were slowed, so they can burst too
+function runShatter(st){
+  const q=shatterQ;shatterQ=[];const r2=(GW*SHATTER_R)**2;
+  for(const b of q.slice(0,12)){
+    for(const o of enemies){
+      if(o.hp<=0||(o.x-b.x)**2+(o.y-b.y)**2>r2)continue;
+      hurt(o,b.dmg*(o.boss?.25:1));o.slowT=Math.max(o.slowT,ECO.slowTime);
+    }
+    novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});burst(b.x,b.y,C.a2,10,GH*.08);
+  }
 }
 // Enemies are solid: overlapping ones are pushed apart, the lighter one more (bosses barely move).
 // Mostly sideways, so crowds spread out instead of shoving the front row into the perimeter.
@@ -2127,7 +2158,7 @@ function drawPlay(){
   });
   novas.forEach(n=>{
     cx.save();cx.globalAlpha=n.life*.8;cx.strokeStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=16;cx.lineWidth=2+n.life*4;
-    cx.beginPath();cx.arc(n.x,n.y,GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();cx.restore();
+    cx.beginPath();cx.arc(n.x,n.y,n.r?n.r*(1.15-n.life*.6):GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();cx.restore();
   });
 
   drawParticles();
@@ -2714,7 +2745,7 @@ const TAT_COLS={
   aegis:[['cd','RECHARGE','s']],boss_slayer:[['b','BOSS DMG','+%']],reaper:[['k','KILLS BELOW','%']],
   lifesteal:[['l','LIFESTEAL','+%']],piercer:[['p','PIERCE','+%']],
   nova:[['m','BLAST','x'],['cd','COOLDOWN','s']],overdrive:[['m','FIRE RATE','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
-  ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
+  ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shatter:[['p','BURST','%']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
   twin:[['m','TWIN DMG','%']],arc:[['every','EVERY','1/n'],['n','TARGETS','n'],['m','DMG EACH','%']],
   midas:[['m','COINS','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
 };

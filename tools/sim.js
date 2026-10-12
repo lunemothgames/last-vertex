@@ -38,6 +38,8 @@ const BUILDS={
            tat:['coin_mult','luck','midas','attack_power','attack_speed']},
   bruiser:{shop:{damage:2,fireRate:1,maxHp:2,regen:2,defense:2,thorns:2,lifesteal:1,dodge:1,...ECON},
            tat:['thorns','mend','shockwave','attack_power','dodge']},
+  shatter:{shop:{...CORE,knockback:2,slowChance:2,slowAmt:2,range:2,...ECON},
+           tat:['frost','shatter','stasis','attack_power','attack_speed']},
   chillNoKb:{shop:{...CORE,slowChance:2,slowAmt:2,range:2,...ECON},tat:['frost','reach','stasis','attack_power','attack_speed']},
   kbOnly:{shop:{...CORE,knockback:2,range:2,...ECON},tat:['attack_power','attack_speed','crit_chance','crit_mult','boss_slayer']},
   // swarm that gives up two power slots for coin tattoos
@@ -136,7 +138,11 @@ function run(tier,maxW=1e9){
         if(st.arcEvery&&++shots%st.arcEvery===0)for(const e of vis.slice(0,st.arcN))hit(e,st.dmg*st.arcM*(e.boss?st.bossDmg:1));
         cd+=1/rate;
       }
-      for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){kill(E[i]);E.splice(i,1);}
+      for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){
+        const d=E[i];kill(d);E.splice(i,1);
+        // SHATTER: a slowed/frozen kill hurts and slows enemies close by (1-D sim: same height band, about half of them sideways)
+        if(st.shatter&&(d.slow>0||d.frz>0)&&!d.boss)for(const o of E)if(o.hp>0&&Math.abs(o.y-d.y)<.08&&Math.random()<.5){o.hp-=d.max*st.shatter*(o.boss?.25:1);o.slow=ECO.slowTime;}
+      }
       if(hp<=0||t>5400)return{w,coins,t:t/st.speed};
     }
     coins+=cv*st.bounty;hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);t+=2.3;

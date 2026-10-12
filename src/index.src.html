@@ -948,7 +948,7 @@ const ECO={
   pickupCooldown:300,                   // seconds after collecting a gem / coin drop
   gemDropPerSec:.006, coinDropPerSec:.008,
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
-  adGems:5,       adCooldown:1800, adDailyCap:10,
+  adGems:5,       adCooldown:900,  adDailyCap:10,
   pullCost:20,    pull10Cost:200,
   tempCostGrowth:1.05,                  // next-run boosts scale with best effective wave
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
@@ -1325,7 +1325,7 @@ document.addEventListener('keydown',e=>{
 function playClick(x,y){
   const pbx=GW*.82,pby=GH*.012,pbw=GW*.16,pbh=GH*.048;
   if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){paused=true;snd('click');return true;}
-  const ad=adRect();
+  const ad=adCooldown()>0?{x:-1e9,y:-1e9,w:0,h:0}:adRect();
   if(x>=ad.x&&x<=ad.x+ad.w&&y>=ad.y-GH*.01&&y<=ad.y+ad.h+GH*.01){handleRunAd();return true;}
   for(let i=pickups.length-1;i>=0;i--){
     const g=pickups[i];const dx=x-g.x,dy=y-g.y;
@@ -1564,7 +1564,7 @@ function fireBullets(st){
   const bSize=2.5+Math.min(4,Math.log10(1+st.dmg)*1.5);
   for(const s of shots){
     const x0=bx+(s.twin?GW*.025:0),a=s.e?Math.atan2(s.e.y-by,s.e.x-x0):base+s.ang;
-    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0});
+    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
   muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
@@ -1737,6 +1737,12 @@ function updatePlay(dt){
     b.trail.unshift({x:b.x,y:b.y});
     if(b.trail.length>8)b.trail.pop();
     b.px=b.x;b.py=b.y;               // start of this step: hits are tested along the whole path (no tunnelling at low fps)
+    // homing: a bullet follows the enemy it was fired at, so knockback / dodging can't make it miss;
+    // if that enemy dies first, the bullet flies on in a straight line
+    if(b.tgt){
+      if(b.tgt.hp<=0)b.tgt=null;
+      else{const sp=Math.hypot(b.vx,b.vy),dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;}
+    }
     b.x+=b.vx*dt;b.y+=b.vy*dt;
   });
 
@@ -1766,14 +1772,14 @@ function updatePlay(dt){
       if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
       if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
-      if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);qEvent('pierce');continue;}
+      if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);if(b.tgt===e)b.tgt=null;qEvent('pierce');continue;}
       // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
       if(b.bounces<st.chain&&Math.random()<st.bounce){
         const hits=b.hits||(b.hits=new Set());hits.add(e);
         let nx=null,nd=Infinity;
         for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
         if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
-          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;break;}
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;break;}
       }
       hit=true;break;
     }
@@ -2139,6 +2145,7 @@ function drawPlay(){
 
 // ad button: just above the perimeter, right side
 function drawAdButton(){
+  if(adCooldown()>0)return;          // hidden while no ad is available
   const r=adRect(),cool=adCooldown(),ready=cool===0;
   cx.letterSpacing='0px';
   hudBox(r.x,r.y,r.w,r.h);
@@ -2392,9 +2399,9 @@ $('tNext').addEventListener('click',()=>{
   save.tier++;persist();snd('blip');renderTierSel();
 });
 function renderMenuAd(){
-  const cd=adCooldown();
-  $('mAd').classList.toggle('cool',cd>0);
-  $('mAdTxt').textContent=cd>0?(adsLeftToday()<=0?'DONE':fmtCD(cd)):`+${ECO.adGems}`;
+  // the ad button only exists while an ad is available
+  $('mAd').style.display=adCooldown()>0?'none':'';
+  $('mAdTxt').textContent=`+${ECO.adGems}`;
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
 function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast(adsLeftToday()<=0?I('tv')+` ${ECO.adDailyCap}/${ECO.adDailyCap} TODAY · MORE TOMORROW`:I('tv')+' READY IN '+fmtCD(adCooldown()),true,true);}
@@ -3081,7 +3088,7 @@ function showAway(){
   const secs=save.awaySecs||0,cd=adCooldown();
   $('awTxt').textContent=`${fmtDur(secs)} COUNTED · ${pc(permVal('offline'))} OF YOUR AVERAGE RATE (${fmtN(save.idleCps)}/S) · UP TO ${ECO.offlineDayH}H A DAY`;
   $('awCoins').textContent=fmtN(save.awayPending);
-  $('awAd').innerHTML=I('tv')+(cd>0?(adsLeftToday()<=0?'DONE':fmtCD(cd)):'x2');$('awAd').style.opacity=cd>0?.4:1;
+  $('awAd').innerHTML=I('tv')+'x2';$('awAd').style.display=cd>0?'none':'';
   $('away').classList.add('show');
 }
 function collectAway(mult){

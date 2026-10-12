@@ -353,12 +353,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
 #tgtBtn svg.i{width:13px;height:13px}
 #playUI.nohud #tgtBtn,#playUI.nohud #spdCtl{display:none}
-#spdCtl{position:absolute;top:11.2%;right:2%;height:32px;display:flex;align-items:stretch;pointer-events:auto;
-  border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px}
-/* big touch targets: the visible box is 34px wide, the tappable area reaches a bit further down */
-#spdCtl button{width:34px;font-size:26px;line-height:1;color:var(--a);position:relative;touch-action:manipulation}
-#spdCtl button::after{content:'';position:absolute;left:0;right:0;top:0;bottom:-10px}
-#spdCtl span{min-width:38px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--dim);border-right:1px solid var(--dim)}
+/* game speed: one small button under the target button; tap = next speed (wraps to x1.0) */
+#spdCtl{position:absolute;top:11.2%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
+  border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto;touch-action:manipulation}
+#spdCtl svg.i{width:13px;height:13px}
+#spdCtl::after,#tgtBtn::after{content:'';position:absolute;left:-6px;right:-4px;top:-3px;bottom:-3px}   /* a bit more to hit than you see */
 /* ── shop: collapsible categories, auto-rebuy toggle ── */
 /* category bar: one category at a time, badge = upgrades you can afford right now */
 .ctabs{display:grid;grid-template-columns:repeat(3,1fr);margin:10px 14px 0;border-bottom:1px solid var(--dim);flex-shrink:0}
@@ -540,7 +539,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   <!-- IN-RUN CONTROLS -->
   <div class="layer" id="playUI">
     <button id="tgtBtn" aria-label="Target priority"><svg class="i"><use href="#i-target"/></svg><span id="tgtTxt">FRONT</span></button>
-    <div id="spdCtl"><button id="spdDn" aria-label="Slower">&minus;</button><span id="spdTxt">x1.0</span><button id="spdUp" aria-label="Faster">+</button></div>
+    <button id="spdCtl" aria-label="Game speed"><svg class="i"><use href="#i-clock"/></svg><span id="spdTxt">x1.0</span></button>
     <div id="abil"></div>
   </div>
 
@@ -2359,7 +2358,14 @@ function stepSpeed(dir){
   if(next===cur){snd('deny');toast(dir>0?`MAX SPEED x${max.toFixed(1)}`:'MIN SPEED x1.0',true);return;}
   save.settings.speed=next;persist();snd('blip');renderPlayUI();toast(`SPEED x${next.toFixed(1)}`);
 }
-for(const [id,dir] of [['spdDn',-1],['spdUp',1]])$(id).addEventListener('pointerdown',e=>{e.preventDefault();stepSpeed(dir);});
+// one tap: next 0.5 step up; from the top it wraps back to x1.0
+function cycleSpeed(){
+  const max=permVal('gameSpeed'),cur=stats().speed;
+  if(cur>=max-1e-6){save.settings.speed=1;}
+  else{let next=Math.floor(cur*2+1e-6)/2+.5;save.settings.speed=Math.round(Math.min(max,next)*10)/10;}
+  persist();snd('blip');renderPlayUI();toast(`SPEED x${stats().speed.toFixed(1)}`);
+}
+$('spdCtl').addEventListener('pointerdown',e=>{e.preventDefault();cycleSpeed();});
 
 // menu
 function renderMenu(){

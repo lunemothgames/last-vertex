@@ -494,6 +494,18 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-twin" viewBox="0 0 24 24"><path d="M8 21V7M5 10l3-3 3 3"/><path d="M16 21V3M13 6l3-3 3 3"/></symbol>
 <symbol id="i-arc" viewBox="0 0 24 24"><path d="M3 4l6 6-3 2 7 8"/><path d="M21 4l-5 5 3 2-5 6"/></symbol>
 <symbol id="i-bug" viewBox="0 0 24 24"><rect x="8" y="9" width="8" height="11" rx="4"/><path d="M9 9.5a3 3 0 0 1 6 0"/><path d="M12 12.5v7.5"/><path d="M8 13H4.5M8 17H4.5M16 13h3.5M16 17h3.5M9.8 6.6L8 4M14.2 6.6L16 4"/></symbol>
+<symbol id="i-bullet" viewBox="0 0 24 24"><path d="M8.5 21V10.5a3.5 6.5 0 0 1 7 0V21z"/><path d="M8.5 16h7"/></symbol>
+<symbol id="i-stream" viewBox="0 0 24 24"><path d="M3 20v-6a2 2.6 0 0 1 4 0v6zM10 20v-6a2 2.6 0 0 1 4 0v6zM17 20v-6a2 2.6 0 0 1 4 0v6z"/><path d="M5 6v3M12 4v5M19 6v3"/></symbol>
+<symbol id="i-boss" viewBox="0 0 24 24"><path d="M22.0,12.0 L18.7,14.8 L19.1,19.1 L14.8,18.7 L12.0,22.0 L9.2,18.7 L4.9,19.1 L5.3,14.8 L2.0,12.0 L5.3,9.2 L4.9,4.9 L9.2,5.3 L12.0,2.0 L14.8,5.3 L19.1,4.9 L18.7,9.2Z"/><path d="M12 8.5l3 3.5-3 3.5-3-3.5z"/></symbol>
+<symbol id="i-exec" viewBox="0 0 24 24"><rect x="2" y="9" width="20" height="6"/><path d="M4.5 11.5v1M6.5 11.5v1"/><path d="M15 3l-4 18"/></symbol>
+<symbol id="i-range" viewBox="0 0 24 24"><path d="M7.5 21l4.5-6 4.5 6z"/><path d="M2 11h3M7 11h3M14 11h3M19 11h3"/><path d="M12 9V2M9 5l3-3 3 3"/></symbol>
+<symbol id="i-regen" viewBox="0 0 24 24"><path d="M9 20s-6-3.6-7.2-7.4A3.6 3.6 0 0 1 9 10.4a3.6 3.6 0 0 1 7.2 2.2C15 16.4 9 20 9 20z"/><path d="M19 12V3M16 6l3-3 3 3"/></symbol>
+<symbol id="i-patch" viewBox="0 0 24 24"><path d="M5.2 14.6l9.4-9.4a3.4 3.4 0 0 1 4.8 4.8l-9.4 9.4a3.4 3.4 0 0 1-4.8-4.8z"/><path d="M10 10l4 4"/><path d="M11 12.2h.01M12.2 11h.01M13 13.4h.01"/></symbol>
+<symbol id="i-loot" viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="9" height="9"/><path d="M5 5l2 2.2-2 2"/><path d="M11.5 11.5l2 2"/><circle cx="17" cy="17" r="4.5"/><path d="M17 15v4"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3 18a9 9 0 0 1 18 0"/><path d="M3 18h18"/><path d="M12 18L6.5 12.5"/><path d="M17 11.5l1.2-1.2"/></symbol>
+<symbol id="i-ff" viewBox="0 0 24 24"><path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/></symbol>
+<symbol id="i-shock" viewBox="0 0 24 24"><path d="M7 20a5 5 0 0 1 10 0M2.5 20a9.5 9.5 0 0 1 19 0"/><path d="M12 3v4M5 6l2.2 2.2M19 6l-2.2 2.2"/></symbol>
+<symbol id="i-kb" viewBox="0 0 24 24"><rect x="7" y="9" width="10" height="9"/><path d="M8 3l4-2 4 2M8 6.5l4-2 4 2"/><path d="M3 22h18"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8.5 8.5 0 1 1 9 4a7 7 0 0 0 11 11z"/></symbol>
 <symbol id="i-aegis" viewBox="0 0 24 24"><path d="M12 6l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V8z"/><circle cx="12" cy="12" r="10.5" stroke-dasharray="3 2.5"/></symbol>
 </defs>
@@ -545,7 +557,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   <!-- IN-RUN CONTROLS -->
   <div class="layer" id="playUI">
     <button id="tgtBtn" aria-label="Target priority"><svg class="i"><use href="#i-target"/></svg><span id="tgtTxt">FRONT</span></button>
-    <button id="spdCtl" aria-label="Game speed"><svg class="i"><use href="#i-clock"/></svg><span id="spdTxt">x1.0</span></button>
+    <button id="spdCtl" aria-label="Game speed"><svg class="i"><use href="#i-ff"/></svg><span id="spdTxt">x1.0</span></button>
     <div id="abil"></div>
   </div>
 
@@ -612,7 +624,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="slots" id="equippedSlots"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
       <div class="inv" id="invGrid"></div>
-      <div class="hint">TAP = INFO · HOLD = EQUIP / UNEQUIP<br>DUPLICATES LEVEL UP AUTOMATICALLY: 2 → 3 → 4 → 6 → 8 → 11 COPIES (MAX LV7)<br>MAXED TATTOOS LEAVE THE SUMMON POOL · ◆ ACTIVE TATTOOS ADD A BUTTON IN RUNS</div>
+      <div class="hint">TAP A TATTOO = WHAT IT DOES · HOLD = EQUIP / UNEQUIP<br>EXTRA COPIES LEVEL IT UP BY THEMSELVES: 2 → 3 → 4 → 6 → 8 → 11 COPIES TO LV7<br>LV7 TATTOOS LEAVE THE SUMMON POOL · AN EPIC IS GUARANTEED WITHIN 50 SUMMONS<br>◆ = ACTIVE: ADDS A BUTTON IN RUNS · MORE SLOTS COST GEMS</div>
     </div>
   </div>
 
@@ -1033,61 +1045,61 @@ const msMul=(u,l)=>u.ms?Math.pow(u.ms[1],Math.floor(Math.min(l,u.ms[2]||Infinity
 const uVal=(u,l)=>(u.start+u.step*l)*msMul(u,l);
 // armor points → share of perimeter damage removed (diminishing: 100 points = 50%)
 const armorRed=a=>a/(a+100);
-const PERM_CATS=[['atk','ATTACK','sword'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
+const PERM_CATS=[['atk','ATTACK','bullet'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
 const PERM_UPGRADES=[
   // ── attack
-  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'sword', base:8,   p:2.2,  max:1e6,  start:1,  step:.25,  ms:[200,1.1,5000], fx:v=>f2(v),
-   info:'Damage dealt by every bullet. Every 200 levels you also get a +10% bonus on top (until level 5000).'},
-  {id:'fireRate',  cat:'atk', name:'FIRE RATE',  icon:'bolt',  base:40,  g:1.12, max:100,  start:1,  step:.02,  fx:v=>v.toFixed(2)+'/s',
-   info:'Bullets fired per second. Upgrades cap at 3 shots per second.'},
+  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'bullet', base:8,   p:2.2,  max:1e6,  start:1,  step:.25,  ms:[200,1.1,5000], fx:v=>f2(v),
+   info:'Damage of every bullet your triangle fires. Every 200 levels (up to level 5000) the total is also multiplied by 1.1.'},
+  {id:'fireRate',  cat:'atk', name:'FIRE RATE',  icon:'stream',  base:40,  g:1.12, max:100,  start:1,  step:.02,  fx:v=>v.toFixed(2)+'/s',
+   info:'How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.'},
   {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.11, max:160,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance for a bullet to land a critical hit. Caps at 80%.'},
+   info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.'},
   {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.1,  max:150,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
-   info:'Damage multiplier of a critical hit.'},
+   info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
   {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.1,  max:120,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance for a shot to fire 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Caps at 60%.'},
+   info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Max 60%.'},
   {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:400, g:1.2,  max:50,   start:0,  step:.01,  fx:v=>pc(v),
-   info:'Chance for a bullet to pass through an enemy and keep flying.'},
+   info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50% from the shop, 75% with tattoos.'},
   {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:200, g:1.12, max:120,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance for a bullet to bounce off its target into the nearest other enemy. Caps at 60% from the shop; the RICOCHET tattoo adds more.'},
-  {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'crown', base:300, g:1.04, max:250,  start:0,  step:.02,  fx:v=>'+'+pc(v),
-   info:'Extra damage dealt to bosses.'},
-  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'skull', base:250, g:1.05, max:200,  start:0,  step:.01,  fx:v=>'+'+pc(v),
-   info:'Extra damage against enemies below 30% health.'},
-  {id:'range',     cat:'atk', name:'RANGE',      icon:'radar', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
-   info:'Your triangle only shoots enemies past the dotted range line. Each level pushes the line further up.'},
+   info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
+  {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:250,  start:0,  step:.02,  fx:v=>'+'+pc(v),
+   info:'Extra damage against bosses (every 10th wave), from bullets, lightning and blasts.'},
+  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:200,  start:0,  step:.01,  fx:v=>'+'+pc(v),
+   info:'Extra bullet damage against enemies below 30% of their health, to finish off wounded enemies faster.'},
+  {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
+   info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier.'},
   // ── defense
   {id:'maxHp',     cat:'def', name:'MAX HP',     icon:'heart', base:8,   p:2.2,  max:1e6,  start:10, step:3,    ms:[200,1.1,5000], fx:v=>fmtN(v)+' HP',
-   info:'Health of your triangle. Every enemy that touches the perimeter deals its attack as damage. Every 200 levels you also get a +10% bonus on top (until level 5000).'},
-  {id:'regen',     cat:'def', name:'REGEN',      icon:'leaf',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
-   info:'Health restored every second during a run. Every 200 levels you also get a +10% bonus on top (until level 5000).'},
-  {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(armorRed(v)), per:'diminishing',
-   info:'Removes a share of every perimeter hit: 100 levels block 50%, 300 block 75%, 600 block 86%. Works the same at every wave. All damage reduction together caps at 90%.'},
+   info:'Your triangle\'s health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
+  {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
+   info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
+  {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(armorRed(v)),
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 300 block 75%, 600 block 86%. Works the same at every wave; all damage reduction together is capped at 90%.'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:250,  start:0,  step:.002, fx:v=>pc(v),
-   info:'Enemies that hit the perimeter (or get dodged) lose this share of their MAX health. Bosses take a quarter. With the THORNS tattoo the total can reach 100%: one touch and it is gone.'},
+   info:'Every time an enemy hits the perimeter (even when you dodge) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.'},
   {id:'dodge',     cat:'def', name:'DODGE',      icon:'wind',  base:60,  g:1.13, max:120,  start:0,  step:.0025,fx:v=>pc2(v),
-   info:'Chance to completely ignore a hit at the perimeter. The enemy still bounces back and still takes thorns. Caps at 50%.'},
+   info:'Chance to take no damage from a perimeter hit. The enemy still bounces back and still takes thorns. Max 50%.'},
   {id:'lifesteal', cat:'def', name:'LIFESTEAL',  icon:'drop',  base:50,  g:1.12, max:100,  start:0,  step:.001, fx:v=>pc(v),
-   info:'Heals you for this share of the damage you deal. Also works on thorns, but a thorns heal can never refund more than half of the hit you just took.'},
-  {id:'waveHeal',  cat:'def', name:'PATCH UP',   icon:'plus',  base:400, g:1.2,  max:40,   start:0,  step:.005, fx:v=>pc(v),
-   info:'Heals this share of your max health whenever you clear a wave.'},
-  {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'push',  base:20,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance for a bullet to shove the enemy it hits back up the field. Caps at 80%.'},
-  {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'spiral',base:30,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance for a bullet to slow the enemy it hits for 3 seconds. Caps at 80%.'},
-  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'snow',  base:30,  g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(v),
-   info:'How much a slowed enemy loses from its speed (caps at 50%). Slowed enemies also take that much extra bullet damage.'},
+   info:'Heals you for this share of the damage your bullets deal. Thorns damage heals too, but never more than half of the hit you just took.'},
+  {id:'waveHeal',  cat:'def', name:'PATCH UP',   icon:'patch',  base:400, g:1.2,  max:40,   start:0,  step:.005, fx:v=>pc(v),
+   info:'Heals this share of your max health at the end of every wave.'},
+  {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
+   info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
+  {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
+   info:'Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.'},
+  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(v),
+   info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage.'},
   // ── utility
   {id:'coinMult',  cat:'util',name:'COIN BONUS', icon:'coins', base:60,  p:2.6,  max:4500, start:1,  step:.02,  fx:v=>'x'+v.toFixed(2),
-   info:'Multiplies every coin you earn from kills, bosses, bounties and coin drops.'},
-  {id:'lootChance',cat:'util',name:'LOOTER',     icon:'magnet',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
-   info:'Chance that a normal enemy drops coins on death. Starts at 50%, caps at 100%.'},
+   info:'Multiplies every coin you earn: kills, bosses, wave bounty, coin drops and idle income.'},
+  {id:'lootChance',cat:'util',name:'LOOTER',     icon:'loot',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
+   info:'Normal enemies drop coins only some of the time: 50% at first. Each level raises the chance; at 100% every kill pays. Bosses always pay.'},
   {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1)+' basic',
-   info:'A reward for surviving: every time you reach a new wave you get this many basic enemies worth of coins.'},
-  {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'clock', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
-   info:'Speeds up the entire simulation: enemies, bullets, wave timers and drops all run faster. Earns coins faster too. Up to x5.'},
+   info:'A reward for surviving: each time a new wave starts you get coins worth this many basic enemies of that wave.'},
+  {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'ff', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
+   info:'Makes the whole game run faster (enemies, bullets, wave timers), so you earn more per minute. In a run, the speed button switches between x1.0 and the speed you\'ve bought. Max x5.'},
   {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),
-   info:'While the game is closed you keep earning this share of your average coins-per-second in runs. Up to 8 hours away count per day, so playing always earns more than waiting.'},
+   info:'While the game is closed you earn this share of your average coins per second from recent runs. Up to 8 hours count per day; collect it when you come back.'},
 ];
 const PU=Object.fromEntries(PERM_UPGRADES.map(u=>[u.id,u]));
 const permVal=id=>{const u=PU[id];return uVal(u,Math.min(u.max,save.perm[id]||0));};
@@ -1101,45 +1113,45 @@ const PITY=50;                              // an epic is guaranteed within this
 const cdTxt=x=>` · ${x.cd.toFixed(0)}s cooldown`;
 const TAT_TYPES=[
   // ── common: plain stats
-  {id:'attack_power',name:'ATK PWR',  icon:'sword', rar:0,w:10, v:{dmg:[.1,.6]},          desc:x=>`+${pc(x.dmg)} bullet damage`},
-  {id:'attack_speed',name:'ATK SPD',  icon:'bolt',  rar:0,w:10, v:{rate:[.06,.36]},        desc:x=>`+${pc(x.rate)} fire rate`},
+  {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.6]},          desc:x=>`+${pc(x.dmg)} bullet damage`},
+  {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.06,.36]},        desc:x=>`+${pc(x.rate)} fire rate`},
   {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.1,.6]},            desc:x=>`+${pc(x.hp)} max health`},
-  {id:'regen',       name:'REGEN',    icon:'leaf',  rar:0,w:10, v:{pct:[.004,.025]},       desc:x=>`heals ${pc2(x.pct)} of max health per second`},
-  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.05,.3]},          desc:x=>`-${pc(x.red)} perimeter damage (stacks with armor, 90% cap)`},
+  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.004,.025]},       desc:x=>`heals ${pc2(x.pct)} of your max health every second`},
+  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.05,.3]},          desc:x=>`-${pc(x.red)} damage from perimeter hits (adds up with ARMOR, 90% max)`},
   {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.15,1.2]},             desc:x=>`+${pc(x.c)} coins from every source`},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.08,.4],drop:[.15,.6]},
-   desc:x=>`${pc(x.jack)} chance a kill pays x3 coins · field drops appear ${pc(x.drop)} more often`},
+   desc:x=>`${pc(x.jack)} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up ${pc(x.drop)} more often`},
   // ── uncommon: build pieces + defensive actives
-  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>`+${pc(x.c)} crit chance · chance above 80% turns into crit power`},
-  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.5]},           desc:x=>`+x${x.m.toFixed(2)} critical damage`},
-  {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>`+${pc(x.d)} chance to ignore a hit (50% cap)`},
-  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.1,.5]},            desc:x=>`+${pc(x.t)} thorns: a perimeter hit costs the enemy that share of its max health`},
+  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>`+${pc(x.c)} crit chance · above the 80% cap it turns into crit power`},
+  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.5]},           desc:x=>`+x${x.m.toFixed(2)} crit power: critical hits deal that much more`},
+  {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>`+${pc(x.d)} chance to take no damage from a perimeter hit (50% max)`},
+  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.1,.5]},            desc:x=>`+${pc(x.t)} thorns: an enemy that hits the perimeter loses that share of its max health`},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.1,.4],a:[.08,.35],vuln:[.4,1.6]},
    desc:x=>`+${pc(x.c)} slow chance, +${pc(x.a)} slow power · slowed or frozen enemies take +${pc(x.vuln)} bullet damage`},
-  {id:'reach',       name:'REACH',    icon:'radar', rar:1,w:5,  v:{r:[.04,.14]},            desc:x=>`range line moves ${(x.r*100).toFixed(1)} further up the field`},
+  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.04,.14]},            desc:x=>`moves the RANGE line ${(x.r*100).toFixed(1)}% of the screen higher, so you shoot sooner`},
   {id:'stasis',      name:'STASIS',   icon:'stasis',rar:1,w:5,  act:1,v:{dur:[4,8],cd:[40,25]},
-   desc:x=>`ACTIVE · freeze every enemy for ${x.dur.toFixed(1)}s (bosses half)`+cdTxt(x)},
+   desc:x=>`ACTIVE · freezes every enemy for ${x.dur.toFixed(1)}s (bosses for half); frozen enemies still take damage`+cdTxt(x)},
   {id:'mend',        name:'MEND',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.25,.6],cd:[60,35]},
-   desc:x=>`ACTIVE · heal ${pc(x.heal)} of max health`+cdTxt(x)},
+   desc:x=>`ACTIVE · heals ${pc(x.heal)} of your max health at once`+cdTxt(x)},
   // ── rare: mechanics + offensive actives
-  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[10,4]},             desc:x=>`a barrier blocks one perimeter hit completely, recharging every ${x.cd.toFixed(1)}s`},
-  {id:'boss_slayer', name:'SLAYER',   icon:'crown', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>`+${pc(x.b)} damage to bosses`},
-  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>`bullets instantly destroy normal enemies below ${pc(x.k)} health`},
-  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>`+${pc(x.l)} of bullet damage healed`},
-  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>`+${pc(x.p)} pierce chance (75% cap)`},
+  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[10,4]},             desc:x=>`a barrier around the triangle blocks one perimeter hit completely, then recharges in ${x.cd.toFixed(1)}s`},
+  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>`+${pc(x.b)} damage to bosses`},
+  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>`bullets instantly kill normal enemies (not bosses) that drop below ${pc(x.k)} health`},
+  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>`+${pc(x.l)} of the damage your bullets deal heals you`},
+  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>`+${pc(x.p)} chance for a bullet to go through an enemy and keep flying (75% max)`},
   {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[6,18],cd:[50,30]},
-   desc:x=>`ACTIVE · blast every enemy on screen for ${x.m.toFixed(1)}x bullet damage and push them back`+cdTxt(x)},
+   desc:x=>`ACTIVE · blasts every enemy on screen for ${x.m.toFixed(1)}x bullet damage and pushes them back`+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[1.8,3],dur:[8,12],cd:[45,30]},
    desc:x=>`ACTIVE · x${x.m.toFixed(2)} fire rate for ${x.dur.toFixed(1)}s`+cdTxt(x)},
   // ── epic: new mechanics
-  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.25],n:[2,5]},    desc:x=>`+${pc(x.c)} ricochet chance · a ricochet chains up to ${Math.round(x.n)} times`},
-  {id:'shockwave',   name:'SHOCKWAVE',icon:'burst', rar:3,w:1.2,v:{m:[5,20],cd:[20,8]},
-   desc:x=>`below 30% health: a shockwave hits enemies in the lower field for ${x.m.toFixed(1)}x bullet damage and throws them back`+cdTxt(x)},
-  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.8]},             desc:x=>`every shot also fires a twin bullet with ${pc(x.m)} damage at the next target in line`},
+  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.25],n:[2,5]},    desc:x=>`+${pc(x.c)} ricochet chance · a bullet can bounce up to ${Math.round(x.n)} times`},
+  {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[5,20],cd:[20,8]},
+   desc:x=>`when your health drops below 30%: a shockwave hits every enemy in the lower half for ${x.m.toFixed(1)}x bullet damage and throws them back`+cdTxt(x)},
+  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.8]},             desc:x=>`every shot also fires a second bullet at the next enemy in line (or the same one) with ${pc(x.m)} of the damage`},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.8]},
-   desc:x=>`every ${Math.round(x.every)}th shot arcs lightning through ${Math.round(x.n)} enemies for ${pc(x.m)} bullet damage each`},
+   desc:x=>`every ${Math.round(x.every)}th shot also sends lightning through up to ${Math.round(x.n)} enemies, ${pc(x.m)} of bullet damage each`},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[3,8],dur:[10,15],cd:[90,90]},
-   desc:x=>`ACTIVE · kills pay x${x.m.toFixed(1)} coins for ${x.dur.toFixed(1)}s`+cdTxt(x)},
+   desc:x=>`ACTIVE · for ${x.dur.toFixed(1)}s every kill pays x${x.m.toFixed(1)} coins`+cdTxt(x)},
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
 const RAR_NAMES=['COMMON','UNCOMMON','RARE','EPIC'];
@@ -2609,8 +2621,9 @@ $('shopList').addEventListener('click',e=>{
   if(b.dataset.auto){const id=b.dataset.auto;save.autoBoost[id]=!save.autoBoost[id];persist();snd('blip');renderShop();return;}
   if(b.dataset.info){
     const u=PU[b.dataset.info],lv=save.perm[u.id]||0;
-    const per=u.per||('+'+u.fx(u.step).replace(/^\+|^x/,'')+' per level');
-    const meta=`NOW ${u.fx(permVal(u.id))} · ${per.toUpperCase()}`+(u.ms?` · +${Math.round((u.ms[1]-1)*100)}% BONUS EVERY ${u.ms[0]} LEVELS (UNTIL ${u.ms[2]})`:'')+(u.max>=1e5?' · NO LEVEL CAP':` · MAX LV ${u.max}`)
+    // NOW → NEXT LEVEL in the stat's own format (no per-level arithmetic that can read wrong)
+    const nxt=lv<u.max?` · NEXT LV ${u.fx(uVal(u,lv+1))}`:' · MAXED';
+    const meta=`NOW ${u.fx(permVal(u.id))}${nxt}`+(u.ms?` · +${Math.round((u.ms[1]-1)*100)}% BONUS EVERY ${u.ms[0]} LEVELS (UNTIL ${u.ms[2]})`:'')+(u.max>=1e5?' · NO LEVEL CAP':` · MAX LV ${u.max}`)
       +(u.id==='offline'?` · YOUR AVERAGE RATE ${fmtN(save.idleCps||0)} COINS/S`:'');
     showTip(u.name,u.info,meta);
   }else if(b.dataset.tinfo){

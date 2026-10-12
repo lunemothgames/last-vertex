@@ -19,7 +19,12 @@ const css=FONTS.map(([fam,w,file,range])=>{
 
 const src=fs.readFileSync(path.join(root,'src','index.src.html'),'utf8');
 if(!src.includes('/*@@FONTS@@*/'))throw new Error('font placeholder missing in src/index.src.html');
-const out=src.replace('/*@@FONTS@@*/',()=>css);
+// translations: every src/lang/<code>.json is inlined at /*@@LANG@@*/
+const langDir=path.join(root,'src','lang'),langs={};
+if(fs.existsSync(langDir))for(const f of fs.readdirSync(langDir).filter(f=>f.endsWith('.json')))
+  langs[f.slice(0,-5)]=JSON.parse(fs.readFileSync(path.join(langDir,f),'utf8'));
+if(!src.includes('/*@@LANG@@*/'))throw new Error('language placeholder missing in src/index.src.html');
+const out=src.replace('/*@@FONTS@@*/',()=>css).replace('/*@@LANG@@*/',()=>'Object.assign(LANG_DATA,'+JSON.stringify(langs)+');');
 
 const js=out.slice(out.indexOf('<script>')+8,out.lastIndexOf('</script>'));
 try{new Function(js);}catch(e){console.error('SYNTAX ERROR:',e.message);process.exit(1);}

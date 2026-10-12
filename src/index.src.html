@@ -73,7 +73,21 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 
 /* ── main menu ── */
 .topbar{display:flex;gap:8px;align-items:center;padding:14px 14px 0}
-.bugbtn{position:absolute;top:54px;right:14px}   /* under the settings gear: bug report / talk to dev */
+.sidebtn{position:absolute;right:14px}   /* under the settings gear: help, then bug report */
+/* ── help panel: one topic open at a time ── */
+.hrow{border:1px dashed var(--dim)}
+.hrow.open{border-style:solid;border-color:var(--a)}
+.hh{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-family:'VT323',monospace;font-size:21px;letter-spacing:.06em}
+.hh svg.i{width:20px;height:20px}
+.hh span{flex:1}
+.hh em{font-style:normal;color:var(--mute);font-size:22px;text-shadow:none}
+.hb{display:none;padding:0 12px 12px;font-size:12px;line-height:1.6;color:var(--a);text-shadow:none}
+.hrow.open .hb{display:block}
+.hb p{margin:0 0 8px}
+.hb b{color:var(--a2);font-weight:400;font-family:'VT323',monospace;font-size:16px;letter-spacing:.04em}
+.hb svg.i{width:14px;height:14px;vertical-align:-2px}
+.hen{display:grid;grid-template-columns:30px 1fr;gap:8px 10px;align-items:start;margin-top:4px}
+.hen svg{width:26px;height:26px;fill:none;stroke-width:2;stroke-linejoin:miter}
 .topbar .sp{flex:1}
 .plus{color:var(--ink);background:var(--a);text-shadow:none;padding:0 4px;line-height:1.1;font-family:'VT323',monospace;font-size:20px}
 .logo{text-align:center;margin-top:clamp(6px,4vh,30px);line-height:.92;font-family:'VT323',monospace}
@@ -345,6 +359,13 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   background:rgba(var(--bg1-rgb),0.92);padding:10px 12px;font-size:11px;line-height:1.55;color:var(--a2);
   text-shadow:0 0 6px var(--a2);box-shadow:0 0 18px rgba(var(--a2-rgb),0.3)}
 #hint.show{display:block;animation:lin .2s steps(4)}
+/* first-steps coach: the button to press blinks, the note sits right below or above it */
+.coach{outline:2px solid var(--a2);outline-offset:3px;animation:coachP 1s steps(2) infinite!important}
+@keyframes coachP{50%{outline-color:transparent}}
+#coachTip{position:absolute;left:24px;right:24px;z-index:27;display:none;pointer-events:auto;border:1px solid var(--a2);
+  background:var(--bg1);padding:9px 12px;font-size:11.5px;line-height:1.55;color:var(--a2);box-shadow:0 0 18px rgba(var(--a2-rgb),0.3)}
+#coachTip.show{display:block;animation:lin .2s steps(4)}
+#coachTip::before{content:'> ';color:var(--mute)}
 /* ── in-run controls: active tattoo abilities + target priority ── */
 #playUI{pointer-events:none!important;animation:none!important}
 #abil{position:absolute;left:10px;bottom:calc(17% + 8px);display:flex;gap:5px}
@@ -508,6 +529,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-shock" viewBox="0 0 24 24"><path d="M7 20a5 5 0 0 1 10 0M2.5 20a9.5 9.5 0 0 1 19 0"/><path d="M12 3v4M5 6l2.2 2.2M19 6l-2.2 2.2"/></symbol>
 <symbol id="i-kb" viewBox="0 0 24 24"><rect x="7" y="9" width="10" height="9"/><path d="M8 3l4-2 4 2M8 6.5l4-2 4 2"/><path d="M3 22h18"/></symbol>
 <symbol id="i-shatter" viewBox="0 0 24 24"><path d="M12 3l5 7-5 4-5-4z"/><path d="M7 10l-3 1M17 10l3 1M12 14v3"/><path d="M5 16l-2 3M19 16l2 3M9 19l-1 3M15 19l1 3"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.9 2.9 0 1 1 4.2 2.6c-.9.5-1.4 1.1-1.4 2.1v.6"/><path d="M12 17.4v.2"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8.5 8.5 0 1 1 9 4a7 7 0 0 0 11 11z"/></symbol>
 <symbol id="i-aegis" viewBox="0 0 24 24"><path d="M12 6l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V8z"/><circle cx="12" cy="12" r="10.5" stroke-dasharray="3 2.5"/></symbol>
 </defs>
@@ -536,7 +558,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button class="adbtn" id="mAd"><svg class="i"><use href="#i-tv"/></svg><span id="mAdTxt">+5</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
-      <button class="icon-btn bugbtn" id="mBug" aria-label="Bug report / talk to dev"><svg class="i"><use href="#i-bug"/></svg></button>
+      <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
+      <button class="icon-btn sidebtn" id="mBug" aria-label="Bug report / talk to dev" style="top:94px"><svg class="i"><use href="#i-bug"/></svg></button>
     </div>
     <div class="logo"><span class="l1">LAST</span><span class="l2">VERTEX</span><span class="rule">════════════════</span></div>
     <div class="hero">
@@ -650,6 +673,15 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="scroll"><div class="note" id="qTimers"></div><div class="list" id="questList"></div></div>
   </div>
 
+  <!-- HELP -->
+  <div class="panel" id="helpPanel">
+    <div class="ph">
+      <button class="back" id="helpBack" aria-label="Back"><svg class="i"><use href="#i-back"/></svg></button>
+      <h2>HELP</h2>
+    </div>
+    <div class="scroll"><div class="note">&gt; TAP A TOPIC TO READ IT</div><div class="list" id="helpList"></div></div>
+  </div>
+
   <!-- SETTINGS -->  <div class="panel" id="setPanel">
     <div class="ph">
       <button class="back" id="setBack" aria-label="Back"><svg class="i"><use href="#i-back"/></svg></button>
@@ -660,6 +692,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <div class="sc"><input type="range" id="sfxVol" min="0" max="100"><button class="tog" id="sfxToggle">ON</button></div></div>
       <div class="srow"><div class="sl"><span>MUSIC</span><b id="musVal">55</b></div>
         <div class="sc"><input type="range" id="musVol" min="0" max="100"><button class="tog" id="musToggle">ON</button></div></div>
+      <div class="srow"><div class="sl"><span>LANGUAGE</span></div>
+        <div class="fxseg" id="langSeg"><button data-lang="en">EN</button><button data-lang="tr">TR</button><button data-lang="es">ES</button><button data-lang="pt">PT</button></div></div>
       <div class="srow"><div class="sl"><span>FX QUALITY</span></div>
         <div class="sc"><span class="sdesc" id="fxDesc"></span></div>
         <div class="fxseg" id="fxSeg"><button data-fx="high">HIGH</button><button data-fx="mid">MID</button><button data-fx="low">LOW</button></div></div>
@@ -684,6 +718,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   </div>
 
   <div id="hint"></div>
+  <div id="coachTip"></div>
   <div id="tipWrap"><div id="tip"><span class="x">[X]</span><h4 id="tipTitle"></h4><p id="tipBody"></p><p class="tm" id="tipMeta"></p></div></div>
   <div class="ovl" id="weekUI"><div class="mbox"><h4>WEEKLY OP</h4><p id="wkMeta"></p><div id="wkMuts"></div><div id="wkRew" style="margin:8px 0 12px"></div>
     <div class="row2"><button class="btn" id="wkClose">CLOSE</button><button class="btn pri" id="wkStart">START</button></div></div></div>
@@ -710,7 +745,7 @@ function defaultSave(){return{
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
   temp:{},autoBoost:{},tatCol:{},tatSlots:1,equipped:[],pity:0,
-  settings:{sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
+  settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
   lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],
@@ -859,6 +894,19 @@ const LINE_FRAC=.83,TRI_FRAC=.90;
 const FONT='"VT323",monospace';
 const fnt=px=>`${Math.round(px)}px ${FONT}`;
 
+// ── LANGUAGE ─────────────────────────────────────────────────────────────────
+// Every player-facing text goes through T('English text', args…). Translations live in src/lang/<code>.json
+// (keyed by the English text) and are inlined by tools/build.js; anything missing falls back to English.
+// {0}, {1}… in a text are replaced by the args. Static HTML text is translated by applyLang().
+const LANG_DATA={};/*@@LANG@@*/
+const LANG_NAMES={en:'EN',tr:'TR',es:'ES',pt:'PT'};
+let LANG='en';
+function T(s,...a){const d=LANG_DATA[LANG],r=(d&&d[s])||s;return a.length?r.replace(/\{(\d)\}/g,(m,i)=>a[i]):r;}
+// first start: the phone's language if we have it, else English (sim/balance tools have no settings → English)
+if(typeof save!=='undefined'&&save.settings){
+  if(!LANG_NAMES[save.settings.lang]){const n=(navigator.language||'en').slice(0,2).toLowerCase();save.settings.lang=LANG_NAMES[n]?n:'en';}
+  LANG=save.settings.lang;if(typeof document!=='undefined')document.documentElement.lang=LANG;
+}
 const SUFFIX=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qad','Qid','Sxd','Spd','Ocd','Nod','Vg'];
 // 3 significant digits + suffix: 999 · 1.23K · 45.6M · 789B · 1.00Qa … then 1.23e66
 function fmtN(n){
@@ -2644,6 +2692,7 @@ function renderShop(){
   }
   $('shopList').innerHTML=html;
   // lines too long for the row scroll back and forth (marquee) instead of being cut off
+  setTimeout(()=>coachCheck('shop'),50);
   $('shopList').querySelectorAll('.mqw').forEach(w=>{const sp=w.firstElementChild,d=sp.scrollWidth-w.clientWidth;
     if(d>2){sp.style.setProperty('--mq',-d+'px');sp.style.animationDuration=(3+d/18).toFixed(1)+'s';sp.classList.add('mq');}});
 }
@@ -2836,6 +2885,7 @@ function renderTattoos(){
     inv.appendChild(d);
   });
   $('colCount').textContent=`${found}/${TAT_TYPES.length}`;
+  setTimeout(()=>coachCheck('tat'),50);
 }
 
 // ── QUESTS ───────────────────────────────────────────────────────────────────
@@ -3106,17 +3156,12 @@ function achCheck(){
 
 // ── FIRST-RUN HINTS ──────────────────────────────────────────────────────────
 const HINTS={
-  menu:'> YOUR TRIANGLE MOVES AND SHOOTS AUTOMATICALLY. SURVIVE WAVES, EARN COINS, GET STRONGER.',
   start:'> YOUR TRIANGLE FIRES BY ITSELF AT ENEMIES PAST THE DOTTED RANGE LINE.',
   breach:'> ENEMIES THAT TOUCH THE RED PERIMETER DAMAGE YOU. THEY BOUNCE BACK AND RETURN.',
   drops:'> TAP FLOATING COINS AND GEMS TO COLLECT THEM.',
   hud:'> DOUBLE-TAP THE FIELD TO HIDE THE HUD. DOUBLE-TAP AGAIN TO BRING IT BACK.',
-  shop:'> SPEND COINS IN THE SHOP TO GET STRONGER. TAP AN ICON TO SEE HOW IT WORKS.',
-  tattoo:'> YOU HAVE ENOUGH GEMS TO SUMMON A TATTOO.',
   target:'> THE TARGET BUTTON (TOP RIGHT) PICKS WHO YOU SHOOT FIRST: FRONT, STRONGEST OR WEAKEST.',
   active:'> ACTIVE TATTOOS GIVE YOU A BUTTON ABOVE THE PERIMETER. TAP IT WHEN IT GLOWS (KEYS 1-5).',
-  quests:'> A QUEST IS READY. OPEN QUESTS TO CLAIM GEMS AND COINS.',
-  tier:'> NEW TIER UNLOCKED. PICK IT WITH THE ARROWS ABOVE PLAY.',
 };
 let hintQueue=[],hintTO=null;
 function hint(id){
@@ -3128,17 +3173,73 @@ function hint(id){
 function nextHint(){
   const id=hintQueue.shift(),el=$('hint');
   if(!id){el.classList.remove('show');hintTO=null;return;}
-  el.textContent=HINTS[id];el.classList.add('show');snd('blip');
+  el.textContent=T(HINTS[id]);el.classList.add('show');snd('blip');
   hintTO=setTimeout(nextHint,6500);
 }
 $('hint').addEventListener('click',()=>{clearTimeout(hintTO);nextHint();});
-function menuHints(){
-  if(!save.life||save.life.runs===0)hint('menu');
-  if(save.life&&save.life.runs>0)hint('shop');
-  if(save.gems>=ECO.pullCost)hint('tattoo');
-  if(save.quests.some(questDone))hint('quests');
-  if(maxUnlockedTier()>1)hint('tier');
+// ── FIRST STEPS COACH ──
+// One step at a time: the button to press blinks and a note next to it says why. Pressing it (or the note)
+// finishes the step; every step is shown once. `where` = which screen it lives on.
+const COACH=[
+  {id:'play',  where:'menu',sel:'#mPlay', when:()=>LIFE().runs===0,
+   text:'Tap PLAY to start. Your triangle aims and shoots on its own; you only decide how it grows.'},
+  {id:'shop',  where:'menu',sel:'#mShop', when:()=>LIFE().runs>=1&&LIFE().levels===0,
+   text:'You earned coins! Open the SHOP to get stronger.'},
+  {id:'buy',   where:'shop',sel:'[data-perm=damage]', when:()=>LIFE().levels===0,
+   text:'Buy DAMAGE: every level makes each bullet hit harder. Tap any icon to see what an upgrade does.'},
+  {id:'again', where:'menu',sel:'#mPlay', when:()=>LIFE().levels>=1&&LIFE().runs<=2,
+   text:'Now play again. Each run you get a little further.'},
+  {id:'help',  where:'menu',sel:'#mHelp', when:()=>LIFE().runs>=2,
+   text:'Wondering how something works? The ? button explains every part of the game.'},
+  {id:'tattoo',where:'menu',sel:'#mTat',  when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,
+   text:'You have enough gems for a TATTOO. Tattoos change how you play.'},
+  {id:'summon',where:'tat', sel:'#gachaSingle', when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,
+   text:'Summon one tattoo.'},
+  {id:'equip', where:'tat', sel:'#invGrid .ctile:not(.locked)', when:()=>LIFE().pulls>0&&!save.equipped.length&&TAT_TYPES.some(t=>tatOf(t.id).lv),
+   text:'HOLD a tattoo to put it in your slot. Tap it to see what it does.'},
+  {id:'quests',where:'menu',sel:'#mQuest',when:()=>save.quests.some(questDone),
+   text:'A quest is done. Open QUESTS and claim its reward.'},
+  {id:'tier',  where:'menu',sel:'#tNext', when:()=>maxUnlockedTier()>1&&save.tier===1,
+   text:'TIER 2 is open: stronger enemies, more coins. Switch tiers with these arrows.'},
+  {id:'weekly',where:'menu',sel:'#mWeek', when:()=>LIFE().runs>=5,
+   text:'Try the WEEKLY OP: two special rules each week and extra gems.'},
+];
+let coachCur=null,coachEl=null;
+function coachClear(done){
+  if(coachEl)coachEl.classList.remove('coach');
+  if(done&&coachCur){if(!save.coach)save.coach={};save.coach[coachCur.id]=1;persist();}
+  coachCur=coachEl=null;$('coachTip').classList.remove('show');
 }
+function coachCheck(where){
+  if(!save.coach)save.coach={};
+  // the current step's button got covered (a panel opened) → hide it for now, it comes back later
+  if(coachCur){if(coachEl&&coachEl.isConnected&&coachEl.offsetParent&&!coverOf(coachEl))return;coachClear(false);}
+  if(state!==ST.MENU)return;
+  for(const c of COACH){
+    if(c.where!==where||save.coach[c.id]||!c.when())continue;
+    const el=document.querySelector(c.sel);if(!el||!el.offsetParent||coverOf(el))continue;
+    coachCur=c;coachEl=el;el.classList.add('coach');placeCoach(el,T(c.text));return;
+  }
+}
+// is the element under an open panel / popup it doesn't belong to?
+function coverOf(el){
+  const top=[...document.querySelectorAll('.panel.open,.ovl.show,#modal.show,.gacha-overlay.show,#tipWrap.show')].pop();
+  return top&&!top.contains(el);
+}
+function placeCoach(el,text){
+  const tip=$('coachTip'),u=ui.getBoundingClientRect(),z=u.width/320,r=el.getBoundingClientRect();
+  tip.textContent=text;tip.classList.add('show');
+  const top=(r.top-u.top)/z,bot=(r.bottom-u.top)/z,h=tip.offsetHeight,H=u.height/z;
+  // below the button if there is room, otherwise above it
+  const y=bot+10+h<H-8?bot+10:Math.max(8,top-10-h);
+  tip.style.top=y+'px';tip.classList.toggle('up',y<top);
+}
+document.addEventListener('click',e=>{
+  if(!coachCur)return;
+  if(coachEl&&coachEl.contains(e.target)){coachClear(true);return;}
+  if($('coachTip').contains(e.target))coachClear(true);
+},true);
+function menuHints(){coachCheck('menu');}
 
 // ── LOW FX ───────────────────────────────────────────────────────────────────
 // Glow (shadowBlur) is the most expensive canvas effect; LOW FX turns it off globally.
@@ -3152,6 +3253,95 @@ function applyFx(){
   resize();          // canvas resolution depends on the level (also rebuilds the stars)
 }
 
+// ── HELP ─────────────────────────────────────────────────────────────────────
+// enemy shapes for the help page (same outlines as in the game)
+const HELP_SHAPES={
+  basic:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',runner:'M12 1l7 11-7 11-7-11z',tank:'M12 2l9 5v10l-9 5-9-5V7z',
+  splitter:'M3 3h6l3 3 3-3h6v18h-6l-3-3-3 3H3z',warden:'M12 2l10 7-4 12H6L2 9z',mender:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
+  blinker:'M4 3h16l-7 9 7 9H4l7-9z',elite:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',boss:'M12 1l2 4 4-2-1 4 4 1-3 3 3 3-4 1 1 4-4-2-2 4-2-4-4 2 1-4-4-1 3-3-3-3 4-1-1-4 4 2z'};
+function enemyRow(key,col,name,text){
+  const dash=key==='elite'?' stroke-dasharray="3 2"':'';
+  return `<svg viewBox="0 0 24 24" style="stroke:${col}"><path d="${HELP_SHAPES[key]}"${dash}/></svg><div><b>${name}</b><br>${text}</div>`;
+}
+function rateLine(){
+  const tot=TAT_TYPES.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];TAT_TYPES.forEach(t=>by[t.rar]+=t.w);
+  return RAR_NAMES.map((n,i)=>`${T(n)} ${(by[i]/tot*100).toFixed(1)}%`).join(' · ');
+}
+// topics: [id, icon, title, () => HTML]
+const HELP_TOPICS=[
+  ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
+    <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
+  ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
+    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = most health, WEAK = least health. Bullets follow their target.',I('target'))}</p>`],
+  ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that calls in shards and speeds up below half health.')}</p>
+    <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>`],
+  ['enemies','boss','ENEMIES',()=>{const r=C.r;return `<div class="hen">`+[
+    enemyRow('basic',r[1],T('BASIC'),T('The standard enemy.')),
+    enemyRow('runner',r[2],T('RUNNER'),T('Fast but fragile.')),
+    enemyRow('tank',r[3],T('TANK'),T('Slow, lots of health, hits hard.')),
+    enemyRow('splitter',r[2],T('SPLITTER'),T('Breaks into two small SHARDS when it dies.')),
+    enemyRow('warden',r[2],T('WARDEN'),T('From tier 5. A shield soaks bullets until it breaks; thorns and blasts go around it.')),
+    enemyRow('mender',r[1],T('MENDER'),T('From tier 8. Heals the enemies around it, so take it out first.')),
+    enemyRow('blinker',r[3],T('BLINKER'),T('From tier 11. Jumps forward every few seconds.')),
+    enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),
+    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave. Huge health, calls in shards, enrages below half health.')),
+  ].join('')+`</div>`;}],
+  ['damage','shield','TAKING DAMAGE',()=>`<p>${T('Each enemy that touches the perimeter deals its attack as damage, then bounces back and comes again.')}</p>
+    <p>${T('MAX HP and REGEN keep you standing, ARMOR and DODGE soften or skip hits, THORNS hurts whoever hits you and LIFESTEAL heals you as you deal damage.')}</p>`],
+  ['money','coins','COINS & GEMS',()=>`<p>${T('{0} COINS come from kills, bosses, wave bounty, coin drops, quests and idle income. Spend them in the SHOP.',I('coin'))}</p>
+    <p>${T('{0} GEMS come from quests, achievements, the weekly op, ads and gem drops. Spend them on tattoos, tattoo slots and themes.',I('gem'))}</p>
+    <p>${T('Coins and gems sometimes float on the field during a run: tap them to collect.')}</p>`],
+  ['shop','bag','SHOP',()=>`<p>${T('PERMANENT upgrades last forever, sorted into ATTACK, DEFENSE and UTILITY. Tap an icon to see exactly what it does; x1 / x5 / x10 / MAX choose how many levels you buy at once.')}</p>
+    <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
+  ['tattoos','spark','TATTOOS',()=>`<p>${T('Summon tattoos with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
+    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 summons.')}</p>
+    <p>${T('Chance per summon: {0}',rateLine())}</p>`],
+  ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and a weekly quest every day; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
+    <p>${T('Achievements reward milestones once each.')}</p>`],
+  ['weekly','flag','WEEKLY OP',()=>`<p>${T('A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.')}</p>`],
+  ['stars','star','MASTERY STARS',()=>`<p>${T('Reach waves 30, 50 and 75 in a tier to earn its three stars. Every star gives +1.5% damage, +1.5% max health and +1% coins forever. Tap the tier name on the main screen to see them.')}</p>`],
+  ['controls','ff','SPEED & CONTROLS',()=>`<p>${T('The {0} button switches the game speed, up to the GAME SPEED you bought.',I('ff'))}</p>
+    <p>${T('Double-tap the field to hide the HUD. Pause with the button at the top right or your phone\'s back button.')}</p>`],
+  ['idle','moon','IDLE INCOME',()=>`<p>${T('While the game is closed you keep earning a share of your average income from recent runs (IDLE INCOME in the shop raises it). Up to 8 hours a day count; collect it when you come back.')}</p>`],
+  ['saves','gear','SETTINGS & SAVES',()=>`<p>${T('FX QUALITY: pick MID or LOW if the game feels slow on your phone.')}</p>
+    <p>${T('Your progress is stored only on this phone. Use EXPORT SAVE to copy a backup code and IMPORT SAVE to restore it, on this or another device. Gift codes go in REDEEM GIFT CODE.')}</p>`],
+];
+let helpOpen='';
+function renderHelp(){
+  $('helpList').innerHTML=HELP_TOPICS.map(([id,ic,title,body])=>{const o=id===helpOpen;
+    return `<div class="hrow${o?' open':''}" data-h="${id}"><div class="hh">${I(ic)}<span>${T(title)}</span><em>${o?'−':'+'}</em></div>${o?`<div class="hb">${body()}</div>`:''}</div>`;}).join('');
+}
+function openHelp(topic){snd('click');helpOpen=topic||'';renderHelp();$('helpPanel').classList.add('open');$('helpPanel').querySelector('.scroll').scrollTop=0;}
+function closeHelp(){snd('click');$('helpPanel').classList.remove('open');}
+$('mHelp').addEventListener('click',()=>openHelp());
+$('helpBack').addEventListener('click',closeHelp);
+$('helpList').addEventListener('click',e=>{
+  const h=e.target.closest('.hh');if(!h)return;
+  const id=h.parentElement.dataset.h;helpOpen=helpOpen===id?'':id;snd('blip');renderHelp();
+  if(helpOpen){const row=$('helpList').querySelector('.hrow.open');row.scrollIntoView({block:'nearest'});}
+});
+
+// ── STATIC TEXT TRANSLATION ──
+// Text written straight into the HTML is translated in place; the English original is remembered per node.
+const _origText=new WeakMap();
+function applyLang(root=document.getElementById('wrap')){
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+  while((n=w.nextNode())){
+    if(!_origText.has(n)){if(!/[A-Za-z]{2}/.test(n.nodeValue))continue;_origText.set(n,n.nodeValue);}
+    const o=_origText.get(n),t=o.trim(),tr=T(t);
+    n.nodeValue=tr===t?o:o.replace(t,tr);
+  }
+}
+function setLang(code){
+  if(!LANG_NAMES[code]||code===LANG)return;
+  LANG=save.settings.lang=code;document.documentElement.lang=code;persist();
+  applyLang();renderSettings();renderMenu();
+  if($('shopPanel').classList.contains('open'))renderShop();
+  if($('tatPanel').classList.contains('open'))renderTattoos();
+  if($('questPanel').classList.contains('open'))renderQuests();
+  if($('helpPanel')&&$('helpPanel').classList.contains('open'))renderHelp();
+}
+
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function rangeFill(el){el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%');}
 function renderSettings(){
@@ -3162,7 +3352,8 @@ function renderSettings(){
   const tg=(id,on)=>{$(id).className='tog'+(on?' on':'');$(id).textContent=on?'ON':'OFF';};
   tg('sfxToggle',s.sfxOn);tg('musToggle',s.musOn);
   $('fxSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.fx===s.fx));
-  $('fxDesc').textContent=FX_DESC[s.fx]||'';
+  $('fxDesc').textContent=T(FX_DESC[s.fx]||'');
+  $('langSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
   tg('dmgToggle',s.showDmgNums!==false);tg('statOvToggle',!!s.statOverlay);
   const th=THEMES.find(x=>x.id===save.theme)||THEMES[0];
   $('themeName').textContent=th.name;
@@ -3175,6 +3366,7 @@ $('sfxVol').addEventListener('input',e=>{save.settings.sfxVol=+e.target.value;pe
 $('sfxVol').addEventListener('change',()=>snd('blip'));
 $('musVol').addEventListener('input',e=>{save.settings.musVol=+e.target.value;persist();updateMusicVolume();renderSettings();});
 $('sfxToggle').addEventListener('click',()=>{save.settings.sfxOn=!save.settings.sfxOn;persist();snd('click');renderSettings();});
+$('langSeg').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b){snd('click');setLang(b.dataset.lang);}});
 $('fxSeg').addEventListener('click',e=>{
   const b=e.target.closest('[data-fx]');if(!b||b.dataset.fx===save.settings.fx)return;
   save.settings.fx=b.dataset.fx;persist();applyFx();snd('click');renderSettings();
@@ -3283,6 +3475,7 @@ function handleBack(){
   if(on('weekUI')){$('wkClose').click();return true;}
   if(on('fbUI')){$('fbClose').click();return true;}
   if(on('gachaOverlay')){$('gachaCollect').click();return true;}
+  if(on('helpPanel','open')){closeHelp();return true;}
   if(on('setPanel','open')){closeSettings();return true;}
   if(on('shopPanel','open')){closeShop();return true;}
   if(on('tatPanel','open')){closeTattoos();return true;}
@@ -3316,7 +3509,7 @@ window.addEventListener('popstate',()=>{
   setTimeout(finish,1250);
   el.addEventListener('pointerdown',finish);
 })();
-applyFx();achCheck();
+applyLang();applyFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 requestAnimationFrame(loop);

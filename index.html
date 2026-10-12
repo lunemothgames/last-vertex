@@ -379,13 +379,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .fxmid #ui,.fxmid #ui *{text-shadow:none!important}
 .fxmid #crt{background:none}
 .fxmid .spin,.fxmid .look,.fxmid .eye,.fxmid .bob{animation:none}
-/* FX QUALITY · LOW (body.fxmid.fxlow): potato mode — flat colours, no overlays, shadows or decorative motion */
-.fxlow #crt{display:none}
-.fxlow *,.fxlow *::before,.fxlow *::after{animation:none!important;transition:none!important;box-shadow:none!important}
-.fxlow .gc{opacity:1}
-.fxlow .panel,.fxlow #boot{background:var(--bg1)}
-.fxlow svg *{filter:none!important}
-.fxlow canvas{image-rendering:pixelated}
+/* FX QUALITY · LOW looks like MID; its savings are in the canvas (30 fps, fewer particles and stars) */
 .fxseg{display:flex;gap:6px;margin-top:8px}
 .fxseg button{flex:1;height:32px;border:1px solid var(--dim);color:var(--mute);font-family:'VT323',monospace;font-size:20px;letter-spacing:.08em;text-shadow:none}
 .fxseg button.on{background:var(--a);border-color:var(--a);color:var(--ink)}
@@ -405,7 +399,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tlv td.cp{color:var(--mute);font-size:14px;text-shadow:none}
 .tlv tr.past td{color:var(--mute);text-shadow:none}
 .tlv tr.now td{background:rgba(var(--rc-rgb,var(--a-rgb)),0.18);color:var(--a2);text-shadow:0 0 6px var(--glow)}
-.tlv tr.now td:first-child::before{content:'▶ '}
+.tlv tr.now td:first-child::before{content:'> '}   /* plain '>' — Android draws ▶ as an emoji */
 .tlv tr.next td.cp{color:var(--a2)}
 .tip-breakdown{width:100%;border-collapse:collapse;margin-top:4px}
 .tip-breakdown td{padding:4px 0;font-size:12px;line-height:1.4}
@@ -432,6 +426,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   background:var(--bg1);font-family:'VT323',monospace;font-size:22px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s}
 #toast.show{opacity:1}
 #toast.hot{border-color:var(--hot);color:var(--hot)}
+#toast svg.i{width:18px;height:18px;vertical-align:-3px}
+.fbinfo{font-size:10px;line-height:1.6;color:var(--a);border:1px dashed var(--dim);padding:8px;margin-bottom:12px;word-break:break-word;user-select:text;-webkit-user-select:text}
 </style>
 </head>
 <body>
@@ -640,10 +636,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="srow"><div class="sl"><span>STAT OVERLAY</span></div>
         <div class="sc"><span class="sdesc">In-game panel: kills/min, coins/min, enemies.</span><button class="tog" id="statOvToggle">OFF</button></div></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
+      <div class="srow link" id="setFeedback"><div class="sl"><span>BUG REPORT</span><b>TALK TO DEV</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setDevTat" style="display:none"><div class="sl"><span>DEV</span><b>+1 OF EVERY TATTOO</b></div><svg class="i"><use href="#i-spark"/></svg></div>
-      <div class="ver">LAST VERTEX v0.6 // SYS OK</div>
+      <div class="ver" id="verTxt">LAST VERTEX // SYS OK</div>
     </div>
   </div>
 
@@ -658,8 +655,12 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   <div id="tipWrap"><div id="tip"><span class="x">[X]</span><h4 id="tipTitle"></h4><p id="tipBody"></p><p class="tm" id="tipMeta"></p></div></div>
   <div class="ovl" id="weekUI"><div class="mbox"><h4>WEEKLY OP</h4><p id="wkMeta"></p><div id="wkMuts"></div><div id="wkRew" style="margin:8px 0 12px"></div>
     <div class="row2"><button class="btn" id="wkClose">CLOSE</button><button class="btn pri" id="wkStart">START</button></div></div></div>
+  <div class="ovl" id="fbUI"><div class="mbox"><h4>TALK TO THE DEV</h4>
+    <p>Found a bug or have an idea? The form opens in your browser. This info about your game is added automatically so bugs are easier to find:</p>
+    <div class="fbinfo" id="fbInfo"></div>
+    <div class="row2"><button class="btn" id="fbClose">CLOSE</button><button class="btn pri" id="fbOpen">OPEN FORM</button></div></div></div>
   <div class="ovl" id="away"><div class="mbox"><h4>WHILE YOU WERE AWAY</h4><p id="awTxt"></p><div class="awc"><svg class="i"><use href="#i-coin"/></svg><span id="awCoins">0</span></div>
-    <div class="row2"><button class="btn" id="awAd">AD x2</button><button class="btn pri" id="awGet">COLLECT</button></div></div></div>
+    <div class="row2"><button class="btn" id="awAd"><svg class="i"><use href="#i-tv"/></svg>x2</button><button class="btn pri" id="awGet">COLLECT</button></div></div></div>
   <div id="modal"><div class="mbox"><h4 id="mdTitle"></h4><p id="mdBody"></p><textarea id="mdText" spellcheck="false"></textarea><div class="row2"><button class="btn" id="mdClose">CLOSE</button><button class="btn pri" id="mdAct">OK</button></div></div></div>
   <div id="toast"></div>
 </div>
@@ -702,14 +703,16 @@ try{
     if(!save.bestWave)save.bestWave=(save.lastRun&&save.lastRun.wave)||0;
   }
 }catch(e){}
+// idle income now uses an average rate; seed it from the old best rate
+if(!save.idleCps&&save.bestCps)save.idleCps=save.bestCps*.6;
+delete save.bestCps;
 // FX QUALITY: high (everything) · mid (no glow / flicker, fewer particles) · low (potato phones)
 // older saves had a LOW FX on/off switch: on → mid, off → high
 if('lowFx' in save.settings){save.settings.fx=save.settings.lowFx?'mid':'high';delete save.settings.lowFx;}
 if(!['high','mid','low'].includes(save.settings.fx))save.settings.fx='high';
 const fxMid=()=>save.settings.fx!=='high',fxLow=()=>save.settings.fx==='low';
-const RES_LOW=.7,renderScale=()=>fxLow()?RES_LOW:1;
 const FX_DESC={high:'Full glow, CRT scanlines, flicker and particles.',mid:'No glow or flicker, fewer particles.',
-  low:'For weak phones: flat colours, no particles or scanlines, lower resolution, 30 FPS.'};
+  low:'Looks like MID at 30 FPS with fewer particles. Easier on weak phones and battery.'};
 // when the game was last open (read before anything saves again) — used for idle income
 const bootLastSeen=save.lastSeen||0,bootTimeHigh=save.timeHigh||0;
 // saveLocked: set right before a reload that must keep what is in storage (import), so pagehide can't overwrite it
@@ -741,17 +744,17 @@ const withTimeout=(pr,ms)=>Promise.race([pr,new Promise(r=>setTimeout(()=>r(fals
 // c: [main, bright, dim, bg1, bg2, hot, ink]   r: rarity / tier colors
 const THEMES=[
   {id:'ice',      name:'ICE BLUE',    note:'cold vector glow',     price:0, c:['#9fd8ff','#f0f9ff','#28506e','#02050b','#0a1729','#ff7aa2','#03101c'],r:['#4a6a88','#bfe8ff','#7affd9','#ff7aa2']},
-  {id:'amber',    name:'AMBER',       note:'warm DOS terminal',    price:300,c:['#ffb43a','#ffe0a0','#6e4c18','#0b0804','#22180a','#ff5a3a','#0b0804'],r:['#8a6a35','#ffd27a','#ff9a2e','#ff4a2a']},
-  {id:'ambercyan',name:'AMBER × CYAN',note:'dual tone',            price:700,c:['#ffb43a','#7ff0ff','#6e4c18','#0b0804','#1f1609','#3af0ff','#0b0804'],r:['#8a6a35','#7ff0ff','#ffb43a','#ff4a6a']},
-  {id:'green',    name:'GREEN P1',    note:'classic terminal',     price:300,c:['#3dff7a','#d4ffe0','#1d6a37','#020a05','#0b2314','#ffe24a','#03140a'],r:['#2f8a4c','#8dffb0','#ffe24a','#ff6b4a']},
-  {id:'teal',     name:'CYAN TEAL',   note:'deep sea',             price:300,c:['#33f0d0','#d8fff6','#166a5c','#020a09','#082420','#ff8a4a','#03140f'],r:['#2f8a7a','#a8fff0','#ffd84a','#ff6a9a']},
-  {id:'norton',   name:'NORTON BLUE', note:'old DOS blue screen',  price:700,c:['#7fe6ff','#ffe97a','#3a66b8','#061340','#0e2470','#ffe14a','#061340'],r:['#6a8ac8','#7fe6ff','#ffe97a','#ff7aa8']},
-  {id:'violet',   name:'VIOLET',      note:'midnight purple',      price:300,c:['#b48cff','#efe6ff','#4a3478','#06040c','#160f2a','#ffc04a','#0c0718'],r:['#6a5a8a','#8fd8ff','#ffc04a','#ff6aa0']},
-  {id:'pink',     name:'HOT PINK',    note:'synth night',          price:300,c:['#ff5fd2','#ffd6f4','#6e2459','#0b0410','#22092a','#5ff2ff','#14051a'],r:['#8a4a7a','#5ff2ff','#ffe14a','#ff5f5f']},
-  {id:'sunset',   name:'SUNSET',      note:'peach & gold on purple',price:700,c:['#ff8a5a','#ffd84a','#6a2e3a','#0d0512','#2a0f2a','#ff4a7a','#12060f'],r:['#8a5060','#ffb08a','#ffd84a','#ff4a7a']},
-  {id:'red',      name:'RED ALERT',   note:'submarine alarm',      price:300,c:['#ff4a3a','#ffd0c8','#6e1e16','#0b0303','#220807','#ffd84a','#140404'],r:['#8a3a32','#ffb0a0','#ffd84a','#ffffff']},
-  {id:'lime',     name:'ACID LIME',   note:'toxic',                price:300,c:['#c8ff3a','#f4ffd0','#4e6a16','#060902','#141f06','#ff4a8a','#0a1002'],r:['#6e8a32','#e8ff9a','#3af0ff','#ff4a8a']},
-  {id:'paper',    name:'PAPER WHITE', note:'white phosphor',       price:450,c:['#e9e4d4','#ffffff','#5d594d','#080807','#1a1915','#ff6a4a','#0a0a08'],r:['#7d786a','#bfe3ff','#ffd26a','#ff6a8a']},
+  {id:'amber',    name:'AMBER',       note:'warm DOS terminal',    price:100,c:['#ffb43a','#ffe0a0','#6e4c18','#0b0804','#22180a','#ff5a3a','#0b0804'],r:['#8a6a35','#ffd27a','#ff9a2e','#ff4a2a']},
+  {id:'ambercyan',name:'AMBER × CYAN',note:'dual tone',            price:200,c:['#ffb43a','#7ff0ff','#6e4c18','#0b0804','#1f1609','#3af0ff','#0b0804'],r:['#8a6a35','#7ff0ff','#ffb43a','#ff4a6a']},
+  {id:'green',    name:'GREEN P1',    note:'classic terminal',     price:100,c:['#3dff7a','#d4ffe0','#1d6a37','#020a05','#0b2314','#ffe24a','#03140a'],r:['#2f8a4c','#8dffb0','#ffe24a','#ff6b4a']},
+  {id:'teal',     name:'CYAN TEAL',   note:'deep sea',             price:100,c:['#33f0d0','#d8fff6','#166a5c','#020a09','#082420','#ff8a4a','#03140f'],r:['#2f8a7a','#a8fff0','#ffd84a','#ff6a9a']},
+  {id:'norton',   name:'NORTON BLUE', note:'old DOS blue screen',  price:200,c:['#7fe6ff','#ffe97a','#3a66b8','#061340','#0e2470','#ffe14a','#061340'],r:['#6a8ac8','#7fe6ff','#ffe97a','#ff7aa8']},
+  {id:'violet',   name:'VIOLET',      note:'midnight purple',      price:100,c:['#b48cff','#efe6ff','#4a3478','#06040c','#160f2a','#ffc04a','#0c0718'],r:['#6a5a8a','#8fd8ff','#ffc04a','#ff6aa0']},
+  {id:'pink',     name:'HOT PINK',    note:'synth night',          price:100,c:['#ff5fd2','#ffd6f4','#6e2459','#0b0410','#22092a','#5ff2ff','#14051a'],r:['#8a4a7a','#5ff2ff','#ffe14a','#ff5f5f']},
+  {id:'sunset',   name:'SUNSET',      note:'peach & gold on purple',price:200,c:['#ff8a5a','#ffd84a','#6a2e3a','#0d0512','#2a0f2a','#ff4a7a','#12060f'],r:['#8a5060','#ffb08a','#ffd84a','#ff4a7a']},
+  {id:'red',      name:'RED ALERT',   note:'submarine alarm',      price:100,c:['#ff4a3a','#ffd0c8','#6e1e16','#0b0303','#220807','#ffd84a','#140404'],r:['#8a3a32','#ffb0a0','#ffd84a','#ffffff']},
+  {id:'lime',     name:'ACID LIME',   note:'toxic',                price:100,c:['#c8ff3a','#f4ffd0','#4e6a16','#060902','#141f06','#ff4a8a','#0a1002'],r:['#6e8a32','#e8ff9a','#3af0ff','#ff4a8a']},
+  {id:'paper',    name:'PAPER WHITE', note:'white phosphor',       price:150,c:['#e9e4d4','#ffffff','#5d594d','#080807','#1a1915','#ff6a4a','#0a0a08'],r:['#7d786a','#bfe3ff','#ffd26a','#ff6a8a']},
 ];
 const C={};
 function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`;}
@@ -809,8 +812,7 @@ function resize(){
   GW=vw;GH=vh;
   if(GW/GH>9/16)GW=Math.round(GH*9/16);
   else if(GW/GH<9/21)GH=Math.round(GW*21/9);
-  // LOW renders at RES_LOW of the screen and lets the browser scale it up (big saving on weak GPUs)
-  const rs=renderScale();cv.width=Math.round(GW*rs);cv.height=Math.round(GH*rs);cv.style.width=GW+'px';cv.style.height=GH+'px';
+  cv.width=GW;cv.height=GH;cv.style.width=GW+'px';cv.style.height=GH+'px';
   wrap.style.width=GW+'px';wrap.style.height=GH+'px';wrap.style.top=(sat+vh/2)+'px';
   // UI is authored at 320px wide and zoomed to fit
   const z=GW/320;
@@ -944,8 +946,8 @@ const ECO={
   kbPush:2.6,     slowTime:3,  multiExtra:2,  executeAt:.3,
   maxReduce:.9,   bossThorns:.25,       // damage reduction cap · bosses take a quarter of thorns
   thornHealCap:.5,                      // lifesteal from thorns refunds at most this share of the hit just taken
-  offlineCapH:12, offlineMinSec:300,    // idle income: counted for up to 12h, only after 5+ minutes away
-  offlineUnverifiedH:2,                 // …but only 2h when the server clock couldn't be checked (offline)
+  offlineDayH:8,   offlineMinSec:300,   // idle income: at most 8h of time away counted per day, only after 5+ minutes away
+  offlineUnverifiedH:2,                 // …and at most 2h at a time when the server clock couldn't be checked (offline)
 };
 const HUD_TOP=.1;                       // enemies fade in below the top HUD band
 // Tiers: tier t starts at wave 1 but enemies are as strong as wave 1+(t-1)·offset.
@@ -1060,12 +1062,12 @@ const PERM_UPGRADES=[
    info:'Multiplies every coin you earn from kills, bosses, bounties and coin drops.'},
   {id:'lootChance',cat:'util',name:'LOOTER',     icon:'magnet',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
    info:'Chance that a normal enemy drops coins on death. Starts at 50%, caps at 100%.'},
-  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:150, g:1.06, max:200,  start:0,  step:.2,   fx:v=>v.toFixed(1)+' kills',
-   info:'Coins paid out every time you clear a wave, measured in kills worth of that wave.'},
+  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:150, g:1.06, max:200,  start:0,  step:.0065,fx:v=>v.toFixed(2)+'/s',
+   info:'Pays for the time you hold out: when the next wave starts you quietly get this many kills worth of coins for every second the last wave lasted.'},
   {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'clock', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'Speeds up the entire simulation: enemies, bullets, wave timers and drops all run faster. Earns coins faster too. Up to x5.'},
-  {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.2, step:.01,  fx:v=>pc(v),
-   info:'While the game is closed you keep earning this share of your best coins-per-second (up to 12 hours).'},
+  {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),
+   info:'While the game is closed you keep earning this share of your average coins-per-second in runs. Up to 8 hours away count per day, so playing always earns more than waiting.'},
 ];
 const PU=Object.fromEntries(PERM_UPGRADES.map(u=>[u.id,u]));
 const permVal=id=>{const u=PU[id];return uVal(u,Math.min(u.max,save.perm[id]||0));};
@@ -1121,7 +1123,7 @@ const TAT_TYPES=[
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
 const RAR_NAMES=['COMMON','UNCOMMON','RARE','EPIC'];
-const TAT_SLOT_PRICES=[250,800,2500,7500];  // gems for slot 2,3,4,5
+const TAT_SLOT_PRICES=[60,200,500,1200];    // gems for slot 2,3,4,5 (≈2 days … ≈6 weeks of free gems)
 const MAX_SLOTS=5;
 const tatLerp=(r,lv)=>r[0]+(r[1]-r[0])*(lv-1)/(TAT_MAX-1);
 // effect values of tattoo `t` at level `lv` (all zero at lv 0)
@@ -1252,11 +1254,12 @@ let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[];
 let actCD={};                           // active tattoo id → seconds until ready
+let runBounty=0;                        // bounty earned by the last wave, paid when the next one starts
 
 function buildStars(){
   if(!GW||!GH)return;
   stars=[];
-  for(let i=0,n=fxLow()?0:fxMid()?45:130;i<n;i++){
+  for(let i=0,n=fxLow()?30:fxMid()?45:130;i<n;i++){
     stars.push({
       x:Math.random()*GW,y:Math.random()*GH,
       r:.35+Math.random()*1.4,
@@ -1274,7 +1277,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};runBounty=0;
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1382,7 +1385,8 @@ function saveProgress(){
     const after=tierStars(runTier);
     if(after>before){toast(`★ TIER ${runTier} MASTERY ${after}/${MASTERY.length}`);snd('gem');achCheck();}
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
-    if(runPlayT>=120)save.bestCps=Math.max(save.bestCps||0,runEarned/runPlayT);
+    // average real-time income of recent runs (2+ minutes), used for idle income
+    if(runPlayT>=120){const r=runEarned/runPlayT;save.idleCps=save.idleCps?save.idleCps*.7+r*.3:r;}
   }
   persist();
 }
@@ -1390,7 +1394,7 @@ function triggerDeath(){
   const TRI_Y=GH*TRI_FRAC;
   // freeze the last frame for the CRT power-off animation
   deathShot=document.createElement('canvas');deathShot.width=GW;deathShot.height=GH;
-  deathShot.getContext('2d').drawImage(cv,0,0,GW,GH);
+  deathShot.getContext('2d').drawImage(cv,0,0);
   particles=[];burst(triX,TRI_Y,C.a,26,GH*.2);burst(triX,TRI_Y,C.hot,18,GH*.26);
   snd('die');setTimeout(()=>snd('crtoff'),700);
   screenFlash=0;shake={x:0,y:0,t:0};hudHidden=false;
@@ -1490,6 +1494,7 @@ function spawnEnemy(){
   }
 }
 function spawnWave(){
+  if(runBounty>0){const c=runBounty;runBounty=0;save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);}   // silent
   waveNum++;
   if(waveNum===3)hint('hud');
   if(waveNum===6)hint('target');
@@ -1550,7 +1555,7 @@ function fireBullets(st){
     bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
-  if(!fxLow())muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
+  muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
   snd('shoot');
 }
 // ARC tattoo: lightning jumps from the target to the nearest enemies
@@ -1588,18 +1593,17 @@ function useActive(id){
 
 // ── PARTICLES ────────────────────────────────────────────────────────────────
 function burst(x,y,col,n,speed){
-  if(fxLow())return;                 // LOW: no particles at all
-  if(fxMid())n=Math.ceil(n/3);
+  if(fxLow())n=Math.ceil(n/6);else if(fxMid())n=Math.ceil(n/3);
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2,spd=(speed||GH*.12)*(0.3+Math.random()*.9);
     particles.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
       r:1.5+Math.random()*3,col,life:1,decay:.55+Math.random()*.55});
   }
 }
-function spawnText(x,y,txt,col){if(textParticles.length<(fxLow()?12:40))textParticles.push({x,y,txt,col,life:1,vy:-GH*.055});}
+function spawnText(x,y,txt,col){if(textParticles.length<(fxLow()?20:40))textParticles.push({x,y,txt,col,life:1,vy:-GH*.055});}
 // damage numbers: normal hits on the same enemy add up into one number; crits stand alone
 function dmgText(e,dmg,crit){
-  if(!save.settings.showDmgNums||fxLow())return;
+  if(!save.settings.showDmgNums)return;
   const t=e.dmgTxt;
   if(!crit&&t&&t.life>.6&&textParticles.includes(t)){t.val+=dmg;t.txt=fmtN(Math.round(t.val));t.x=e.x;return;}
   if(textParticles.length>=30)return;
@@ -1613,7 +1617,6 @@ function loop(ts){
   requestAnimationFrame(loop);
   if(fxLow()&&ts-lastTime<30)return;   // LOW: 30 fps cap (less heat and battery on weak phones)
   frameDt=Math.min((ts-lastTime)/1000,.05);lastTime=ts;
-  const rs=renderScale();cx.setTransform(rs,0,0,rs,0,0);
   if(state===ST.MENU){updateMenu(frameDt);drawMenu();}
   else if(state===ST.PLAY){
     if(!paused)runPlayT+=frameDt;
@@ -1629,7 +1632,7 @@ function loop(ts){
 // ── UPDATE ───────────────────────────────────────────────────────────────────
 function updateMenu(dt){
   menuAnim+=dt;
-  if(!fxLow()&&menuParticles.length<7&&Math.random()<dt*.9)menuParticles.push({
+  if(menuParticles.length<7&&Math.random()<dt*.9)menuParticles.push({
     x:GW*(.05+Math.random()*.9),y:-GW*.06,s:GW*(.025+Math.random()*.025),
     vy:GH*(.018+Math.random()*.03),rot:Math.random()*6,vr:(Math.random()-.5)*.8,
   });
@@ -1657,7 +1660,7 @@ function updatePlay(dt){
   if(runFx.midT>0)runFx.midT-=dt;
   aegisT=Math.max(0,aegisT-dt);
 
-  if(!fxLow()&&Math.random()<dt*20){
+  if(Math.random()<dt*(fxLow()?8:20)){
     const spread=(Math.random()-.5)*GW*.025;
     thruster.push({x:triX+spread,y:TRI_Y+GW*.04,vx:spread*.5,vy:GH*.04+Math.random()*GH*.06,
       r:GW*.014+Math.random()*GW*.008,life:1,decay:2.5+Math.random()*1.5});
@@ -1702,10 +1705,8 @@ function updatePlay(dt){
     if(waveTimer<=0){
       wavePhase='between';waveTimer=2+Math.random()*.5;qReach('wave',waveNum);
       if(st.waveHeal>0)hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
-      if(st.bounty>0){
-        const c=Math.round(coinValueAt(effWave())*st.mult*st.bounty);
-        if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);spawnText(GW/2,GH*.36,'BOUNTY +'+fmtN(c),C.a);}
-      }
+      // bounty for this wave's length, paid when the next wave starts
+      if(st.bounty>0)runBounty=Math.round(coinValueAt(effWave())*st.mult*st.bounty*waveDuration);
       saveProgress();
     }
   }
@@ -1877,7 +1878,6 @@ function drawStars(scrollMult){
   cx.globalAlpha=1;
 }
 function drawBg(cxp,cyp){
-  if(fxLow()){cx.fillStyle=C.bg1;cx.fillRect(-6,-6,GW+12,GH+12);return;}
   const g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,GH*.8);
   g.addColorStop(0,C.bg2);g.addColorStop(1,C.bg1);
   cx.fillStyle=g;cx.fillRect(-6,-6,GW+12,GH+12);
@@ -1928,6 +1928,13 @@ function drawCoinIcon(x,y,s,col){
   cx.beginPath();cx.moveTo(x,y-s*.22);cx.lineTo(x+s*.18,y);cx.lineTo(x,y+s*.22);cx.lineTo(x-s*.18,y);cx.closePath();cx.stroke();
   cx.restore();
 }
+// same as the #i-tv icon on the menu's ad button: a screen with a play triangle
+function drawTvIcon(x,y,s,col){
+  cx.save();cx.strokeStyle=col;cx.fillStyle=col;cx.lineWidth=Math.max(1.2,s*.11);cx.lineJoin='miter';
+  cx.strokeRect(x-s*.5,y-s*.36,s,s*.6);
+  cx.beginPath();cx.moveTo(x-s*.12,y-s*.2);cx.lineTo(x+s*.2,y-s*.06);cx.lineTo(x-s*.12,y+s*.08);cx.closePath();cx.fill();
+  cx.restore();
+}
 function drawGemIcon(x,y,s,col){
   cx.save();cx.strokeStyle=col;cx.lineWidth=Math.max(1.2,s*.13);cx.lineJoin='miter';cx.shadowColor=col;cx.shadowBlur=5;
   cx.beginPath();cx.moveTo(x-s*.48,y-s*.12);cx.lineTo(x-s*.26,y-s*.4);cx.lineTo(x+s*.26,y-s*.4);cx.lineTo(x+s*.48,y-s*.12);cx.lineTo(x,y+s*.44);cx.closePath();
@@ -1958,11 +1965,9 @@ function drawPlay(){
   drawStars(2);
 
   // danger zone + perimeter
-  if(!fxLow()){
-    const zh=GH*.045,fg=cx.createLinearGradient(0,LINE_Y,0,LINE_Y+zh);
-    fg.addColorStop(0,hexA(C.hot,.08));fg.addColorStop(1,'rgba(0,0,0,0)');
-    cx.fillStyle=fg;cx.fillRect(0,LINE_Y,GW,zh);
-  }
+  const zh=GH*.045,fg=cx.createLinearGradient(0,LINE_Y,0,LINE_Y+zh);
+  fg.addColorStop(0,hexA(C.hot,.08));fg.addColorStop(1,'rgba(0,0,0,0)');
+  cx.fillStyle=fg;cx.fillRect(0,LINE_Y,GW,zh);
   cx.strokeStyle=hexA(C.hot,.45);cx.lineWidth=1;cx.setLineDash([6,6]);
   cx.beginPath();cx.moveTo(0,LINE_Y+.5);cx.lineTo(GW,LINE_Y+.5);cx.stroke();cx.setLineDash([]);
   // range line: the triangle only shoots below this
@@ -2020,7 +2025,7 @@ function drawPlay(){
     cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;cx.stroke();
     if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
     cx.shadowBlur=0;cx.globalAlpha=.6*fa;cx.lineWidth=1;
-    if(!fxLow())enemyInner(e.type,s);
+    enemyInner(e.type,s);
     cx.restore();
     // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
     if(e.shield>0){cx.save();cx.globalAlpha=fa*(.35+.55*e.shield/e.maxShield);cx.strokeStyle=C.a2;cx.lineWidth=2;cx.shadowColor=C.a2;cx.shadowBlur=8;
@@ -2037,10 +2042,10 @@ function drawPlay(){
   });
 
   // bullets
-  if(fxLow()){cx.fillStyle=C.a2;bullets.forEach(b=>{const r=b.sz*1.6;cx.fillRect(b.x-r/2,b.y-r/2,r,r);});}
-  else bullets.forEach(b=>{
+  const trailN=fxLow()?3:8;
+  bullets.forEach(b=>{
     cx.fillStyle=C.a;
-    b.trail.forEach((pt,i)=>{
+    b.trail.forEach((pt,i)=>{if(i>=trailN)return;
       cx.globalAlpha=(1-(i/b.trail.length))*.4;
       const r=Math.max(.6,b.sz-.3-i*.28);cx.fillRect(pt.x-r/2,pt.y-r/2,r,r);
     });cx.globalAlpha=1;
@@ -2089,12 +2094,9 @@ function drawPlay(){
   // double-tap hides everything but the ad button
   if(!hudHidden){
     // HUD band: keeps the top readable over enemies and numbers
-    if(fxLow()){cx.fillStyle=hexA(C.bg1,.85);cx.fillRect(-6,-6,GW+12,TOP*.8+6);}
-    else{
-      const hb=cx.createLinearGradient(0,0,0,TOP);
-      hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
-      cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
-    }
+    const hb=cx.createLinearGradient(0,0,0,TOP);
+    hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
+    cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
   }
   drawAdButton();
   if(!hudHidden){drawHUD(st);if(!paused)drawWaveBanner();}
@@ -2109,10 +2111,12 @@ function drawAdButton(){
   cx.letterSpacing='0px';
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
-  const col=ready?C.a2:C.mute,label=ready?`AD +${ECO.adGems}`:'AD '+fmtCD(cool),fz=r.h*.9,is=r.h*.5;
-  cx.font=fnt(fz);const tw=cx.measureText(label).width,tx=r.x+(r.w-tw-is*1.3)/2;
-  cx.textAlign='left';glowText(label,tx,r.y+r.h*.74,col,fz,ready?5:0);
-  drawGemIcon(tx+tw+is*.85,r.y+r.h*.5,is,col);
+  // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
+  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
+  cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
+  drawTvIcon(x0+tv*.5,r.y+r.h*.5,tv,col);
+  cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
+  if(ready)drawGemIcon(x0+tv*1.25+tw+is*.85,r.y+r.h*.5,is,col);
 }
 
 function drawHUD(st){
@@ -2152,9 +2156,7 @@ function drawHUD(st){
   const hcol=low?C.hot:C.a;
   cx.save();
   if(low)cx.globalAlpha=.6+.4*Math.sin(lastTime*.012);
-  if(fxLow()){   // LOW: two plain bars instead of 24 segments
-    cx.fillStyle=hexA(C.dim,.6);cx.fillRect(hbx,hby,hbw,hbh);cx.fillStyle=hcol;cx.fillRect(hbx,hby,hbw*hpf,hbh);
-  }else for(let i=0;i<seg;i++){
+  for(let i=0;i<seg;i++){
     if(i<on){cx.fillStyle=hcol;cx.shadowColor=hcol;cx.shadowBlur=4;}
     else{cx.fillStyle=hexA(C.dim,.6);cx.shadowBlur=0;}
     cx.fillRect(hbx+i*(sw+gap),hby,sw,hbh);
@@ -2253,8 +2255,8 @@ function formatTime(s){return Math.floor(s/60)+'m '+Math.round(s%60)+'s';}
 const $=id=>document.getElementById(id);
 const I=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
 let _toastTO=null;
-function toast(msg,hot){
-  const t=$('toast');t.textContent=msg;t.className='show'+(hot?' hot':'');
+function toast(msg,hot,html){
+  const t=$('toast');if(html)t.innerHTML=msg;else t.textContent=msg;t.className='show'+(hot?' hot':'');
   clearTimeout(_toastTO);_toastTO=setTimeout(()=>{t.className='';},1500);
 }
 function anyPanelOpen(){return document.querySelector('.panel.open,.gacha-overlay.show,.ovl.show')!==null;}
@@ -2351,7 +2353,7 @@ function renderMenuAd(){
   $('mAdTxt').textContent=cd>0?fmtCD(cd):`+${ECO.adGems}`;
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
-function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast('AD READY IN '+fmtCD(adCooldown()),true);}
+function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast(I('tv')+' READY IN '+fmtCD(adCooldown()),true,true);}
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
 $('mTat').addEventListener('click',openTattoos);
@@ -2521,7 +2523,7 @@ $('shopList').addEventListener('click',e=>{
     const u=PU[b.dataset.info],lv=save.perm[u.id]||0;
     const per=u.per||('+'+u.fx(u.step).replace(/^\+|^x/,'')+' per level');
     const meta=`NOW ${u.fx(permVal(u.id))} · ${per.toUpperCase()}`+(u.ms?` · +${Math.round((u.ms[1]-1)*100)}% BONUS EVERY ${u.ms[0]} LEVELS (UNTIL ${u.ms[2]})`:'')+(u.max>=1e5?' · NO LEVEL CAP':` · MAX LV ${u.max}`)
-      +(u.id==='offline'?` · YOUR BEST RATE ${fmtN(save.bestCps||0)} COINS/S`:'');
+      +(u.id==='offline'?` · YOUR AVERAGE RATE ${fmtN(save.idleCps||0)} COINS/S`:'');
     showTip(u.name,u.info,meta);
   }else if(b.dataset.tinfo){
     const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.tinfo);showTip(u.name,u.info,'LASTS ONE RUN · PRICE GROWS WITH YOUR BEST WAVE');
@@ -2948,8 +2950,6 @@ function menuHints(){
 {
   const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');
   Object.defineProperty(cx,'shadowBlur',{get(){return d.get.call(cx);},set(v){d.set.call(cx,fxMid()?0:v);}});
-  // LOW: dashed lines are drawn solid (dash patterns are slow to rasterise)
-  const dash=cx.setLineDash.bind(cx);cx.setLineDash=a=>dash(fxLow()?[]:a);
 }
 function applyFx(){
   document.body.classList.toggle('fxmid',fxMid());document.body.classList.toggle('fxlow',fxLow());
@@ -3021,21 +3021,23 @@ $('wkStart').addEventListener('click',()=>{$('weekUI').classList.remove('show');
 // ── IDLE INCOME ──────────────────────────────────────────────────────────────
 // time away (from the last save) pays a share of your best coins/sec; it waits in awayPending until collected
 function checkAway(since){
-  const capH=timeVerified?ECO.offlineCapH:ECO.offlineUnverifiedH;
-  const now=gameNow(),secs=since?Math.min(capH*3600,Math.max(0,now-since)/1000):0;
-  if(secs>=ECO.offlineMinSec&&save.bestCps>0){
-    const c=Math.floor(save.bestCps*permVal('offline')*secs);
-    if(c>0){save.awayPending=(save.awayPending||0)+c;save.awaySecs=(save.awaySecs||0)+secs;}
+  const now=gameNow(),day=new Date(now).toDateString();
+  if(save.idleDay!==day){save.idleDay=day;save.idleUsed=0;}       // a fresh 8h budget every day
+  const left=Math.max(0,ECO.offlineDayH*3600-(save.idleUsed||0));
+  const cap=timeVerified?left:Math.min(left,ECO.offlineUnverifiedH*3600);
+  const away=since?Math.max(0,now-since)/1000:0,secs=Math.min(cap,away);
+  if(away>=ECO.offlineMinSec&&secs>0&&save.idleCps>0){
+    const c=Math.floor(save.idleCps*permVal('offline')*secs);
+    if(c>0){save.awayPending=(save.awayPending||0)+c;save.awaySecs=(save.awaySecs||0)+secs;save.idleUsed=(save.idleUsed||0)+secs;}
   }
   persist();
   if(save.awayPending>0)showAway();
 }
 function showAway(){
-  const secs=Math.min(save.awaySecs||0,ECO.offlineCapH*3600),cd=adCooldown();
-  $('awTxt').textContent=`${fmtDur(secs)} AWAY · ${pc(permVal('offline'))} OF YOUR BEST RATE (${fmtN(save.bestCps)}/S) · `+
-    (timeVerified?`COUNTS UP TO ${ECO.offlineCapH}H`:`OFFLINE: COUNTS UP TO ${ECO.offlineUnverifiedH}H`);
+  const secs=save.awaySecs||0,cd=adCooldown();
+  $('awTxt').textContent=`${fmtDur(secs)} COUNTED · ${pc(permVal('offline'))} OF YOUR AVERAGE RATE (${fmtN(save.idleCps)}/S) · UP TO ${ECO.offlineDayH}H A DAY`;
   $('awCoins').textContent=fmtN(save.awayPending);
-  $('awAd').textContent=cd>0?'AD '+fmtCD(cd):'AD x2';$('awAd').style.opacity=cd>0?.4:1;
+  $('awAd').innerHTML=I('tv')+(cd>0?fmtCD(cd):'x2');$('awAd').style.opacity=cd>0?.4:1;
   $('away').classList.add('show');
 }
 function collectAway(mult){
@@ -3049,6 +3051,32 @@ $('awAd').addEventListener('click',()=>{
   if(adCooldown()>0){snd('deny');return;}
   adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;collectAway(2);
 });
+
+// ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
+// form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
+// Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
+const GAME_VERSION='0.6';
+const FEEDBACK={form:'',infoEntry:''};
+function gameInfo(){
+  const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');
+  const chrome=(ua.match(/Chrome\/(\d+)/)||[])[1];
+  return `v${GAME_VERSION} · ${dev.trim()}${chrome?' · Chrome '+chrome:''} · ${screen.width}x${screen.height}@${devicePixelRatio} · `+
+    `FX ${save.settings.fx.toUpperCase()} · T${save.tier} best ${save.tierBest[save.tier]||0} · ★${totalStars()} · runs ${LIFE().runs}`;
+}
+function openFeedback(){
+  $('fbInfo').textContent=gameInfo();
+  $('fbOpen').textContent=FEEDBACK.form?'OPEN FORM':'SOON';$('fbOpen').style.opacity=FEEDBACK.form?1:.4;
+  $('fbUI').classList.add('show');snd('click');
+}
+$('setFeedback').addEventListener('click',openFeedback);
+$('fbClose').addEventListener('click',()=>{snd('click');$('fbUI').classList.remove('show');});
+$('fbOpen').addEventListener('click',()=>{
+  if(!FEEDBACK.form){snd('deny');toast('FORM COMING SOON',true);return;}
+  const sep=FEEDBACK.form.includes('?')?'&':'?';
+  const url=FEEDBACK.form+(FEEDBACK.infoEntry?`${sep}usp=pp_url&${FEEDBACK.infoEntry}=${encodeURIComponent(gameInfo())}`:'');
+  window.open(url,'_blank','noopener');snd('click');
+});
+$('verTxt').textContent=`LAST VERTEX v${GAME_VERSION} // SYS OK`;
 
 // ── ANDROID BACK BUTTON ──────────────────────────────────────────────────────
 // An installed web app closes when Back runs out of history. We keep a few spare history entries
@@ -3064,6 +3092,7 @@ function handleBack(){
   if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}
+  if(on('fbUI')){$('fbClose').click();return true;}
   if(on('gachaOverlay')){$('gachaCollect').click();return true;}
   if(on('setPanel','open')){closeSettings();return true;}
   if(on('shopPanel','open')){closeShop();return true;}

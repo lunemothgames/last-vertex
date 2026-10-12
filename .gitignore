@@ -1,3 +1,6 @@
 _backup/
 node_modules/
 *.log
+
+# gift-code signing key: never commit (see tools/make-code.js)
+keys/

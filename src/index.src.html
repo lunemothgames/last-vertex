@@ -248,7 +248,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 @keyframes gcIn{0%{opacity:0}34%{opacity:1;background:var(--rc)}100%{opacity:1}}
 .gc svg.i{width:24px;height:24px}
 .gcards.one .gc svg.i{width:40px;height:40px}
-.gc .n{font-family:'VT323',monospace;font-size:11px;color:var(--a);white-space:nowrap}
+.gc .n{font-family:'VT323',monospace;font-size:11px;line-height:1;color:var(--a);text-align:center;max-width:100%;overflow-wrap:break-word}   /* long names (KRİTİK HASAR) wrap instead of spilling out */
 .gc .lv{font-family:'VT323',monospace;font-size:14px;line-height:1}
 .gcards.one .gc .n{font-size:16px}.gcards.one .gc .lv{font-size:20px}
 .gc .new{position:absolute;top:-7px;right:-4px;background:var(--hot);color:var(--ink);font-family:'VT323',monospace;font-size:12px;padding:0 3px;text-shadow:none}
@@ -2616,7 +2616,17 @@ function renderDead(){
   if(prevBest>0)rows.splice(1,0,[T('BEST'),prevBest]);
   $('dStats').innerHTML=rows.map(([k,v])=>`<div class="dr"><span>${k}</span><i></i><b>${v}</b></div>`).join('');
 }
-$('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;startMusic(true);});
+$('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;startMusic(true);if(runUnlockedTier)maybeAskReview();});
+// store rating prompt (app only): after a run that unlocked a new tier, once the player is a few tiers in.
+// At most 3 asks, 60+ days apart; Google / Apple also decide on their own whether the window really shows.
+function maybeAskReview(){
+  const R=IS_APP&&Capacitor.Plugins&&Capacitor.Plugins.InAppReview;
+  if(!R||LIFE().runs<5||maxUnlockedTier()<3)return;
+  const asks=Array.isArray(save.reviewAsks)?save.reviewAsks:(save.reviewAsks=[]);
+  if(asks.length>=3||gameNow()-(asks[asks.length-1]||0)<60*864e5)return;
+  asks.push(gameNow());persist();
+  setTimeout(()=>R.requestReview().catch(()=>{}),1200);   // let the menu settle first
+}
 $('dRetry').addEventListener('click',()=>{snd('click');startRun(!!(save.lastRun&&save.lastRun.weekly));});
 
 // ── INFO TIP ─────────────────────────────────────────────────────────────────
@@ -2700,7 +2710,7 @@ function renderShop(){
   cats.style.display=shopTab==='perm'?'':'none';
   if(shopTab==='perm')cats.innerHTML=PERM_CATS.map(([c,label,icon])=>{
     const n=PERM_UPGRADES.filter(u=>u.cat===c&&(save.perm[u.id]||0)<u.max&&upCost(u,save.perm[u.id]||0)<=save.coins).length;
-    return `<button data-c="${c}" class="${c===cur?'on':''}">${I(icon)}${label}${n?`<b>${n}</b>`:''}</button>`;
+    return `<button data-c="${c}" class="${c===cur?'on':''}">${I(icon)}${T(label)}${n?`<b>${n}</b>`:''}</button>`;
   }).join('');
   $('shopNote').textContent='> '+T(shopTab==='perm'?'TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'LASTS ONE RUN · AUTO REBUYS IT EACH RUN':'NEW COLORS FOR THE GAME · BUY WITH GEMS');
 

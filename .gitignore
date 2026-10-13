@@ -10,3 +10,6 @@ www/
 android/app/build/
 android/build/
 android/.gradle/
+
+# promo videos: ~15 MB each, rebuilt by tools/make-promo-video.js (the YouTube upload is the real copy)
+store/video/

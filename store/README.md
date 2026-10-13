@@ -5,10 +5,11 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
 
 | Dosya | Ne işe yarıyor |
 |---|---|
-| `listing.md` | Mağaza adı, kısa ve uzun açıklama, kategori — kopyala-yapıştır |
+| `listing.md` | Mağaza adı, kısa ve uzun açıklama (EN, TR, ES, PT), kategori — kopyala-yapıştır |
 | `icon-512.png` | Mağaza ikonu (512×512) |
 | `feature-graphic.png` | Mağaza sayfasının üstündeki büyük görsel (1024×500) |
-| `screenshots/` | 7 telefon ekran görüntüsü (1080×1920) |
+| `screenshots/<dil>/` | Her dil için 7 başlıklı ekran görüntüsü (1080×1920), dosya sırasıyla yükle |
+| `video/promo-<dil>.mp4` | 30 sn dikey tanıtım videosu (sessiz). Repo'da yok, `npm run promo-video` ile üretilir |
 | `../privacy.html` | Gizlilik politikası; adresi: `https://ahmetozeladam.github.io/last-vertex/privacy.html` |
 
 ---
@@ -27,7 +28,11 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
 
 ## 3. Play Console'da uygulamayı oluştur
 1. **Create app** → ad: `Last Vertex: Idle Defense`, dil: English, tür: Game, ücretsiz.
-2. **Store presence → Main store listing**: `listing.md` metinleri, ikon, feature graphic, ekran görüntüleri.
+2. **Store presence → Main store listing**: `listing.md` İngilizce metinleri, ikon, feature graphic, `screenshots/en/`.
+   - **Manage translations → Add your own translations**: tr-TR, es-419, es-ES, pt-BR, pt-PT. Her dile kendi metnini
+     ve kendi `screenshots/<dil>/` görsellerini yükle (es-ES için `es`, pt-PT için `pt` klasörü).
+   - **Video**: `video/promo-en.mp4`'yi YouTube'a yükle (herkese açık ya da liste dışı, reklamlar kapalı), linki
+     "YouTube URL" alanına yapıştır. Diğer dillerin videoları için de aynısı. Aynı videolar Shorts/TikTok için de uygun.
 3. **Policy → App content** formları:
    - Privacy policy: yukarıdaki privacy.html adresi
    - Ads: **No** (şu an gerçek reklam yok)
@@ -41,5 +46,12 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
 Kapalı test 14 günü doldurunca Play Console → **Production** başvurusu. İnceleme genelde birkaç gün sürer.
 
 ---
-Ekran görüntülerini oyun değişince yeniden üretmek için: `node tools/make-store-art.js`.
+Oyun görünüşü değişince: `npm run build`, sonra `npm run store-art` (ekran görüntüleri + feature graphic) ve
+`npm run promo-video` (4 dilde video, ~10 dk). Görsel başlıkları `tools/store-text.js`'te.
+Metinleri değiştirince `npm run check-listing` karakter sınırlarını kontrol eder.
+
+Uygulama içi puanlama: yeni bir tier açılan koşudan sonra HOME'a basınca, oyuncu en az 5 koşu yapmış ve tier 3'ü
+açmışsa Google'ın puanlama penceresi istenir (en fazla 3 kez, en az 60 gün arayla). Pencerenin gerçekten çıkıp
+çıkmadığına Google karar verir (kota var, her istekte çıkmaz). Sadece Play'den yüklenen sürümde çalışır;
+Android Studio'dan yüklenen debug APK'da görünmez, test etmek için internal test kanalını kullan.
 Kurallar ve ücretler zamanla değişebilir; Play Console ne istiyorsa ona uy.

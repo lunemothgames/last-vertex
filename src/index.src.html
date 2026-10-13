@@ -283,8 +283,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .blinky{transform-box:fill-box;transform-origin:center;animation:blinky 9s steps(1) infinite}
 @keyframes blinky{0%,43%,45%,86%,88%,100%{transform:scaleY(1)}44%,87%{transform:scaleY(.15)}}
 /* ── menu ad button ── */
-.adbtn{display:flex;align-items:center;gap:4px;height:28px;padding:0 8px;border:1px solid var(--a2);color:var(--a2);
-  font-family:'VT323',monospace;font-size:21px;box-shadow:0 0 10px rgba(var(--a2-rgb),0.35);text-shadow:0 0 6px var(--a2)}
+.adbtn{white-space:nowrap;display:flex;align-items:center;gap:4px;height:28px;padding:0 6px;min-width:0;flex-shrink:1;overflow:hidden;border:1px solid var(--a2);color:var(--a2);
+  font-family:'VT323',monospace;font-size:18px;box-shadow:0 0 10px rgba(var(--a2-rgb),0.35);text-shadow:0 0 6px var(--a2)}
 .adbtn svg.i{width:16px;height:16px}
 .adbtn.cool{border-color:var(--dim);color:var(--mute);box-shadow:none;text-shadow:none}
 .bnav{grid-template-columns:1fr 1fr 1fr}
@@ -559,7 +559,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="topbar">
       <div class="pill"><svg class="i"><use href="#i-coin"/></svg><b id="mCoins">0</b></div>
       <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="mGems">0</b></div>
-      <button class="adbtn" id="mAd"><svg class="i"><use href="#i-tv"/></svg><span id="mAdTxt">+5</span></button>
+      <button class="adbtn" id="mAd"><span id="mAdTxt">FREE +5</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
       <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
@@ -649,6 +649,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <button class="pull ten" id="gachaMulti"><span class="l">SUMMON x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">200</b></span></button>
       </div>
       <div class="note pity" id="pityNote"></div>
+      <div class="note pity" id="oddsNote"></div>
       <div class="lab">EQUIPPED <span id="eqCount">0/1</span></div>
       <div class="slots" id="equippedSlots"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
@@ -1479,7 +1480,7 @@ function coinDropValue(){
 function spawnPickup(kind){pickups.push({kind,x:GW*.1+Math.random()*GW*.8,y:GH*(HUD_TOP+.04)+Math.random()*GH*.4,r:GW*.03,spawnTime:Date.now()});}
 
 // ── AD / RUN ─────────────────────────────────────────────────────────────────
-function adRect(){const w=GW*.25,h=GH*.034;return{x:GW*.97-w,y:GH*LINE_FRAC-h-GH*.012,w,h};}
+function adRect(){const w=GW*.3,h=GH*.034;return{x:GW*.97-w,y:GH*LINE_FRAC-h-GH*.012,w,h};}
 const todayKey=()=>{const d=new Date(gameNow());return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
 function adsLeftToday(){if(save.adDay!==todayKey()){save.adDay=todayKey();save.adCount=0;}return ECO.adDailyCap-(save.adCount||0);}
 // seconds until the next ad: normal cooldown, or until midnight once the daily cap is used up
@@ -2294,9 +2295,8 @@ function drawAdButton(){
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
   // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
-  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
+  const col=ready?C.a2:C.mute,label=ready?T('FREE +{0}',ECO.adGems):adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=0;
   cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
-  drawTvIcon(x0+tv*.5,r.y+r.h*.5,tv,col);
   cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
   if(ready)drawGemIcon(x0+tv*1.25+tw+is*.85,r.y+r.h*.5,is,col);
 }
@@ -2567,10 +2567,10 @@ $('tNext').addEventListener('click',()=>{
 function renderMenuAd(){
   // the ad button only exists while an ad is available
   $('mAd').style.display=adCooldown()>0?'none':'';
-  $('mAdTxt').textContent=`+${ECO.adGems}`;
+  $('mAdTxt').textContent=T('FREE +{0}',ECO.adGems);
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
-function menuAd(){if(useAd()){toast(T('+{0} GEM',ECO.adGems));renderMenu();}else toast(adsLeftToday()<=0?I('tv')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('tv')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);}
+function menuAd(){if(useAd()){toast(T('+{0} GEM',ECO.adGems));renderMenu();}else toast(adsLeftToday()<=0?I('gem')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('gem')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);}
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
 $('mTat').addEventListener('click',openTattoos);
@@ -2888,6 +2888,7 @@ function renderTattoos(){
   $('tatGems').textContent=fmtN(save.gems);
   $('pull1Cost').textContent=ECO.pullCost;$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
+  $('oddsNote').textContent=T('Chance per summon: {0}',rateLine());
   $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT SUMMON: {0}',`<b>${T('EPIC GUARANTEED')}</b>`):T('EPIC GUARANTEED WITHIN {0} SUMMONS',`<b>${left}</b>`));
   $('gachaSingle').classList.toggle('no',save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
@@ -3397,7 +3398,7 @@ $('helpList').addEventListener('click',e=>{
 
 // ── FIT TEXT ──
 // Translations can be longer than the English: headers and buttons shrink their font until the text fits.
-const FIT_SEL='.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#tgtBtn span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.d-title,.p-title,.logo';
+const FIT_SEL='.adbtn span,.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#tgtBtn span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.d-title,.p-title,.logo';
 function fitText(){
   for(const el of document.querySelectorAll(FIT_SEL)){
     if(!el.offsetParent)continue;

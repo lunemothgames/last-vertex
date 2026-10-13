@@ -905,9 +905,11 @@ const LANG_DATA={};/*@@LANG@@*/
 const LANG_NAMES={en:'EN',tr:'TR',es:'ES',pt:'PT'};
 let LANG='en';
 function T(s,...a){const d=LANG_DATA[LANG],r=(d&&d[s])||s;return a.length?r.replace(/\{(\d)\}/g,(m,i)=>a[i]):r;}
-// first start: the phone's language if we have it, else English (sim/balance tools have no settings → English)
+// default language is English; the player can switch in Settings
 if(typeof save!=='undefined'&&save.settings){
-  if(!LANG_NAMES[save.settings.lang]){const n=(navigator.language||'en').slice(0,2).toLowerCase();save.settings.lang=LANG_NAMES[n]?n:'en';}
+  // one-time reset: the first language build picked the phone's language by itself
+  if(!save.settings.langV2){save.settings.lang='en';save.settings.langV2=1;}
+  if(!LANG_NAMES[save.settings.lang])save.settings.lang='en';   // English unless the player picks another language in Settings
   LANG=save.settings.lang;if(typeof document!=='undefined')document.documentElement.lang=LANG;
 }
 const SUFFIX=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qad','Qid','Sxd','Spd','Ocd','Nod','Vg'];

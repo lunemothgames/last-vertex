@@ -24,7 +24,8 @@ Everything is served as plain static files; there is nothing to build on the ser
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Home-screen app info and icons |
 | `splash/` | iPhone launch images |
 | `privacy.html` | Privacy policy (linked in Settings and the store listing) |
-| `store/` | Google Play listing text, store art, assetlinks template and the release guide (`store/README.md`) |
+| `store/` | Google Play listing text, store art and the release guide (`store/README.md`) |
+| `android/`, `capacitor.config.json`, `assets/` | The Android app (Capacitor) and the logo its icons are made from; `node tools/build-app.js debug\|release` (`www/` is a generated copy) |
 | `tools/` | Build, balance simulation and icon scripts (not used by the game at runtime) |
 | `_docs/balance.html` | Generated balance reference |
 

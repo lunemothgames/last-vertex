@@ -1,7 +1,7 @@
 # Google Play'e çıkış rehberi
 
-Bu klasörde Play Store için gereken her şey var. Oyunun kendisi zaten
-`https://ahmetozeladam.github.io/last-vertex/` adresinde; Play'deki uygulama bu adresi tam ekran açan bir kılıf olacak.
+Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek bir Android uygulaması
+(Capacitor): oyunun bütün dosyaları uygulamanın içinde, internetsiz çalışır.
 
 | Dosya | Ne işe yarıyor |
 |---|---|
@@ -9,7 +9,6 @@ Bu klasörde Play Store için gereken her şey var. Oyunun kendisi zaten
 | `icon-512.png` | Mağaza ikonu (512×512) |
 | `feature-graphic.png` | Mağaza sayfasının üstündeki büyük görsel (1024×500) |
 | `screenshots/` | 7 telefon ekran görüntüsü (1080×1920) |
-| `assetlinks/.well-known/assetlinks.json` | Uygulamayı siteye bağlayan doğrulama dosyası (şablon, 4. adımda doldurulacak) |
 | `../privacy.html` | Gizlilik politikası; adresi: `https://ahmetozeladam.github.io/last-vertex/privacy.html` |
 
 ---
@@ -19,16 +18,12 @@ Bu klasörde Play Store için gereken her şey var. Oyunun kendisi zaten
 2. Kişisel hesaplarda yayından önce **kapalı test** zorunlu: en az **12 test kullanıcısı**, **14 gün** boyunca uygulamayı yüklü tutmalı.
    Test kullanıcılarının Gmail adreslerini şimdiden topla.
 
-## 2. Uygulama paketini oluştur (PWABuilder)
-1. https://www.pwabuilder.com → adres kutusuna `https://ahmetozeladam.github.io/last-vertex/` yaz → **Start**.
-2. **Package for stores → Android → Generate Package**. Ayarlarda:
-   - **Package ID:** `io.github.ahmetozeladam.lastvertex` (sonradan değiştirilemez; doğrulama dosyası da bunu kullanıyor)
-   - **App name:** `Last Vertex: Idle Defense` · **Short name:** `Last Vertex`
-   - **Version:** `1.0.0` · **Version code:** `1` (her yeni yüklemede bir artır)
-   - **Display mode:** Standalone · **Orientation:** Portrait
-   - **Signing key:** *Create new* (PWABuilder bir imza anahtarı oluşturur)
-3. İnen zip içinde: `.aab` dosyası (Play'e yüklenecek), imza anahtarı (`signing.keystore`) ve şifreleri (`signing-key-info.txt`).
-   **Bu üçünü kaybetme**, güvenli bir yere yedekle — güncellemeler aynı anahtarla imzalanmak zorunda.
+## 2. Uygulama paketini oluştur
+1. `android/app/build.gradle` içinde `versionCode` değerini her yeni yüklemede bir artır (`versionName` istediğin gibi, ör. 0.7.0).
+2. `node tools/build-app.js release` → `android/app/build/outputs/bundle/release/app-release.aab` (Play'e yüklenecek dosya).
+   Telefonda denemek için: `node tools/build-app.js debug` → `android/app/build/outputs/apk/debug/app-debug.apk`.
+3. İmza anahtarı `keys/upload.jks` + `keys/upload.properties`. **Bunları kaybetme**, `keys/` klasörünü yedekle; repo'ya asla gitmez.
+4. Play Console ilk yüklemede "Play App Signing" sorar: kabul et (Google asıl anahtarı saklar, bizimki yükleme anahtarı olur).
 
 ## 3. Play Console'da uygulamayı oluştur
 1. **Create app** → ad: `Last Vertex: Idle Defense`, dil: English, tür: Game, ücretsiz.
@@ -42,20 +37,7 @@ Bu klasörde Play Store için gereken her şey var. Oyunun kendisi zaten
    - Data safety: uygulama veri **toplamıyor** ve **paylaşmıyor** (kayıt sadece cihazda; geri bildirim formu tarayıcıda, isteğe bağlı açılıyor)
 4. **Testing → Closed testing**: test grubu oluştur, e-postaları ekle, `.aab` dosyasını yükle, yayınla. 14 gün sayacı başlar.
 
-## 4. Uygulamayı siteye bağla (tam ekran için ŞART)
-Bu adım olmazsa uygulama açılınca üstte adres çubuğu görünür.
-
-1. Play Console → **Setup → App integrity → App signing** → *App signing key certificate* altındaki **SHA-256** değerini kopyala.
-2. `assetlinks/.well-known/assetlinks.json` içinde `PASTE:THE:...` yazan yere yapıştır.
-3. **Önemli:** Android bu dosyayı sitenin **kök adresinde** arar:
-   `https://ahmetozeladam.github.io/.well-known/assetlinks.json` — `last-vertex` klasörünün içinde değil.
-   Bunun için GitHub'da **`ahmetozeladam.github.io`** adında yeni bir public repo aç ve içine:
-   - `.well-known/assetlinks.json` dosyasını,
-   - boş bir `.nojekyll` dosyasını
-   koy, Pages'i aç (main / root). Bunu bana söylersen dosyayı hazırlayıp gönderirim.
-4. Kontrol: https://developers.google.com/digital-asset-links/tools/generator adresinde site ve paket adını girip **Test statement**.
-
-## 5. Yayın
+## 4. Yayın
 Kapalı test 14 günü doldurunca Play Console → **Production** başvurusu. İnceleme genelde birkaç gün sürer.
 
 ---

@@ -402,6 +402,19 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .autot.on{border-color:var(--a);background:var(--a);color:var(--ink);text-shadow:none}
 .pity{text-align:center;margin:10px 14px 0}
 .pity b{color:var(--r3);font-weight:400}
+/* summon odds: one column per rarity, in its own color */
+.odds{margin:12px 14px 0;padding:7px 6px 8px;border:1px dashed var(--dim)}
+.odds>span{display:block;text-align:center;font-size:10px;letter-spacing:.14em;color:var(--mute);text-shadow:none;margin-bottom:6px}
+.odds>div{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.odds i{font-style:normal;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;color:var(--rc);font-family:'VT323',monospace;line-height:1}
+.odds i small{font-size:14px;letter-spacing:.04em;white-space:nowrap}
+.odds i b{font-weight:400;font-size:25px;text-shadow:0 0 6px var(--rc)}
+.odds i.out{color:var(--mute);text-shadow:none;opacity:.6}
+.odds i.out b{text-shadow:none}
+.hb .odds{margin:4px 0 0}
+.tchance{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding:5px 8px;border:1px dashed var(--dim);
+  font-family:'VT323',monospace;font-size:17px;letter-spacing:.06em;color:var(--mute);text-shadow:none}
+.tchance b{font-weight:400;font-size:22px;color:var(--a2);text-shadow:0 0 6px var(--glow)}
 /* ── shop category label & settings description ── */
 .scat{font-family:'VT323',monospace;font-size:18px;color:var(--mute);letter-spacing:.2em;margin:8px 0 0;text-shadow:none}
 .scat::before{content:'── '}.scat::after{content:' ──'}
@@ -648,8 +661,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <button class="pull" id="gachaSingle"><span class="l">SUMMON x1</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull1Cost">10</b></span></button>
         <button class="pull ten" id="gachaMulti"><span class="l">SUMMON x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">200</b></span></button>
       </div>
+      <div class="odds" id="oddsBox"></div>
       <div class="note pity" id="pityNote"></div>
-      <div class="note pity" id="oddsNote"></div>
       <div class="lab">EQUIPPED <span id="eqCount">0/1</span></div>
       <div class="slots" id="equippedSlots"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
@@ -2876,9 +2889,10 @@ function tatChart(t,lv){
 }
 function tatInfo(t){
   const c=tatOf(t.id),esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  if(!c.lv){showTip(T('??? · LOCKED'),T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLowerCase()));return;}
+  const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('SUMMON CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
+  if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLowerCase()))+odds,'',true);return;}
   const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE SUMMON POOL');
-  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+tatChart(t,c.lv);
+  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+odds+tatChart(t,c.lv);
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):''} · ${status}`,true);
 }
 function toggleEquip(t){
@@ -2893,8 +2907,9 @@ function renderTattoos(){
   $('tatGems').textContent=fmtN(save.gems);
   $('pull1Cost').textContent=ECO.pullCost;$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
-  $('oddsNote').textContent=T('Chance per summon: {0}',rateLine());
-  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT SUMMON: {0}',`<b>${T('EPIC GUARANTEED')}</b>`):T('EPIC GUARANTEED WITHIN {0} SUMMONS',`<b>${left}</b>`));
+  $('oddsBox').innerHTML=oddsGrid();
+  const pr=T(RAR_NAMES[pityRar()]);
+  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT SUMMON: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} SUMMONS',pr,`<b>${left}</b>`));
   $('gachaSingle').classList.toggle('no',save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
   $('eqCount').textContent=`${save.equipped.length}/${save.tatSlots}`;
@@ -3267,7 +3282,7 @@ const COACH=[
    text:'Wondering how something works? The ? button explains every part of the game.'},
   {id:'tattoo',where:'menu',sel:'#mTat',  when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,
    text:'You have enough gems for a TATTOO. Tattoos change how you play.'},
-  {id:'summon',where:'tat', sel:'#gachaSingle', when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,
+  {id:'summon',where:'tat', sel:'#gachaSingle', when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,up:true,
    text:'Summon one tattoo.'},
   {id:'equip', where:'tat', sel:'#invGrid .ctile:not(.locked)', when:()=>LIFE().pulls>0&&!save.equipped.length&&TAT_TYPES.some(t=>tatOf(t.id).lv),
    text:'HOLD a tattoo to put it in your slot. Tap it to see what it does.'},
@@ -3299,7 +3314,7 @@ function coachCheck(where){
     // a step the player keeps ignoring retires after a few showings
     if(!save.coachN)save.coachN={};save.coachN[c.id]=(save.coachN[c.id]||0)+1;
     if(save.coachN[c.id]>6){save.coach[c.id]=1;continue;}
-    coachCur=c;coachEl=el;el.classList.add('coach');placeCoach(el,T(c.text));return;
+    coachCur=c;coachEl=el;el.classList.add('coach');placeCoach(el,T(c.text),c.up);return;
   }
 }
 // is the element under an open panel / popup it doesn't belong to?
@@ -3307,12 +3322,13 @@ function coverOf(el){
   const top=[...document.querySelectorAll('.panel.open,.ovl.show,#modal.show,.gacha-overlay.show,#tipWrap.show')].pop();
   return top&&!top.contains(el);
 }
-function placeCoach(el,text){
+// up: prefer above the button (the summon step must not cover the odds table below it)
+function placeCoach(el,text,up){
   const tip=$('coachTip'),u=ui.getBoundingClientRect(),z=u.width/320,r=el.getBoundingClientRect();
   tip.textContent=text;tip.classList.add('show');
   const top=(r.top-u.top)/z,bot=(r.bottom-u.top)/z,h=tip.offsetHeight,H=u.height/z;
   // below the button if there is room, otherwise above it
-  const y=bot+10+h<H-8?bot+10:Math.max(8,top-10-h);
+  const y=up&&top-10-h>=8?top-10-h:bot+10+h<H-8?bot+10:Math.max(8,top-10-h);
   tip.style.top=y+'px';tip.classList.toggle('up',y<top);
 }
 document.addEventListener('click',e=>{
@@ -3343,10 +3359,17 @@ function enemyRow(key,col,name,text){
   const dash=key==='elite'?' stroke-dasharray="3 2"':'';
   return `<svg viewBox="0 0 24 24" style="stroke:${col}"><path d="${HELP_SHAPES[key]}"${dash}/></svg><div><b>${name}</b><br>${text}</div>`;
 }
-function rateLine(){
-  const tot=TAT_TYPES.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];TAT_TYPES.forEach(t=>by[t.rar]+=t.w);
-  return RAR_NAMES.map((n,i)=>`${T(n)} ${(by[i]/tot*100).toFixed(1)}%`).join(' · ');
+// odds shown to the player come from the live pool, so they stay true once tattoos max out and leave it
+function oddsGrid(){
+  const pool=tatPool(),tot=pool.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];pool.forEach(t=>by[t.rar]+=t.w);
+  return `<span>${T('CHANCE PER SUMMON')}</span><div>${RAR_NAMES.map((n,i)=>
+    `<i class="${by[i]?'':'out'}" style="--rc:var(--r${i})"><small>${T(n)}</small><b>${by[i]?(by[i]/tot*100).toFixed(1)+'%':'—'}</b></i>`).join('')}</div>`;
 }
+function tatChance(t){
+  const pool=tatPool();if(!pool.includes(t))return 0;
+  return t.w/pool.reduce((s,x)=>s+x.w,0);
+}
+const pityRar=()=>{const p=tatPool();return p.length?Math.max(...p.map(t=>t.rar)):3;};
 // topics: [id, icon, title, () => HTML]
 const HELP_TOPICS=[
   ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
@@ -3375,7 +3398,7 @@ const HELP_TOPICS=[
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
   ['tattoos','spark','TATTOOS',()=>`<p>${T('Summon tattoos with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
     <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 summons.')}</p>
-    <p>${T('Chance per summon: {0}',rateLine())}</p>`],
+    <div class="odds">${oddsGrid()}</div>`],
   ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and a weekly quest every day; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
     <p>${T('Achievements reward milestones once each.')}</p>`],
   ['weekly','flag','WEEKLY OP',()=>`<p>${T('A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.')}</p>`],

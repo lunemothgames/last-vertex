@@ -14,7 +14,7 @@ const SAVE={coins:4.2e7,gems:340,tier:6,tierBest:{1:78,2:62,3:51,4:44,5:36,6:21}
     pierce:20,coinMult:150,lootChance:60,bounty:40,gameSpeed:8,offline:10},
   tatCol:{attack_power:{lv:5,copies:2},twin:{lv:3,copies:1},nova:{lv:4,copies:0},arc:{lv:2,copies:3},crit_mult:{lv:4,copies:1},
     max_hp:{lv:5,copies:0},regen:{lv:3,copies:2},coin_mult:{lv:4,copies:1},frost:{lv:2,copies:0},aegis:{lv:1,copies:0},thorns:{lv:3,copies:0}},
-  equipped:['attack_power','twin','nova','arc'],settings:{fx:'high',target:0},hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
+  equipped:['attack_power','twin','nova','arc'],settings:{fx:'high',target:0,lang:'en'},coach:Object.fromEntries(['play','shop','buy','again','help','tattoo','summon','equip','quests','tier','weekly'].map(k=>[k,1])),hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
 
 (async()=>{
   const b=await puppeteer.launch({executablePath:BROWSER,headless:true});

@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=fs.readFileSync(path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
-const code=[
+const code=["const T=(s,...a)=>a.length?s.replace(/\{(\d)\}/g,(m,i)=>a[i]):s;",
   cut('const SUFFIX=','// ── AUDIO'),
   cut('const THEMES=[','const C={};'),
   cut('// ── ECONOMY','// ── STATS'),

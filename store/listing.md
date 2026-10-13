@@ -38,7 +38,7 @@ Choose your target priority, speed up the game, time your abilities — or put t
 ▸ RETRO TERMINAL LOOK
 Scanlines, phosphor glow and 12 color themes, from ice blue to amber, green P1 and hot pink. Runs smoothly on older phones with three graphics levels.
 
-No account, no sign-in. Your progress stays on your device and can be exported with a save code.
+Play in English, Türkçe, Español or Português. No account, no sign-in. Your progress stays on your device and can be exported with a save code.
 ```
 
 ## Category and tags

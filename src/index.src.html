@@ -172,6 +172,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .fx{font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;margin-top:2px}
 .fx b{color:var(--a2);font-weight:400}
 .mqw>span{display:inline-block}
+.nm.mqw,.mqw.nmw{display:block;overflow:hidden;white-space:nowrap}
+.nm:has(.nmw){display:flex;align-items:center}.nmw{flex:1 1 auto;min-width:0;display:inline-block!important}
+#tgtBtn,#spdCtl,.wkbtn{white-space:nowrap}
 .mqw>span.mq{animation:mq 6s ease-in-out infinite}
 @keyframes mq{0%,18%{transform:translateX(0)}50%,68%{transform:translateX(var(--mq))}100%{transform:translateX(0)}}
 .pipr{display:flex;align-items:center;gap:6px;margin-top:5px}
@@ -312,7 +315,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   background:rgba(var(--bg1-rgb),0.8)}
 #modal.show,.ovl.show{display:flex}
 /* weekly op button + panel, idle income popup */
-.wkbtn{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px auto 0;width:224px;height:34px;position:relative;
+.wkbtn{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px auto 0;min-width:224px;max-width:calc(100% - 28px);padding:0 10px;height:34px;position:relative;
   border:1px dashed var(--r2);color:var(--r2);font-family:'VT323',monospace;font-size:19px;letter-spacing:.06em;text-shadow:0 0 6px var(--r2)}
 .wkbtn svg.i{width:15px;height:15px}
 .wkbtn .dot{position:absolute;top:-4px;right:-4px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
@@ -362,7 +365,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 /* first-steps coach: the button to press blinks, the note sits right below or above it */
 .coach{outline:2px solid var(--a2);outline-offset:3px;animation:coachP 1s steps(2) infinite!important}
 @keyframes coachP{50%{outline-color:transparent}}
-#coachTip{position:absolute;left:24px;right:24px;z-index:27;display:none;pointer-events:auto;border:1px solid var(--a2);
+#coachTip{position:absolute;left:24px;right:24px;z-index:27;display:none;pointer-events:none;border:1px solid var(--a2);
   background:var(--bg1);padding:9px 12px;font-size:11.5px;line-height:1.55;color:var(--a2);box-shadow:0 0 18px rgba(var(--a2-rgb),0.3)}
 #coachTip.show{display:block;animation:lin .2s steps(4)}
 #coachTip::before{content:'> ';color:var(--mute)}
@@ -932,7 +935,7 @@ function sfxGain(){
 function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
 // minimum ms between two plays of the same effect: dozens of oscillators a second clog weak phones'
 // audio thread, and then sounds arrive late and in bunches
-const SFX_GAP={shoot:70,hit:55,crit:80,coin:80,die:90,breach:120,dodge:100,gem:120,blip:30,click:30};
+const SFX_GAP={shoot:70,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
 const _sfxLast={};
 let _noiseBuf=null;
 function snd(type){
@@ -948,25 +951,54 @@ function snd(type){
       gn.gain.setValueAtTime(v,t0);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);
       o.connect(gn);gn.connect(g);o.start(t0);o.stop(t0+d);
     };
-    if(type==='shoot')tone('square',700,.06,.04,300);
-    else if(type==='hit')tone('sawtooth',180,.09,.06);
-    else if(type==='die'){
-      if(!_noiseBuf){_noiseBuf=a.createBuffer(1,a.sampleRate*.18,a.sampleRate);const d=_noiseBuf.getChannelData(0);
-        for(let i=0;i<d.length;i++)d[i]=Math.exp(-i/a.sampleRate*22)*(Math.random()*2-1);}
-      const buf=_noiseBuf;
-      const s=a.createBufferSource(),gn=a.createGain();gn.gain.value=.28;
-      s.buffer=buf;s.connect(gn);gn.connect(g);s.start(t);
+    // noise burst (shared buffer): d = length, f = band-pass centre, q = width, v = volume, delay
+    const noise=(d,f,q,v,delay=0)=>{
+      if(!_noiseBuf){_noiseBuf=a.createBuffer(1,a.sampleRate*.6,a.sampleRate);const n=_noiseBuf.getChannelData(0);for(let i=0;i<n.length;i++)n[i]=Math.random()*2-1;}
+      const src=a.createBufferSource(),bp=a.createBiquadFilter(),gn=a.createGain(),t0=t+delay;
+      src.buffer=_noiseBuf;bp.type='bandpass';bp.frequency.value=f;bp.Q.value=q;
+      gn.gain.setValueAtTime(v,t0);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);
+      src.connect(bp);bp.connect(gn);gn.connect(g);src.start(t0,Math.random()*.3,d+.02);
+    };
+    const arp=(wave,notes,step,v,d)=>notes.forEach((f,i)=>tone(wave,f,v,d,0,i*step));
+    switch(type){
+      // ── combat (rate-limited, kept light)
+      case 'shoot':  tone('square',760,.035,.035,320);break;
+      case 'hit':    tone('triangle',220,.06,.05,120);noise(.03,2400,1.2,.05);break;
+      case 'crit':   tone('square',1300,.05,.05,2600);tone('sine',2600,.04,.07,0,.02);break;
+      case 'kill':   noise(.09,900,.8,.12);tone('square',340,.05,.08,90);break;
+      case 'coin':   tone('square',1320,.035,.05);tone('square',1980,.035,.08,0,.045);break;
+      case 'breach': tone('sawtooth',110,.2,.25,55);noise(.18,300,.7,.18);break;
+      case 'dodge':  tone('sine',1800,.06,.1,700);noise(.07,5000,1,.04);break;
+      case 'block':  tone('triangle',520,.12,.14,520);tone('sine',1560,.05,.18,0,.01);break;
+      case 'die':    noise(.5,500,.5,.32);tone('sawtooth',220,.18,.55,40);break;
+      case 'crtoff': tone('sine',1600,.07,.45,50);tone('square',8000,.015,.12);break;
+      // ── run events
+      case 'wave':   arp('square',[392,523],.07,.045,.09);break;
+      case 'boss':   tone('sawtooth',82,.18,.9,62);tone('sawtooth',87,.14,.9,65);noise(.6,180,.6,.16);
+                     arp('square',[330,311,294],.18,.05,.16);break;
+      case 'enrage': tone('sawtooth',120,.16,.5,240);noise(.3,700,.8,.12);break;
+      case 'nova':   tone('sine',160,.25,.6,40);noise(.45,1200,.4,.22);tone('square',900,.05,.3,200);break;
+      case 'freeze': arp('triangle',[2093,1568,1319,1047],.04,.07,.25);noise(.3,6000,2,.05);break;
+      case 'heal':   arp('sine',[523,659,784,1047],.06,.08,.25);break;
+      case 'power':  tone('sawtooth',200,.08,.45,900);tone('square',400,.04,.45,1800);break;
+      case 'shock':  tone('sine',90,.3,.5,30);noise(.4,400,.5,.25);break;
+      case 'shatter':noise(.16,4200,1.5,.1);tone('triangle',2400,.05,.12,1200);break;
+      case 'bounty': tone('sine',1568,.04,.12);break;
+      // ── rewards & menus
+      case 'gem':    arp('sine',[1047,1319,1568],.06,.1,.22);break;
+      case 'levelup':arp('square',[523,659,784,1047],.055,.06,.12);tone('sine',2093,.05,.35,0,.22);break;
+      case 'epic':   arp('square',[392,523,659,784,1047,1319],.06,.06,.14);tone('sine',1568,.07,.6,0,.36);noise(.5,7000,1,.05,.36);break;
+      case 'star':   arp('sine',[1319,1568,2093,2637],.07,.08,.3);break;
+      case 'unlock': arp('square',[262,330,392,523,659,784],.08,.06,.16);tone('square',1047,.06,.5,0,.48);break;
+      case 'achieve':arp('triangle',[784,988,1175,1568],.07,.08,.22);break;
+      case 'quest':  arp('triangle',[659,880],.08,.08,.18);break;
+      case 'collect':arp('square',[880,1175,1568],.04,.05,.1);break;
+      case 'summon': noise(.5,800,.4,.08);tone('sine',200,.08,.5,800);break;
+      case 'click':  tone('square',1500,.025,.025);break;
+      case 'buy':    tone('square',660,.04,.06);tone('square',990,.04,.08,0,.06);break;
+      case 'deny':   tone('square',140,.05,.14);break;
+      case 'blip':   tone('square',2200,.02,.03);break;
     }
-    else if(type==='breach')tone('sawtooth',95,.28,.28);
-    else if(type==='coin')tone('sine',900,.07,.08,1400);
-    else if(type==='gem')[1047,1319,1568].forEach((f,i)=>tone('sine',f,.1,.22,0,i*.06));
-    else if(type==='crit')tone('sine',1100,.11,.06,2200);
-    else if(type==='dodge')tone('sine',1800,.06,.08,900);
-    else if(type==='click')tone('square',1500,.025,.025);
-    else if(type==='buy'){tone('square',660,.04,.06);tone('square',990,.04,.08,0,.06);}
-    else if(type==='deny')tone('square',140,.05,.14);
-    else if(type==='blip')tone('square',2200,.02,.03);
-    else if(type==='crtoff'){tone('sine',1600,.07,.45,50);tone('square',8000,.015,.12);}
     void ramp;
   }catch(e){}
 }
@@ -1169,50 +1201,50 @@ const TAT_MAX=7;
 const TAT_REQ=[0,2,3,4,6,8,11];             // copies for Lv l→l+1 (35 copies to max)
 const tatReq=l=>TAT_REQ[l]||Infinity;
 const PITY=50;                              // an epic is guaranteed within this many summons
-const cdTxt=x=>` · ${x.cd.toFixed(0)}s cooldown`;
+const cdTxt=x=>' · '+T('{0}s cooldown',x.cd.toFixed(0));
 const TAT_TYPES=[
   // ── common: plain stats
-  {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.6]},          desc:x=>`+${pc(x.dmg)} bullet damage`},
-  {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.06,.36]},        desc:x=>`+${pc(x.rate)} fire rate`},
-  {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.1,.6]},            desc:x=>`+${pc(x.hp)} max health`},
-  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.004,.025]},       desc:x=>`heals ${pc2(x.pct)} of your max health every second`},
-  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.05,.3]},          desc:x=>`-${pc(x.red)} damage from perimeter hits (adds up with ARMOR, 90% max)`},
-  {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.15,1.2]},             desc:x=>`+${pc(x.c)} coins from every source`},
+  {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.6]},          desc:x=>T('+{0} bullet damage',pc(x.dmg))},
+  {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.06,.36]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
+  {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.1,.6]},            desc:x=>T('+{0} max health',pc(x.hp))},
+  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.004,.025]},       desc:x=>T('heals {0} of your max health every second',pc2(x.pct))},
+  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.05,.3]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR, 90% max)',pc(x.red))},
+  {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.15,1.2]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.08,.4],drop:[.15,.6]},
-   desc:x=>`${pc(x.jack)} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up ${pc(x.drop)} more often`},
+   desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
   // ── uncommon: build pieces + defensive actives
-  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>`+${pc(x.c)} crit chance · above the 80% cap it turns into crit power`},
-  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.5]},           desc:x=>`+x${x.m.toFixed(2)} crit power: critical hits deal that much more`},
-  {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>`+${pc(x.d)} chance to take no damage from a perimeter hit (50% max)`},
-  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.1,.5]},            desc:x=>`+${pc(x.t)} thorns: an enemy that hits the perimeter loses that share of its max health`},
+  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
+  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.5]},           desc:x=>T('+x{0} crit power: critical hits deal that much more',x.m.toFixed(2))},
+  {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>T('+{0} chance to take no damage from a perimeter hit (50% max)',pc(x.d))},
+  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.1,.5]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.1,.4],a:[.08,.35],vuln:[.4,1.6]},
-   desc:x=>`+${pc(x.c)} slow chance, +${pc(x.a)} slow power · slowed or frozen enemies take +${pc(x.vuln)} bullet damage`},
-  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.04,.14]},            desc:x=>`moves the RANGE line ${(x.r*100).toFixed(1)}% of the screen higher, so you shoot sooner`},
+   desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
+  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.04,.14]},            desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner',(x.r*100).toFixed(1))},
   {id:'stasis',      name:'STASIS',   icon:'stasis',rar:1,w:5,  act:1,v:{dur:[4,8],cd:[40,25]},
-   desc:x=>`ACTIVE · freezes every enemy for ${x.dur.toFixed(1)}s (bosses for half); frozen enemies still take damage`+cdTxt(x)},
+   desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage',x.dur.toFixed(1))+cdTxt(x)},
   {id:'mend',        name:'MEND',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.25,.6],cd:[60,35]},
-   desc:x=>`ACTIVE · heals ${pc(x.heal)} of your max health at once`+cdTxt(x)},
+   desc:x=>T('ACTIVE · heals {0} of your max health at once',pc(x.heal))+cdTxt(x)},
   // ── rare: mechanics + offensive actives
-  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[10,4]},             desc:x=>`a barrier around the triangle blocks one perimeter hit completely, then recharges in ${x.cd.toFixed(1)}s`},
-  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>`+${pc(x.b)} damage to bosses`},
-  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>`bullets instantly kill normal enemies (not bosses) that drop below ${pc(x.k)} health`},
-  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>`+${pc(x.l)} of the damage your bullets deal heals you`},
-  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>`+${pc(x.p)} chance for a bullet to go through an enemy and keep flying (75% max)`},
+  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[10,4]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely, then recharges in {0}s',x.cd.toFixed(1))},
+  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses',pc(x.b))},
+  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
+  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>T('+{0} of the damage your bullets deal heals you',pc(x.l))},
+  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>T('+{0} chance for a bullet to go through an enemy and keep flying (75% max)',pc(x.p))},
   {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:2,w:3.5,v:{p:[.15,.4]},
-   desc:x=>`a slowed or frozen enemy that dies bursts into ice: enemies close by lose ${pc(x.p)} of its max health and get slowed (bosses take a quarter) · bursts can chain`},
+   desc:x=>T('a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p))},
   {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[6,18],cd:[50,30]},
-   desc:x=>`ACTIVE · blasts every enemy on screen for ${x.m.toFixed(1)}x bullet damage and pushes them back`+cdTxt(x)},
+   desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[1.8,3],dur:[8,12],cd:[45,30]},
-   desc:x=>`ACTIVE · x${x.m.toFixed(2)} fire rate for ${x.dur.toFixed(1)}s`+cdTxt(x)},
+   desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
   // ── epic: new mechanics
-  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.25],n:[2,5]},    desc:x=>`+${pc(x.c)} ricochet chance · a bullet can bounce up to ${Math.round(x.n)} times`},
+  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.25],n:[2,5]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
   {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[5,20],cd:[20,8]},
-   desc:x=>`when your health drops below 30%: a shockwave hits every enemy in the lower half for ${x.m.toFixed(1)}x bullet damage and throws them back`+cdTxt(x)},
-  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.8]},             desc:x=>`every shot also fires a second bullet at the next enemy in line (or the same one) with ${pc(x.m)} of the damage`},
+   desc:x=>T('when your health drops below 30%: a shockwave hits every enemy in the lower half for {0}x bullet damage and throws them back',x.m.toFixed(1))+cdTxt(x)},
+  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.8]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.8]},
-   desc:x=>`every ${Math.round(x.every)}th shot also sends lightning through up to ${Math.round(x.n)} enemies, ${pc(x.m)} of bullet damage each`},
+   desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[3,8],dur:[10,15],cd:[90,90]},
-   desc:x=>`ACTIVE · for ${x.dur.toFixed(1)}s every kill pays x${x.m.toFixed(1)} coins`+cdTxt(x)},
+   desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
 const RAR_NAMES=['COMMON','UNCOMMON','RARE','EPIC'];
@@ -1285,12 +1317,12 @@ function totalCoinMult(tier){
 function coinMultBreakdown(tier){
   const T=save.temp||{};
   const rows=[];
-  rows.push(['PERM SHOP',`x${permVal('coinMult').toFixed(2)}`]);
-  rows.push(['TIER BONUS',`x${tierCoinMult(tier||save.tier).toFixed(2)}`]);
-  if(tb('coin_mult').c>0)rows.push(['COINS TATTOO',`x${(1+tb('coin_mult').c).toFixed(2)}`]);
-  if(T.lucky)rows.push(['LUCKY BOOST','x1.50']);
-  if(totalStars())rows.push([`MASTERY ★${totalStars()}`,`x${(1+totalStars()*STAR.coin).toFixed(2)}`]);
-  rows.push(['TOTAL',`x${totalCoinMult(tier||save.tier).toFixed(2)}`]);
+  rows.push([T('PERM SHOP'),`x${permVal('coinMult').toFixed(2)}`]);
+  rows.push([T('TIER BONUS'),`x${tierCoinMult(tier||save.tier).toFixed(2)}`]);
+  if(tb('coin_mult').c>0)rows.push([T('COINS TATTOO'),`x${(1+tb('coin_mult').c).toFixed(2)}`]);
+  if(T.lucky)rows.push([T('LUCKY BOOST'),'x1.50']);
+  if(totalStars())rows.push([T('MASTERY ★{0}',totalStars()),`x${(1+totalStars()*STAR.coin).toFixed(2)}`]);
+  rows.push([T('TOTAL'),`x${totalCoinMult(tier||save.tier).toFixed(2)}`]);
   return rows;
 }
 function stats(){
@@ -1351,7 +1383,7 @@ let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[];
 let actCD={};                           // active tattoo id → seconds until ready
-let shatterQ=[];                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
+let shatterQ=[],runUnlockSnd=0;                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
 const SHATTER_R=.2;                     // burst radius, share of screen width
 
 function buildStars(){
@@ -1375,7 +1407,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};shatterQ=[];
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};shatterQ=[];runUnlockSnd=0;
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1420,7 +1452,7 @@ function playClick(x,y){
     const g=pickups[i];const dx=x-g.x,dy=y-g.y;
     if(dx*dx+dy*dy<(g.r*2.5)*(g.r*2.5)){
       if(g.kind==='gem'){
-        save.gems++;save.lastGemPickup=gameNow();snd('gem');spawnText(g.x,g.y,'+1 GEM',C.a2);burst(g.x,g.y,C.a2,10,GH*.08);
+        save.gems++;save.lastGemPickup=gameNow();snd('gem');spawnText(g.x,g.y,T('+{0} GEM',1),C.a2);burst(g.x,g.y,C.a2,10,GH*.08);
       }else{
         const v=coinDropValue();
         save.coins+=v;runCoins+=v;save.lastCoinPickup=gameNow();snd('coin');spawnText(g.x,g.y,'+'+fmtN(v),C.a);burst(g.x,g.y,C.a,10,GH*.08);
@@ -1477,12 +1509,13 @@ function startRun(weekly=false){
 function saveProgress(){
   if(runWeekly){
     const W=weeklyState();W.best=Math.max(W.best,runWave);
-    for(const [w,g] of WEEKLY_REWARDS)if(runWave>=w&&!W.got.includes(w)){W.got.push(w);save.gems+=g;toast(`WEEKLY WAVE ${w} · +${g} GEM`);snd('gem');}
+    for(const [w,g] of WEEKLY_REWARDS)if(runWave>=w&&!W.got.includes(w)){W.got.push(w);save.gems+=g;toast(T('WEEKLY WAVE {0} · +{1} GEM',w,g));snd('gem');}
   }else{
     const before=tierStars(runTier);
     if(runWave>(save.tierBest[runTier]||0)){save.tierBest[runTier]=runWave;save.bestWave=bestEffWave();}
     const after=tierStars(runTier);
-    if(after>before){toast(`★ TIER ${runTier} MASTERY ${after}/${MASTERY.length}`);snd('gem');achCheck();}
+    if(after>before){toast(T('★ TIER {0} MASTERY {1}/{2}',runTier,after,MASTERY.length));snd('star');achCheck();}
+    if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()));}
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
     if(runPlayT>=120){const r=runEarned/runPlayT;save.idleCps=save.idleCps?save.idleCps*.7+r*.3:r;}
@@ -1554,7 +1587,7 @@ function killEnemy(e,st){
   let coins=e.boss?Math.max(1,Math.round(v)):(e.coin>0&&Math.random()<st.coinChance?Math.max(1,Math.round(v)):0);
   if(coins>0&&Math.random()<st.jackpot)coins*=3;
   if(coins>0){save.coins+=coins;runCoins+=coins;runEarned+=coins;snd('coin');spawnText(e.x,e.y-e.sz,'+'+fmtN(coins),C.a);qEvent('coins',coins);}
-  runKills++;qEvent('kill');qEvent('kill_'+e.type);
+  runKills++;qEvent('kill');qEvent('kill_'+e.type);snd('kill');
   LIFE().kills++;if(e.boss)LIFE().bosses++;
   burst(e.x,e.y,enemyCol(e),e.boss?30:12,GH*.12);
   if(e.boss){burst(e.x,e.y,C.a,20,GH*.2);screenFlash=.4;shake={x:0,y:0,t:.35};}
@@ -1597,7 +1630,7 @@ function spawnWave(){
   waveNum++;
   // WAVE BOUNTY: surviving into a new wave (from wave 2) pays N basic enemies' worth of this wave's coins, silently
   if(waveNum>1){const st=stats();if(st.bounty>0){const c=Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty);
-    if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);}}}
+    if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);snd('bounty');}}}
   if(waveNum===3)hint('hud');
   if(waveNum===6)hint('target');
   const boss=waveNum%((runMods&&runMods.bossEvery)||ECO.bossEvery)===0;
@@ -1612,7 +1645,7 @@ function spawnWave(){
   }
   if(boss)makeEnemy('basic',GW/2,spawnY(GW*.13),true);
   runWave=waveNum;
-  waveAnim={active:true,timer:2,num:waveNum,boss};
+  waveAnim={active:true,timer:2,num:waveNum,boss};snd(boss?'boss':'wave');
   if(boss){screenFlash=.5;shake={x:0,y:0,t:.3};}
 }
 // damage that doesn't come from a bullet (arc, nova, shockwave); deaths are handled in the enemy loop
@@ -1638,7 +1671,7 @@ function segBoxHit(x0,y0,x1,y1,cx,cy,r){
 const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0);
 function cycleTarget(){
   save.settings.target=((save.settings.target||0)+1)%TARGET_MODES.length;persist();snd('blip');renderPlayUI();
-  spawnText(GW/2,GH*.4,'TARGET: '+TARGET_MODES[save.settings.target],C.a2);
+  spawnText(GW/2,GH*.4,T('TARGET:')+' '+T(TARGET_MODES[save.settings.target]),C.a2);
 }
 function fireBullets(st){
   const TRI_Y=GH*TRI_FRAC,order=targetOrder(inRangeEnemies(st));
@@ -1689,8 +1722,8 @@ function useActive(id){
   else if(id==='midas'){runFx.midT=x.dur;runFx.midM=x.m;}
   else if(id==='stasis'){for(const e of enemies)e.frozenT=e.boss?x.dur/2:x.dur;}
   else if(id==='mend'){const h=st.maxHp*x.heal;hp=Math.min(st.maxHp,hp+h);burst(triX,TRI_Y,C.r[2],14,GH*.08);spawnText(triX,TRI_Y-GH*.08,'+'+fmtN(h)+' HP',C.r[2]);}
-  actCD[id]=x.cd;snd('gem');qEvent('active');
-  spawnText(GW/2,GH*.4,TT[id].name+'!',C.a2);
+  actCD[id]=x.cd;snd({nova:'nova',stasis:'freeze',mend:'heal',overdrive:'power',midas:'collect'}[id]||'gem');qEvent('active');
+  spawnText(GW/2,GH*.4,T(TT[id].name)+'!',C.a2);
 }
 
 // ── PARTICLES ────────────────────────────────────────────────────────────────
@@ -1788,7 +1821,7 @@ function updatePlay(dt){
       if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*2);
     }
     novas.push({x:triX,y:LINE_Y,life:1,col:C.hot});screenFlash=.25;shake={x:0,y:0,t:.2};
-    spawnText(triX,GH*.72,'SHOCKWAVE!',C.hot);
+    spawnText(triX,GH*.72,T('SHOCKWAVE!'),C.hot);snd('shock');
     shockCooldown=st.shockCD;
   }
 
@@ -1856,7 +1889,7 @@ function updatePlay(dt){
       if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
       else e.hp-=dmg;
       runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
-      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,'REAP',C.r[3]);}
+      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,T('REAP'),C.r[3]);}
       if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');}
       else{snd('hit');burst(hx,hy,C.a2,5,GH*.06);}
       dmgText(e,dmg,isCrit);
@@ -1910,8 +1943,8 @@ function updatePlay(dt){
     // boss: calls two shards every few seconds, enrages below half health
     if(e.boss&&!frozen&&e.hp>0){
       if(!e.enraged&&e.hp<e.maxHp*ECO.bossEnrageAt){
-        e.enraged=true;e.spd=e.baseSpd*1.4;screenFlash=.3;shake={x:0,y:0,t:.3};
-        spawnText(e.x,e.y-e.sz*.8,'ENRAGED',C.hot);burst(e.x,e.y,C.hot,16,GH*.12);
+        e.enraged=true;e.spd=e.baseSpd*1.4;snd('enrage');screenFlash=.3;shake={x:0,y:0,t:.3};
+        spawnText(e.x,e.y-e.sz*.8,T('ENRAGED'),C.hot);burst(e.x,e.y,C.hot,16,GH*.12);
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
@@ -1932,12 +1965,12 @@ function updatePlay(dt){
       const thorn=()=>{if(st.thornPct>0){const d=Math.min(e.hp,e.maxHp*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=d;runDmgDealt+=d;dmgText(e,d,false);if(st.ls>0&&taken>0)hp=Math.min(st.maxHp,hp+Math.min(d*st.ls,taken*ECO.thornHealCap));}};
       if(Math.random()<st.dodge){
         snd('dodge');qEvent('dodge');
-        spawnText(e.x,LINE_Y-GH*.02,'DODGE',C.a2);
+        spawnText(e.x,LINE_Y-GH*.02,T('DODGE'),C.a2);
         burst(e.x,LINE_Y,C.a2,6,GH*.05);
         e.kbVy=-e.spd*2;
       }else if(st.aegisCD>0&&aegisT<=0){
-        aegisT=st.aegisCD;snd('dodge');
-        spawnText(e.x,LINE_Y-GH*.02,'BLOCK',C.a2);
+        aegisT=st.aegisCD;snd('block');
+        spawnText(e.x,LINE_Y-GH*.02,T('BLOCK'),C.a2);
         burst(e.x,LINE_Y,C.a2,10,GH*.07);
         e.kbVy=-e.spd*3.5;
       }else{
@@ -1967,7 +2000,7 @@ function runShatter(st){
       if(o.hp<=0||(o.x-b.x)**2+(o.y-b.y)**2>r2)continue;
       hurt(o,b.dmg*(o.boss?.25:1));o.slowT=Math.max(o.slowT,ECO.slowTime);
     }
-    novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});burst(b.x,b.y,C.a2,10,GH*.08);
+    novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});snd('shatter');burst(b.x,b.y,C.a2,10,GH*.08);
   }
 }
 // Enemies are solid: overlapping ones are pushed apart, the lighter one more (bosses barely move).
@@ -2118,8 +2151,8 @@ function drawPlay(){
   cx.beginPath();cx.moveTo(0,RY+.5);cx.lineTo(GW,RY+.5);cx.stroke();cx.setLineDash([]);
   if(!hudHidden){
     cx.font=fnt(GW*.034);
-    cx.textAlign='left';cx.fillStyle=hexA(C.hot,.5);cx.fillText('// PERIMETER',GW*.03,LINE_Y+GH*.022);
-    cx.textAlign='right';cx.fillStyle=hexA(C.a,.6);cx.fillText('RANGE //',GW*.97,RY-GH*.007);
+    cx.textAlign='left';cx.fillStyle=hexA(C.hot,.5);cx.fillText('// '+T('PERIMETER'),GW*.03,LINE_Y+GH*.022);
+    cx.textAlign='right';cx.fillStyle=hexA(C.a,.6);cx.fillText(T('RANGE')+' //',GW*.97,RY-GH*.007);
   }
 
   // drops
@@ -2255,7 +2288,7 @@ function drawAdButton(){
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
   // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
-  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:adsLeftToday()<=0?'DONE':fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
+  const col=ready?C.a2:C.mute,label=ready?`+${ECO.adGems}`:adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=r.h*.62;
   cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
   drawTvIcon(x0+tv*.5,r.y+r.h*.5,tv,col);
   cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
@@ -2276,7 +2309,7 @@ function drawHUD(st){
 
   // wave text
   cx.textAlign='center';
-  glowText(`${runWeekly?'WEEKLY':'T'+runTier} · WAVE ${waveNum}`,GW/2,GH*.045,hexA(runWeekly?C.r[2]:C.a,.75),GW*.058,4);
+  glowText(`${runWeekly?T('WEEKLY'):'T'+runTier} · ${T('WAVE {0}',waveNum)}`,GW/2,GH*.045,hexA(runWeekly?C.r[2]:C.a,.75),GW*.058,4);
   // wave duration bar (thin line under wave text, only during active phase)
   if(wavePhase==='active'&&waveDuration>0){
     const bw=GW*.38,bx=GW*.5-bw/2,by=GH*.059,bh=GH*.004,frac=Math.max(0,waveTimer/waveDuration);
@@ -2314,16 +2347,16 @@ function drawHUD(st){
     const bw=GW*.42,bh=GH*.012,bx=GW*.29,by=GH*.082,hf=Math.max(0,boss.hp/boss.maxHp);
     cx.fillStyle=hexA(C.dim,.55);cx.fillRect(bx,by,bw,bh);
     cx.fillStyle=C.boss;cx.shadowColor=C.boss;cx.shadowBlur=8;cx.fillRect(bx,by,bw*hf,bh);cx.shadowBlur=0;
-    cx.textAlign='center';glowText(`${boss.enraged?'ENRAGED ':''}BOSS ${fmtN(Math.ceil(boss.hp))}/${fmtN(Math.ceil(boss.maxHp))}`,GW/2,by-2,C.boss,fs*.82,4);
+    cx.textAlign='center';glowText(`${boss.enraged?T('ENRAGED')+' ':''}${T('BOSS')} ${fmtN(Math.ceil(boss.hp))}/${fmtN(Math.ceil(boss.maxHp))}`,GW/2,by-2,C.boss,fs*.82,4);
   }
 
   // stat strip
   const sy=GH*.985,sf=fs*.85;
   // exact values (2 decimals) below 1000; suffixes (1.23K…) only above that
   const exact=v=>v<1000?String(+v.toFixed(2)):fmtN(v);
-  cx.textAlign='left';glowText(`ATK ${exact(st.dmg)}`,GW*.04,sy,C.mute,sf,0);
-  cx.textAlign='center';glowText(`SPD ${st.rate.toFixed(2)}/s`,GW*.5,sy,C.mute,sf,0);
-  cx.textAlign='right';glowText(`CRT ${+(st.crit*100).toFixed(1)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
+  cx.textAlign='left';glowText(`${T('ATK')} ${exact(st.dmg)}`,GW*.04,sy,C.mute,sf,0);
+  cx.textAlign='center';glowText(`${T('SPD')} ${st.rate.toFixed(2)}/s`,GW*.5,sy,C.mute,sf,0);
+  cx.textAlign='right';glowText(`${T('CRT')} ${+(st.crit*100).toFixed(1)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
 
   // stat overlay
   if(save.settings.statOverlay){
@@ -2347,8 +2380,8 @@ function drawWaveBanner(){
   cx.fillStyle=waveAnim.boss?C.hot:C.a;
   cx.fillRect(0,GH*.44,GW,1);cx.fillRect(0,GH*.6,GW,1);
   cx.textAlign='center';cx.letterSpacing='0px';
-  glowText(`>> WAVE ${waveAnim.num} <<`,GW/2,GH*.53,waveAnim.boss?C.hot:C.a,GW*.13,18);
-  if(waveAnim.boss&&Math.floor(lastTime/250)%2===0)glowText('!! BOSS INCOMING !!',GW/2,GH*.578,C.hot,GW*.06,10);
+  glowText(`>> ${T('WAVE {0}',waveAnim.num)} <<`,GW/2,GH*.53,waveAnim.boss?C.hot:C.a,GW*.13,18);
+  if(waveAnim.boss&&Math.floor(lastTime/250)%2===0)glowText(T('!! BOSS INCOMING !!'),GW/2,GH*.578,C.hot,GW*.06,10);
   cx.restore();
 }
 
@@ -2425,7 +2458,7 @@ function syncUI(){
 
 // in-run controls: one button per equipped active tattoo + target priority
 function renderPlayUI(){
-  $('tgtTxt').textContent=TARGET_MODES[save.settings.target||0];
+  $('tgtTxt').textContent=T(TARGET_MODES[save.settings.target||0]);
   const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
   $('abil').innerHTML=activeIds().map((id,i)=>`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`).join('');
   _abState='';
@@ -2456,14 +2489,14 @@ function stepSpeed(dir){
   let next=dir>0?Math.floor(cur*2+1e-6)/2+.5:Math.ceil(cur*2-1e-6)/2-.5;
   next=Math.round(Math.max(1,Math.min(max,next))*10)/10;
   if(next===cur){snd('deny');toast(dir>0?`MAX SPEED x${max.toFixed(1)}`:'MIN SPEED x1.0',true);return;}
-  save.settings.speed=next;persist();snd('blip');renderPlayUI();toast(`SPEED x${next.toFixed(1)}`);
+  save.settings.speed=next;persist();snd('blip');renderPlayUI();toast(T('SPEED x{0}',next.toFixed(1)));
 }
 // one tap: next 0.5 step up; from the top it wraps back to x1.0
 function cycleSpeed(){
   const max=permVal('gameSpeed'),cur=stats().speed;
   if(cur>=max-1e-6){save.settings.speed=1;}
   else{let next=Math.floor(cur*2+1e-6)/2+.5;save.settings.speed=Math.round(Math.min(max,next)*10)/10;}
-  persist();snd('blip');renderPlayUI();toast(`SPEED x${stats().speed.toFixed(1)}`);
+  persist();snd('blip');renderPlayUI();toast(T('SPEED x{0}',stats().speed.toFixed(1)));
 }
 $('spdCtl').addEventListener('pointerdown',e=>{e.preventDefault();cycleSpeed();});
 
@@ -2479,9 +2512,9 @@ function perfSample(ms){
 function offerLowFx(){
   if(!save.fxSlowFps||save.fxAsked||fxLow()||document.querySelector('.ovl.show,#modal.show,.panel.open'))return;
   save.fxAsked=1;persist();
-  confirmBox('SLOW DEVICE?',`The game ran at about ${save.fxSlowFps} FPS on this phone. FX QUALITY: LOW looks the same at a steady 30 FPS and is easier on the battery. You can change it any time in Settings.`,
-    'USE LOW',()=>{save.settings.fx='low';persist();applyFx();snd('buy');toast('FX QUALITY: LOW');});
-  $('cfNo').textContent='KEEP';
+  confirmBox('SLOW DEVICE?',T('The game ran at about {0} FPS on this phone. FX QUALITY: LOW looks the same at a steady 30 FPS and is easier on the battery. You can change it any time in Settings.',save.fxSlowFps),
+    'USE LOW',()=>{save.settings.fx='low';persist();applyFx();snd('buy');toast(T('FX QUALITY: LOW'));});
+  $('cfNo').textContent=T('KEEP');
 }
 function renderMenu(){
   setTimeout(offerLowFx,600);
@@ -2491,10 +2524,10 @@ function renderMenu(){
 }
 function renderTierSel(){
   const t=save.tier,maxT=maxUnlockedTier();
-  $('tName').textContent=`TIER ${t}`;
+  $('tName').textContent=T('TIER {0}',t);
   const totalMult=totalCoinMult(t);
   const st=tierStars(t),stars='★'.repeat(st)+'☆'.repeat(MASTERY.length-st);
-  $('tSub').textContent=`BEST ${save.tierBest[t]||0} · ${stars}\nCOINS x${totalMult>=10?totalMult.toFixed(0):totalMult.toFixed(2)}`;
+  $('tSub').textContent=`${T('BEST {0}',save.tierBest[t]||0)} · ${stars}\n${T('COINS x{0}',totalMult>=10?totalMult.toFixed(0):totalMult.toFixed(2))}`;
   renderWeekBtn();
   $('tPrev').classList.toggle('off',t<=1);
   $('tNext').classList.toggle('off',t>=maxT);
@@ -2504,24 +2537,24 @@ $('tSub').style.cursor='pointer';
 // tapping the tier name shows mastery: stars of this tier and the bonus from all stars
 $('tName').addEventListener('click',()=>{
   const t=save.tier,n=totalStars(),best=save.tierBest[t]||0;
-  const rows=MASTERY.map((w,i)=>`<tr class="${best>=w?'total':''}"><td>${best>=w?'★':'☆'} STAR ${i+1}</td><td>WAVE ${w}</td></tr>`).join('');
+  const rows=MASTERY.map((w,i)=>`<tr class="${best>=w?'total':''}"><td>${best>=w?'★':'☆'} ${T('STAR {0}',i+1)}</td><td>${T('WAVE {0}',w)}</td></tr>`).join('');
   const html=`<table class="tip-breakdown">${rows}</table><table class="tip-breakdown" style="margin-top:10px">`+
-    `<tr><td>ALL STARS</td><td>★ ${n} / ${MASTERY.length*TIERS.max}</td></tr>`+
-    `<tr><td>DAMAGE</td><td>+${pc(n*STAR.dmg)}</td></tr><tr><td>MAX HP</td><td>+${pc(n*STAR.hp)}</td></tr><tr><td>COINS</td><td>+${pc(n*STAR.coin)}</td></tr></table>`;
-  showTip(`TIER ${t} MASTERY`,html,'EVERY STAR: +1.5% DAMAGE · +1.5% MAX HP · +1% COINS, FOREVER',true);
+    `<tr><td>${T('ALL STARS')}</td><td>★ ${n} / ${MASTERY.length*TIERS.max}</td></tr>`+
+    `<tr><td>${T('DAMAGE')}</td><td>+${pc(n*STAR.dmg)}</td></tr><tr><td>${T('MAX HP')}</td><td>+${pc(n*STAR.hp)}</td></tr><tr><td>${T('COINS')}</td><td>+${pc(n*STAR.coin)}</td></tr></table>`;
+  showTip(T('TIER {0} MASTERY',t),html,T('EVERY STAR: +1.5% DAMAGE · +1.5% MAX HP · +1% COINS, FOREVER'),true);
 });
 $('tSub').addEventListener('click',()=>{
   const rows=coinMultBreakdown(save.tier);
   const isTotal=([k])=>k==='TOTAL';
   const html='<table class="tip-breakdown">'+rows.map(r=>`<tr class="${isTotal(r)?'total':''}">`+
     `<td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')+'</table>';
-  showTip('COIN MULTIPLIER',html,'TAP ANYWHERE TO CLOSE',true);
+  showTip(T('COIN MULTIPLIER'),html,T('TAP ANYWHERE TO CLOSE'),true);
   snd('blip');
 });
 $('tPrev').addEventListener('click',()=>{if(save.tier>1){save.tier--;persist();snd('blip');renderTierSel();}});
 $('tNext').addEventListener('click',()=>{
   if(save.tier>=TIERS.max){snd('deny');return;}
-  if(!tierUnlocked(save.tier+1)){snd('deny');toast(`REACH WAVE ${TIERS.unlockWave} IN TIER ${save.tier}`,true);return;}
+  if(!tierUnlocked(save.tier+1)){snd('deny');toast(T('REACH WAVE {0} IN TIER {1}',TIERS.unlockWave,save.tier),true);return;}
   save.tier++;persist();snd('blip');renderTierSel();
 });
 function renderMenuAd(){
@@ -2530,7 +2563,7 @@ function renderMenuAd(){
   $('mAdTxt').textContent=`+${ECO.adGems}`;
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
-function menuAd(){if(useAd()){toast(`+${ECO.adGems} GEM`);renderMenu();}else toast(adsLeftToday()<=0?I('tv')+` ${ECO.adDailyCap}/${ECO.adDailyCap} TODAY · MORE TOMORROW`:I('tv')+' READY IN '+fmtCD(adCooldown()),true,true);}
+function menuAd(){if(useAd()){toast(T('+{0} GEM',ECO.adGems));renderMenu();}else toast(adsLeftToday()<=0?I('tv')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('tv')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);}
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
 $('mTat').addEventListener('click',openTattoos);
@@ -2548,14 +2581,14 @@ $('pNo').addEventListener('click',()=>{snd('click');confirmEndRun=false;});
 // dead
 function renderDead(){
   const r=save.lastRun||{};
-  $('dWave').textContent=`${r.wave||0} · ${r.weekly?'WEEKLY OP':'TIER '+(r.tier||1)}`;
-  $('dBest').textContent=runUnlockedTier?`★ TIER ${runUnlockedTier} UNLOCKED ★`:r.weekly?'★ NEW WEEKLY BEST ★':'★ NEW BEST WAVE ★';
+  $('dWave').textContent=`${r.wave||0} · ${r.weekly?T('WEEKLY OP'):T('TIER {0}',r.tier||1)}`;
+  $('dBest').textContent='★ '+(runUnlockedTier?T('TIER {0} UNLOCKED',runUnlockedTier):r.weekly?T('NEW WEEKLY BEST'):T('NEW BEST WAVE'))+' ★';
   $('dBest').classList.toggle('show',runNewBest||!!runUnlockedTier);
   const prevBest=runNewBest||r.weekly?0:(save.tierBest[r.tier||1]||0);
   const cpm=r.time>0?Math.round((r.coins||0)/(r.time/60)):0;
-  const rows=[['WAVE',r.wave||0],['KILLS',r.kills||0],['COINS','+'+fmtC(r.coins||0)],
-    ['COINS/MIN',fmtN(cpm)],['DMG DEALT',fmtN(r.dmgDealt||0)],['DMG TAKEN',fmtN(r.dmgTaken||0)],['TIME',formatTime(r.time||0)]];
-  if(prevBest>0)rows.splice(1,0,['BEST',prevBest]);
+  const rows=[[T('WAVE'),r.wave||0],[T('KILLS'),r.kills||0],[T('COINS'),'+'+fmtC(r.coins||0)],
+    [T('COINS/MIN'),fmtN(cpm)],[T('DMG DEALT'),fmtN(r.dmgDealt||0)],[T('DMG TAKEN'),fmtN(r.dmgTaken||0)],[T('TIME'),formatTime(r.time||0)]];
+  if(prevBest>0)rows.splice(1,0,[T('BEST'),prevBest]);
   $('dStats').innerHTML=rows.map(([k,v])=>`<div class="dr"><span>${k}</span><i></i><b>${v}</b></div>`).join('');
 }
 $('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;startMusic(true);});
@@ -2598,7 +2631,7 @@ function autoBuyBoosts(){
     const c=tempCost(u);if(save.coins<c)continue;
     save.coins-=c;save.temp[u.id]=1;got.push(u.name);LIFE().boosts=(LIFE().boosts||0)+1;
   }
-  if(got.length){persist();toast('AUTO: '+got.length+' BOOST'+(got.length>1?'S':''));}
+  if(got.length){persist();toast(T(got.length>1?'AUTO: {0} BOOSTS':'AUTO: {0} BOOST',got.length));}
 }
 
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
@@ -2637,14 +2670,14 @@ function renderShop(){
   $('shopTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===shopTab));
   const seg=$('buyModeRow');
   seg.style.display=shopTab==='perm'?'':'none';
-  seg.innerHTML=[1,5,10,'MAX'].map(m=>`<button data-m="${m}" class="${shopBuyMode===m?'on':''}">${m==='MAX'?'MAX':'x'+m}</button>`).join('');
+  seg.innerHTML=[1,5,10,'MAX'].map(m=>`<button data-m="${m}" class="${shopBuyMode===m?'on':''}">${m==='MAX'?T('MAX'):'x'+m}</button>`).join('');
   const cats=$('catTabs'),cur=save.settings.shopCat||'atk';
   cats.style.display=shopTab==='perm'?'':'none';
   if(shopTab==='perm')cats.innerHTML=PERM_CATS.map(([c,label,icon])=>{
     const n=PERM_UPGRADES.filter(u=>u.cat===c&&(save.perm[u.id]||0)<u.max&&upCost(u,save.perm[u.id]||0)<=save.coins).length;
     return `<button data-c="${c}" class="${c===cur?'on':''}">${I(icon)}${label}${n?`<b>${n}</b>`:''}</button>`;
   }).join('');
-  $('shopNote').textContent=shopTab==='perm'?'> TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'> LASTS ONE RUN · AUTO REBUYS IT EACH RUN':'> NEW COLORS FOR THE GAME · BUY WITH GEMS';
+  $('shopNote').textContent='> '+T(shopTab==='perm'?'TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'LASTS ONE RUN · AUTO REBUYS IT EACH RUN':'NEW COLORS FOR THE GAME · BUY WITH GEMS');
 
   let html='';
   if(shopTab==='perm'){
@@ -2655,18 +2688,18 @@ function renderShop(){
       let pips;
       if(u.ms&&!maxed&&lv<(u.ms[2]||Infinity)){
         const blk=u.ms[0],on=Math.floor(lv%blk/blk*20),next=(Math.floor(lv/blk)+1)*blk;
-        pips=`<div class="pips">${Array.from({length:20},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} · +${Math.round((u.ms[1]-1)*100)}% AT LV${next}</em>`;
+        pips=`<div class="pips">${Array.from({length:20},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} · ${T('+{0}% AT LV{1}',Math.round((u.ms[1]-1)*100),next)}</em>`;
       }else if(u.max>=1e5){
-        pips=`<div class="pips">${'<i class="on"></i>'.repeat(20)}</div><em>LV${fmtN(lv)} · NO LEVEL CAP</em>`;
+        pips=`<div class="pips">${'<i class="on"></i>'.repeat(20)}</div><em>LV${fmtN(lv)} · ${T('NO LEVEL CAP')}</em>`;
       }else{
         const np=Math.min(u.max,20),on=Math.floor(lv/u.max*np);
         pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} / ${u.max}</em>`;
       }
-      const btn=maxed?'MAX':n>0?`<span>${I('coin')}${fmtN(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtN(upCost(u,lv))}</span>`;
+      const btn=maxed?T('MAX'):n>0?`<span>${I('coin')}${fmtN(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtN(upCost(u,lv))}</span>`;
       const cls=maxed?' max':n>0?'':' no';
       return `<div class="urow${maxed?' maxed':''}"><button class="ic" data-info="${u.id}">${I(u.icon)}</button>
-        <div class="info"><div class="nm">${u.name}</div>
-        <div class="fx">${maxed?`<b>${val(lv)}</b> · MAXED`:`${val(lv)} → <b>${val(tgt)}</b>`}</div>
+        <div class="info"><div class="nm mqw"><span>${T(u.name)}</span></div>
+        <div class="fx">${maxed?`<b>${val(lv)}</b> · ${T('MAXED')}`:`${val(lv)} → <b>${val(tgt)}</b>`}</div>
         <div class="pipr">${pips}</div></div>
         <button class="buy${cls}" data-perm="${u.id}">${btn}</button></div>`;
     }).join('');
@@ -2674,19 +2707,19 @@ function renderShop(){
     html=TEMP_UPGRADES.map(u=>{
       const owned=!!save.temp[u.id],c=tempCost(u),can=!owned&&save.coins>=c,auto=!!save.autoBoost[u.id];
       return `<div class="urow${owned?' maxed':''}"><button class="ic" data-tinfo="${u.id}">${I(u.icon)}</button>
-        <div class="info"><div class="nm">${u.name}<button class="autot${auto?' on':''}" data-auto="${u.id}">AUTO</button></div><div class="fx">${u.desc}</div></div>
-        <button class="buy${owned?' max':can?'':' no'}" data-temp="${u.id}">${owned?'ARMED':`<span>${I('coin')}${fmtN(c)}</span>`}</button></div>`;
+        <div class="info"><div class="nm"><span class="mqw nmw"><span>${T(u.name)}</span></span><button class="autot${auto?' on':''}" data-auto="${u.id}">AUTO</button></div><div class="fx mqw"><span>${T(u.desc)}</span></div></div>
+        <button class="buy${owned?' max':can?'':' no'}" data-temp="${u.id}">${owned?T('ARMED'):`<span>${I('coin')}${fmtN(c)}</span>`}</button></div>`;
     }).join('');
   }else{
     html=THEMES.map(t=>{
       const owned=save.themesOwned.includes(t.id),active=save.theme===t.id,[a,a2,dim,bg1,bg2,hot]=t.c;
       const ask=pendingTheme===t.id;
-      const btn=active?'ACTIVE':owned?'USE':ask?'BUY?':`<span>${I('gem')}${t.price}</span>`;
+      const btn=active?T('ACTIVE'):owned?T('USE'):ask?T('BUY?'):`<span>${I('gem')}${t.price}</span>`;
       const cls=active?' max':owned?' ok':ask?' ask':save.gems>=t.price?'':' no';
       return `<div class="trow${active?' on':''}">
         <div class="tprev" style="background:radial-gradient(ellipse at 50% 40%,${bg2},${bg1} 85%);border-color:${dim};color:${a};text-shadow:0 0 6px ${a}">
           <span>LV_</span><i style="background:linear-gradient(90deg,${a} 0 45%,${a2} 45% 72%,${hot} 72%)"></i></div>
-        <div class="info"><div class="nm">${t.name}</div><div class="fx mqw"><span>${t.note}</span></div></div>
+        <div class="info"><div class="nm">${T(t.name)}</div><div class="fx mqw"><span>${T(t.note)}</span></div></div>
         <button class="buy${cls}" data-theme="${t.id}">${btn}</button></div>`;
     }).join('');
   }
@@ -2703,12 +2736,12 @@ $('shopList').addEventListener('click',e=>{
   if(b.dataset.info){
     const u=PU[b.dataset.info],lv=save.perm[u.id]||0;
     // NOW → NEXT LEVEL in the stat's own format (no per-level arithmetic that can read wrong)
-    const nxt=lv<u.max?` · NEXT LV ${u.fx(uVal(u,lv+1))}`:' · MAXED';
-    const meta=`NOW ${u.fx(permVal(u.id))}${nxt}`+(u.ms?` · +${Math.round((u.ms[1]-1)*100)}% BONUS EVERY ${u.ms[0]} LEVELS (UNTIL ${u.ms[2]})`:'')+(u.max>=1e5?' · NO LEVEL CAP':` · MAX LV ${u.max}`)
-      +(u.id==='offline'?` · YOUR AVERAGE RATE ${fmtN(save.idleCps||0)} COINS/S`:'');
-    showTip(u.name,u.info,meta);
+    const nxt=lv<u.max?' · '+T('NEXT LV {0}',u.fx(uVal(u,lv+1))):' · '+T('MAXED');
+    const meta=T('NOW {0}',u.fx(permVal(u.id)))+nxt+(u.ms?' · '+T('+{0}% BONUS EVERY {1} LEVELS (UNTIL {2})',Math.round((u.ms[1]-1)*100),u.ms[0],u.ms[2]):'')+' · '+(u.max>=1e5?T('NO LEVEL CAP'):T('MAX LV {0}',u.max))
+      +(u.id==='offline'?' · '+T('YOUR AVERAGE RATE {0} COINS/S',fmtN(save.idleCps||0)):'');
+    showTip(T(u.name),T(u.info),meta);
   }else if(b.dataset.tinfo){
-    const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.tinfo);showTip(u.name,u.info,'LASTS ONE RUN · PRICE GROWS WITH YOUR BEST WAVE');
+    const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.tinfo);showTip(T(u.name),T(u.info),T('LASTS ONE RUN · PRICE GROWS WITH YOUR BEST WAVE'));
   }else if(b.dataset.perm){
     const u=PU[b.dataset.perm],{n}=permPlan(u);
     if(n<=0){snd('deny');return;}
@@ -2723,7 +2756,7 @@ $('shopList').addEventListener('click',e=>{
     const t=THEMES.find(x=>x.id===b.dataset.theme);
     if(save.theme===t.id)return;
     if(save.themesOwned.includes(t.id)){setTheme(t.id);return;}
-    if(save.gems<t.price){snd('deny');toast('NOT ENOUGH GEMS',true);return;}
+    if(save.gems<t.price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
     if(pendingTheme!==t.id){pendingTheme=t.id;snd('blip');renderShop();return;}
     save.gems-=t.price;save.themesOwned.push(t.id);pendingTheme=null;
     setTheme(t.id);toast(t.name+' UNLOCKED');
@@ -2731,7 +2764,7 @@ $('shopList').addEventListener('click',e=>{
 });
 function setTheme(id){
   save.theme=id;persist();applyTheme(id);snd('buy');pendingTheme=null;
-  renderShop();renderMenu();$('themeName').textContent=THEMES.find(x=>x.id===id).name;
+  renderShop();renderMenu();$('themeName').textContent=T(THEMES.find(x=>x.id===id).name);
 }
 
 // ── TATTOOS & GACHA ──────────────────────────────────────────────────────────
@@ -2753,13 +2786,13 @@ function pickW(list){
 }
 function doPull(count){
   const pool=tatPool();
-  if(!pool.length){snd('deny');toast('COLLECTION COMPLETE',true);return;}
+  if(!pool.length){snd('deny');toast(T('COLLECTION COMPLETE'),true);return;}
   // never sell more summons than there are copies left to find
   const left=pool.reduce((s,t)=>{const c=tatOf(t.id);return s+tatCopiesTo(TAT_MAX)-(c.lv?tatCopiesTo(c.lv)+c.copies:0);},0);
   count=Math.min(count,left);
   const cost=count===10?ECO.pull10Cost:ECO.pullCost*count;
-  if(save.gems<cost){snd('deny');toast('NOT ENOUGH GEMS',true);return;}
-  save.gems-=cost;LIFE().pulls+=count;
+  if(save.gems<cost){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
+  save.gems-=cost;LIFE().pulls+=count;snd('summon');
   const results=[];
   for(let i=0;i<count;i++){
     const t=rollType();if(!t)break;
@@ -2772,13 +2805,16 @@ function doPull(count){
 function showGachaResults(results){
   const cards=$('gachaCards'),title=$('gachaResultTitle');
   const hot=results.some(r=>r.isNew||r.t.rar>=2);
-  title.textContent=results.some(r=>r.isNew)?'!! NEW TATTOO !!':'>> SUMMON RESULTS';
+  title.textContent=results.some(r=>r.isNew)?T('!! NEW TATTOO !!'):'>> '+T('SUMMON RESULTS');
   title.className='g-title'+(hot?' rare':'');
   cards.className='gcards'+(results.length===1?' one':'');
   cards.innerHTML=results.map((r,i)=>`<div class="gc r${r.t.rar}" style="--rc:var(--r${r.t.rar});--rc-rgb:var(--r${r.t.rar}-rgb);animation-delay:${(i*.09).toFixed(2)}s">
-      <span class="new">${r.isNew?'NEW':r.lv>=TAT_MAX&&r.leveled?'MAX':r.leveled?'LV UP':'+1'}</span>${I(r.t.icon)}<span class="n">${r.t.name}</span><span class="lv">LV${r.lv}</span></div>`).join('');
+      <span class="new">${r.isNew?T('NEW'):r.lv>=TAT_MAX&&r.leveled?T('MAX'):r.leveled?T('LV UP'):'+1'}</span>${I(r.t.icon)}<span class="n">${T(r.t.name)}</span><span class="lv">LV${r.lv}</span></div>`).join('');
   $('gachaOverlay').classList.add('show');
-  results.forEach((r,i)=>setTimeout(()=>snd(r.isNew||r.leveled?'gem':'blip'),i*90));
+  // a sound per card; the best card of the pull gets the big one at the end
+  const top=results.some(r=>r.t.rar===3)?'epic':results.some(r=>r.leveled||r.isNew)?'levelup':'';
+  results.forEach((r,i)=>setTimeout(()=>snd(r.t.rar>=2?'gem':'blip'),i*90));
+  if(top)setTimeout(()=>snd(top),results.length*90+120);
 }
 $('gachaCollect').addEventListener('click',()=>{snd('click');$('gachaOverlay').classList.remove('show');renderTattoos();});
 $('gachaSingle').addEventListener('click',()=>doPull(1));
@@ -2813,7 +2849,7 @@ function tatCell(v,f){
 // chart: every level's values; passed levels dim, current highlighted, copies needed on the right
 function tatChart(t,lv){
   const cols=TAT_COLS[t.id]||[],c=tatOf(t.id);
-  let h=`<table class="tlv" style="--rc:var(--r${t.rar});--rc-rgb:var(--r${t.rar}-rgb)"><tr><th>LV</th>${cols.map(k=>`<th>${k[1]}</th>`).join('')}<th>COPIES</th></tr>`;
+  let h=`<table class="tlv" style="--rc:var(--r${t.rar});--rc-rgb:var(--r${t.rar}-rgb)"><tr><th>LV</th>${cols.map(k=>`<th>${T(k[1])}</th>`).join('')}<th>${T('COPIES')}</th></tr>`;
   for(let L=1;L<=TAT_MAX;L++){
     const x=tatFx(t,L),cls=L<lv?'past':L===lv?'now':L===lv+1?'next':'';
     const cp=L===1?'1':L<=lv?'✓':L===lv+1?`${c.copies}/${tatReq(lv)}`:`+${tatReq(L-1)}`;
@@ -2823,24 +2859,24 @@ function tatChart(t,lv){
 }
 function tatInfo(t){
   const c=tatOf(t.id),esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  if(!c.lv){showTip('??? · LOCKED',`An undiscovered ${RAR_NAMES[t.rar].toLowerCase()} tattoo. Summon to find it.`);return;}
-  const status=c.lv<TAT_MAX?`${c.copies}/${tatReq(c.lv)} COPIES TO LV${c.lv+1}`:'MAX LEVEL · OUT OF THE SUMMON POOL';
-  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?' <b>(equipped)</b>':'')+tatChart(t,c.lv);
-  showTip(`${t.name} · LV${c.lv}`,body,`${RAR_NAMES[t.rar]}${t.act?' · ACTIVE':''} · ${status}`,true);
+  if(!c.lv){showTip(T('??? · LOCKED'),T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLowerCase()));return;}
+  const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE SUMMON POOL');
+  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+tatChart(t,c.lv);
+  showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):''} · ${status}`,true);
 }
 function toggleEquip(t){
   const c=tatOf(t.id);
-  if(!c.lv){snd('deny');toast('NOT DISCOVERED YET',true);return;}
-  if(save.equipped.includes(t.id)){save.equipped=save.equipped.filter(x=>x!==t.id);toast(`${t.name} REMOVED`);}
-  else if(save.equipped.length<save.tatSlots){save.equipped.push(t.id);toast(`${t.name} EQUIPPED`);}
-  else{snd('deny');toast('NO FREE SLOT',true);return;}
+  if(!c.lv){snd('deny');toast(T('NOT DISCOVERED YET'),true);return;}
+  if(save.equipped.includes(t.id)){save.equipped=save.equipped.filter(x=>x!==t.id);toast(T('{0} REMOVED',T(t.name)));}
+  else if(save.equipped.length<save.tatSlots){save.equipped.push(t.id);toast(T('{0} EQUIPPED',T(t.name)));}
+  else{snd('deny');toast(T('NO FREE SLOT'),true);return;}
   persist();snd('blip');renderTattoos();achCheck();
 }
 function renderTattoos(){
   $('tatGems').textContent=fmtN(save.gems);
   $('pull1Cost').textContent=ECO.pullCost;$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
-  $('pityNote').innerHTML=done?'> COLLECTION COMPLETE · EVERY TATTOO IS MAXED':left<=1?'> NEXT SUMMON: <b>EPIC GUARANTEED</b>':`> EPIC GUARANTEED WITHIN <b>${left}</b> SUMMONS`;
+  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT SUMMON: {0}',`<b>${T('EPIC GUARANTEED')}</b>`):T('EPIC GUARANTEED WITHIN {0} SUMMONS',`<b>${left}</b>`));
   $('gachaSingle').classList.toggle('no',save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
   $('eqCount').textContent=`${save.equipped.length}/${save.tatSlots}`;
@@ -2860,9 +2896,9 @@ function renderTattoos(){
       d.className='slot buy-slot'+(pendingSlot?' ask':'');
       d.innerHTML=pendingSlot?'<span>BUY?</span>':`${I('lock')}<span>${I('gem')}${price}</span>`;
       d.addEventListener('click',()=>{
-        if(save.gems<price){snd('deny');toast('NOT ENOUGH GEMS',true);return;}
+        if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
         if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
-        save.gems-=price;save.tatSlots++;pendingSlot=false;persist();snd('buy');toast(`SLOT ${save.tatSlots} UNLOCKED`);renderTattoos();
+        save.gems-=price;save.tatSlots++;pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
       });
     }else{d.className='slot locked';d.innerHTML=I('lock');}
     eq.appendChild(d);
@@ -2876,10 +2912,10 @@ function renderTattoos(){
       found++;
       const isEq=save.equipped.includes(t.id),maxed=c.lv>=TAT_MAX,p=maxed?100:c.copies/tatReq(c.lv)*100;
       d.className='ctile'+(isEq?' eq':'');d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
-      d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${t.name}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
+      d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${T(t.name)}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
     }else{
       d.className='ctile locked';
-      d.innerHTML=`${I('lock')}<span class="n">${t.act?'◆':''}???</span><span class="lv">${RAR_NAMES[t.rar]}</span>`;
+      d.innerHTML=`${I('lock')}<span class="n">${t.act?'◆':''}???</span><span class="lv">${T(RAR_NAMES[t.rar])}</span>`;
     }
     attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
     inv.appendChild(d);
@@ -2892,21 +2928,21 @@ function renderTattoos(){
 // A new daily quest every `dailyEveryH` hours, a weekly one every `weeklyEveryH`. Board holds `cap`.
 const QUEST={cap:10,dailyEveryH:3,weeklyEveryH:24};
 const QUEST_DEFS=[
-  {k:'kill',         txt:n=>`Destroy ${fmtN(n)} enemies`,          d:[60,120],w:[700,1100]},
-  {k:'kill_basic',   txt:n=>`Destroy ${fmtN(n)} basic enemies`,    d:[40,80], w:[450,750]},
-  {k:'kill_runner',  txt:n=>`Destroy ${fmtN(n)} runners`,          d:[15,30], w:[150,260],need:()=>bestEffWave()>=ENEMY_TYPES.runner.from},
-  {k:'kill_tank',    txt:n=>`Destroy ${fmtN(n)} tanks`,            d:[8,15],  w:[80,140], need:()=>bestEffWave()>=ENEMY_TYPES.tank.from},
-  {k:'kill_splitter',txt:n=>`Destroy ${fmtN(n)} splitters`,        d:[10,20], w:[100,180],need:()=>bestEffWave()>=ENEMY_TYPES.splitter.from},
-  {k:'kill_boss',    txt:n=>`Destroy ${n} boss${n>1?'es':''}`,     d:[1,1],   w:[4,6],    need:()=>bestEffWave()>=ECO.bossEvery},
-  {k:'knockback',    txt:n=>`Knock back ${fmtN(n)} enemies`,       d:[20,40], w:[220,360],need:()=>permVal('knockback')>0},
-  {k:'crit',         txt:n=>`Land ${fmtN(n)} critical hits`,       d:[25,50], w:[260,420],need:()=>permVal('critChance')>0},
-  {k:'slow',         txt:n=>`Slow down ${fmtN(n)} enemies`,        d:[15,30], w:[180,300],need:()=>permVal('slowChance')>0&&permVal('slowAmt')>0},
-  {k:'multishot',    txt:n=>`Fire ${fmtN(n)} multishots`,          d:[15,30], w:[180,300],need:()=>permVal('multishot')>0},
-  {k:'dodge',        txt:n=>`Dodge ${fmtN(n)} hits`,               d:[4,8],   w:[40,70],  need:()=>permVal('dodge')>0},
-  {k:'pierce',       txt:n=>`Pierce through ${fmtN(n)} enemies`,   d:[10,20], w:[120,200],need:()=>permVal('pierce')>0},
-  {k:'drop',         txt:n=>`Collect ${n} field drop${n>1?'s':''}`,d:[1,2],   w:[6,10]},
-  {k:'wave',         txt:n=>`Clear ${n} waves in a single run`,    wave:true},
-  {k:'coins',        txt:n=>`Earn ${fmtN(n)} coins in runs`,       coins:true},
+  {k:'kill',         txt:n=>T('Destroy {0} enemies',fmtN(n)),          d:[60,120],w:[700,1100]},
+  {k:'kill_basic',   txt:n=>T('Destroy {0} basic enemies',fmtN(n)),    d:[40,80], w:[450,750]},
+  {k:'kill_runner',  txt:n=>T('Destroy {0} runners',fmtN(n)),          d:[15,30], w:[150,260],need:()=>bestEffWave()>=ENEMY_TYPES.runner.from},
+  {k:'kill_tank',    txt:n=>T('Destroy {0} tanks',fmtN(n)),            d:[8,15],  w:[80,140], need:()=>bestEffWave()>=ENEMY_TYPES.tank.from},
+  {k:'kill_splitter',txt:n=>T('Destroy {0} splitters',fmtN(n)),        d:[10,20], w:[100,180],need:()=>bestEffWave()>=ENEMY_TYPES.splitter.from},
+  {k:'kill_boss',    txt:n=>T(n>1?'Destroy {0} bosses':'Destroy {0} boss',n),     d:[1,1],   w:[4,6],    need:()=>bestEffWave()>=ECO.bossEvery},
+  {k:'knockback',    txt:n=>T('Knock back {0} enemies',fmtN(n)),       d:[20,40], w:[220,360],need:()=>permVal('knockback')>0},
+  {k:'crit',         txt:n=>T('Land {0} critical hits',fmtN(n)),       d:[25,50], w:[260,420],need:()=>permVal('critChance')>0},
+  {k:'slow',         txt:n=>T('Slow down {0} enemies',fmtN(n)),        d:[15,30], w:[180,300],need:()=>permVal('slowChance')>0&&permVal('slowAmt')>0},
+  {k:'multishot',    txt:n=>T('Fire {0} multishots',fmtN(n)),          d:[15,30], w:[180,300],need:()=>permVal('multishot')>0},
+  {k:'dodge',        txt:n=>T('Dodge {0} hits',fmtN(n)),               d:[4,8],   w:[40,70],  need:()=>permVal('dodge')>0},
+  {k:'pierce',       txt:n=>T('Pierce through {0} enemies',fmtN(n)),   d:[10,20], w:[120,200],need:()=>permVal('pierce')>0},
+  {k:'drop',         txt:n=>T(n>1?'Collect {0} field drops':'Collect {0} field drop',n),d:[1,2],   w:[6,10]},
+  {k:'wave',         txt:n=>T('Clear {0} waves in a single run',n),    wave:true},
+  {k:'coins',        txt:n=>T('Earn {0} coins in runs',fmtN(n)),       coins:true},
 ];
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 function makeQuest(kind){
@@ -2944,14 +2980,14 @@ function qEvent(k,n=1){
   for(const q of save.quests){
     if(q.k!==k||questDone(q))continue;
     q.prog=Math.min(q.target,q.prog+n);
-    if(questDone(q)){toast('QUEST COMPLETE');snd('gem');renderQuestDot();}
+    if(questDone(q)){toast(T('QUEST COMPLETE'));snd('quest');renderQuestDot();}
   }
 }
 function qReach(k,v){
   for(const q of save.quests){
     if(q.k!==k||questDone(q)||v<=q.prog)continue;
     q.prog=Math.min(q.target,v);
-    if(questDone(q)){toast('QUEST COMPLETE');snd('gem');renderQuestDot();}
+    if(questDone(q)){toast(T('QUEST COMPLETE'));snd('quest');renderQuestDot();}
   }
 }
 function renderQuestDot(){$('mQuestDot').style.display=save.quests.some(questDone)||(Array.isArray(save.achClaimed)&&achClaimable().length)?'':'none';}
@@ -2961,15 +2997,15 @@ function fmtHM(ms){const s=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(s/3600),m
 function renderQuestTimers(){
   const now=gameNow(),n=save.quests.length,full=n>=QUEST.cap;
   // the board count lives in the tab label, the note only says when new quests arrive
-  $('questTabs').querySelector('[data-q=q]').textContent=`QUESTS ${n}/${QUEST.cap}`;
-  $('qTimers').textContent=full?'> BOARD FULL · CLAIM ONE TO GET NEW QUESTS'
-    :`> NEW DAILY IN ${fmtHM(save.qNextDaily-now)} · WEEKLY IN ${fmtHM(save.qNextWeekly-now)}`;
+  $('questTabs').querySelector('[data-q=q]').textContent=`${T('QUESTS')} ${n}/${QUEST.cap}`;
+  $('qTimers').textContent='> '+(full?T('BOARD FULL · CLAIM ONE TO GET NEW QUESTS')
+    :T('NEW DAILY IN {0} · WEEKLY IN {1}',fmtHM(save.qNextDaily-now),fmtHM(save.qNextWeekly-now)));
 }
 let questTab='q';
 $('questTabs').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;questTab=b.dataset.q;snd('click');renderQuests();$('questPanel').querySelector('.scroll').scrollTop=0;});
 function renderAchievements(){
   const done=ACHS.filter(achDone).length;
-  $('qTimers').textContent=`> ${done} OF ${ACHS.length} DONE · EACH REWARD PAYS ONCE`;
+  $('qTimers').textContent='> '+T('{0} OF {1} DONE · EACH REWARD PAYS ONCE',done,ACHS.length);
   const order=a=>save.achClaimed.includes(a.id)?2:achDone(a)?0:1;
   $('questList').innerHTML=[...ACHS].sort((a,b)=>order(a)-order(b)).map(a=>{
     const claimed=save.achClaimed.includes(a.id),ok=achDone(a),v=Math.min(a.v(),a.t),p=v/a.t*100;
@@ -2977,7 +3013,7 @@ function renderAchievements(){
       <div class="qtop"><span class="qk">${a.name}</span><span class="qr">${I('gem')}${a.gems}${a.coins?` ${I('coin')}${fmtN(a.coins)}`:''}</span></div>
       <div class="qt">${a.desc}</div>
       <div class="qb"><div class="bar2"><i style="width:${p}%"></i></div><em>${fmtN(v)}/${fmtN(a.t)}</em>
-      <button class="buy${claimed?' max':ok?' ok':' no'}" data-ach="${a.id}">${claimed?'DONE':ok?'CLAIM':Math.floor(p)+'%'}</button></div></div>`;
+      <button class="buy${claimed?' max':ok?' ok':' no'}" data-ach="${a.id}">${claimed?T('DONE'):ok?T('CLAIM'):Math.floor(p)+'%'}</button></div></div>`;
   }).join('');
 }
 function renderQuests(){
@@ -2989,10 +3025,10 @@ function renderQuests(){
   $('questList').innerHTML=list.length?list.map(q=>{
     const d=QUEST_DEFS.find(x=>x.k===q.k),done=questDone(q),p=Math.min(100,q.prog/q.target*100);
     return `<div class="qrow${done?' done':''}${q.kind==='weekly'?' wk':''}">
-      <div class="qtop"><span class="qk">${q.kind.toUpperCase()}</span><span class="qr">${I('gem')}${q.gems} ${I('coin')}${fmtN(q.coins)}</span></div>
+      <div class="qtop"><span class="qk">${T(q.kind.toUpperCase())}</span><span class="qr">${I('gem')}${q.gems} ${I('coin')}${fmtN(q.coins)}</span></div>
       <div class="qt">${d?d.txt(q.target):q.k}</div>
       <div class="qb"><div class="bar2"><i style="width:${p}%"></i></div><em>${fmtN(q.prog)}/${fmtN(q.target)}</em>
-      <button class="buy${done?' ok':' no'}" data-claim="${q.id}">${done?'CLAIM':Math.floor(p)+'%'}</button></div></div>`;
+      <button class="buy${done?' ok':' no'}" data-claim="${q.id}">${done?T('CLAIM'):Math.floor(p)+'%'}</button></div></div>`;
   }).join(''):'<div class="empty">&gt; NO QUESTS. NEW ONES ARRIVE OVER TIME.</div>';
 }
 function openQuests(){snd('click');refreshQuests();renderQuests();$('questPanel').classList.add('open');$('questPanel').querySelector('.scroll').scrollTop=0;}
@@ -3003,13 +3039,13 @@ $('questList').addEventListener('click',e=>{
   if(ab){
     const a=ACHS.find(x=>x.id===ab.dataset.ach);
     if(!a||!achDone(a)||save.achClaimed.includes(a.id)){snd('deny');return;}
-    save.achClaimed.push(a.id);save.gems+=a.gems;save.coins+=a.coins||0;persist();snd('buy');toast(`+${a.gems} GEM`+(a.coins?` · +${fmtN(a.coins)} COINS`:''));renderQuests();renderQuestDot();return;
+    save.achClaimed.push(a.id);save.gems+=a.gems;save.coins+=a.coins||0;persist();snd('buy');toast(T('+{0} GEM',a.gems)+(a.coins?' · '+T('+{0} COINS',fmtN(a.coins)):''));renderQuests();renderQuestDot();return;
   }
   const b=e.target.closest('[data-claim]');if(!b)return;
   const q=save.quests.find(x=>x.id===b.dataset.claim);
   if(!q||!questDone(q)){snd('deny');return;}
   save.gems+=q.gems;save.coins+=q.coins;save.quests=save.quests.filter(x=>x!==q);LIFE().quests++;achCheck();
-  persist();snd('buy');toast(`+${q.gems} GEM · +${fmtN(q.coins)} COINS`);refreshQuests();renderQuests();renderQuestDot();
+  persist();snd('buy');toast(T('+{0} GEM',q.gems)+' · '+T('+{0} COINS',fmtN(q.coins)));refreshQuests();renderQuests();renderQuestDot();
 });
 setInterval(()=>{refreshQuests();if($('questPanel').classList.contains('open')&&questTab==='q')renderQuestTimers();},1000);
 
@@ -3025,8 +3061,8 @@ let modalMode='';
 // a yes/no question in its own window on top of everything
 let _confirmYes=null;
 function confirmBox(title,body,yesLabel,onYes){
-  $('cfNo').textContent='CANCEL';
-  $('cfTitle').textContent=title;$('cfBody').textContent=body;$('cfYes').textContent=yesLabel;
+  $('cfNo').textContent=T('CANCEL');
+  $('cfTitle').textContent=T(title);$('cfBody').textContent=body;$('cfYes').textContent=T(yesLabel);
   _confirmYes=onYes;$('confirmUI').classList.add('show');snd('blip');
 }
 $('cfNo').addEventListener('click',()=>{snd('click');$('confirmUI').classList.remove('show');_confirmYes=null;});
@@ -3035,17 +3071,17 @@ function openModal(mode){
   modalMode=mode;
   const ta=$('mdText');
   if(mode==='redeem'){
-    $('mdTitle').textContent='REDEEM GIFT CODE';
-    $('mdBody').textContent='Paste a gift code from the developer to receive its rewards. Each code works once.';
-    ta.value='';ta.readOnly=false;$('mdAct').textContent='REDEEM';
+    $('mdTitle').textContent=T('REDEEM GIFT CODE');
+    $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once.');
+    ta.value='';ta.readOnly=false;$('mdAct').textContent=T('REDEEM');
   }else if(mode==='export'){
-    $('mdTitle').textContent='EXPORT SAVE';
-    $('mdBody').textContent='Copy this code and keep it somewhere safe (notes, mail to yourself). Paste it into IMPORT SAVE on any device to restore your progress.';
-    ta.value=exportCode();ta.readOnly=true;$('mdAct').textContent='COPY';
+    $('mdTitle').textContent=T('EXPORT SAVE');
+    $('mdBody').textContent=T('Copy this code and keep it somewhere safe (notes, mail to yourself). Paste it into IMPORT SAVE on any device to restore your progress.');
+    ta.value=exportCode();ta.readOnly=true;$('mdAct').textContent=T('COPY');
   }else{
-    $('mdTitle').textContent='IMPORT SAVE';
-    $('mdBody').textContent='Paste a save code. This REPLACES your current progress on this device.';
-    ta.value='';ta.readOnly=false;$('mdAct').textContent='LOAD';
+    $('mdTitle').textContent=T('IMPORT SAVE');
+    $('mdBody').textContent=T('Paste a save code. This REPLACES your current progress on this device.');
+    ta.value='';ta.readOnly=false;$('mdAct').textContent=T('LOAD');
   }
   $('modal').classList.add('show');snd('click');
   if(mode==='export'){ta.focus();ta.select();}
@@ -3055,16 +3091,16 @@ $('mdAct').addEventListener('click',()=>{
   const ta=$('mdText');
   if(modalMode==='export'){
     ta.select();
-    const done=()=>{toast('CODE COPIED');snd('buy');};
+    const done=()=>{toast(T('CODE COPIED'));snd('buy');};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ta.value).then(done,()=>{document.execCommand('copy');done();});
     else{document.execCommand('copy');done();}
     return;
   }
   if(modalMode==='redeem'){redeemGift(ta.value);return;}
   const o=parseCode(ta.value.trim());
-  if(!o){snd('deny');toast('INVALID CODE',true);return;}
-  confirmBox('OVERWRITE PROGRESS?','The progress on this device will be replaced by the pasted save. This cannot be undone.','OVERWRITE',()=>{
-    try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){toast('STORAGE ERROR',true);return;}
+  if(!o){snd('deny');toast(T('INVALID CODE'),true);return;}
+  confirmBox('OVERWRITE PROGRESS?',T('The progress on this device will be replaced by the pasted save. This cannot be undone.'),'OVERWRITE',()=>{
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){toast(T('STORAGE ERROR'),true);return;}
     saveLocked=true;location.reload();
   });
 });
@@ -3091,26 +3127,26 @@ async function readGift(code){
 }
 async function redeemGift(text){
   const r=await readGift(text);
-  if(!r){snd('deny');toast('INVALID CODE',true);return;}
+  if(!r){snd('deny');toast(T('INVALID CODE'),true);return;}
   if(!Array.isArray(save.redeemed))save.redeemed=[];
-  if(save.redeemed.includes(r.i)){snd('deny');toast('CODE ALREADY USED',true);return;}
-  if(r.x&&Math.floor(gameNow()/864e5)>r.x){snd('deny');toast('CODE EXPIRED',true);return;}
+  if(save.redeemed.includes(r.i)){snd('deny');toast(T('CODE ALREADY USED'),true);return;}
+  if(r.x&&Math.floor(gameNow()/864e5)>r.x){snd('deny');toast(T('CODE EXPIRED'),true);return;}
   const got=[];
-  if(r.g>0){save.gems+=Math.floor(r.g);got.push(`${fmtN(r.g)} GEMS`);}
-  if(r.c>0){save.coins+=Math.floor(r.c);got.push(`${fmtN(r.c)} COINS`);}
+  if(r.g>0){save.gems+=Math.floor(r.g);got.push(T('{0} GEMS',fmtN(r.g)));}
+  if(r.c>0){save.coins+=Math.floor(r.c);got.push(T('{0} COINS',fmtN(r.c)));}
   // themes: a list of ids, or 'all'
   const th=r.th==='all'?THEMES.map(t=>t.id):Array.isArray(r.th)?r.th:[];
   const newTh=th.filter(id=>THEMES.some(t=>t.id===id)&&!save.themesOwned.includes(id));
   newTh.forEach(id=>save.themesOwned.push(id));
-  if(th.length)got.push(newTh.length?`${newTh.length} THEME${newTh.length>1?'S':''}`:'THEMES (ALREADY OWNED)');
+  if(th.length)got.push(newTh.length?T(newTh.length>1?'{0} THEMES':'{0} THEME',newTh.length):T('THEMES (ALREADY OWNED)'));
   const tats=[];
   for(const [id,n] of Object.entries(r.t||{})){
     const t=TT[id];if(!t)continue;
     for(let k=0;k<Math.min(50,n);k++){if(tatOf(id).lv>=TAT_MAX)break;const x=addTatCopy(id);tats.push({t,...x,lv:tatOf(id).lv});}
-    got.push(`${n}x ${t.name}`);
+    got.push(`${n}x ${T(t.name)}`);
   }
   save.redeemed.push(r.i);persist();achCheck();
-  $('modal').classList.remove('show');snd('gem');toast('REDEEMED: '+got.join(' · '));
+  $('modal').classList.remove('show');snd('gem');toast(T('REDEEMED:')+' '+got.join(' · '));
   if(tats.length)showGachaResults(tats);
   if(state===ST.MENU)renderMenu();
 }
@@ -3121,7 +3157,9 @@ const maxLocalWave=()=>Math.max(0,...Object.values(save.tierBest).map(Number));
 const tatFound=()=>TAT_TYPES.filter(t=>tatOf(t.id).lv>0).length;
 const tatTopLv=()=>Math.max(0,...TAT_TYPES.map(t=>tatOf(t.id).lv));
 const ACHS=[];
-const ach=(id,name,desc,gems,v,t,coins=0)=>ACHS.push({id,name,desc,gems,v,t,coins});
+// name/desc: 'TEXT' or ['TEXT {0}', arg] — translated each time they are shown
+const achTxt=x=>Array.isArray(x)?T(x[0],...x.slice(1)):T(x);
+const ach=(id,name,desc,gems,v,t,coins=0)=>ACHS.push({id,get name(){return achTxt(name);},get desc(){return achTxt(desc);},gems,v,t,coins});
 // first-session goals: each one is done within the first few runs and pays for the first summon
 ach('run1','BOOT SEQUENCE','Finish your first run',3,()=>LIFE().runs,1,30);
 ach('lv1','FIRST UPGRADE','Buy a shop level',2,()=>LIFE().levels,1,25);
@@ -3133,24 +3171,24 @@ ach('lv10','TUNING','Buy 10 shop levels',3,()=>LIFE().levels,10,80);
 ach('boost1','PREPARED','Buy a next-run boost',2,()=>LIFE().boosts||0,1);
 ach('equip1','FRESH INK','Equip a tattoo',3,()=>save.equipped.length,1);
 ach('boss1','BOSS DOWN','Destroy your first boss',5,()=>LIFE().bosses,1);
-[[10,3],[20,5],[30,8]].forEach(([w,g])=>ach('wave'+w,`WAVE ${w}`,`Reach wave ${w} in any tier`,g,maxLocalWave,w));
-[2,3,4,5,6,7,8,9,10,12,15,20,25,30].forEach((t,i)=>ach('tier'+t,`TIER ${t}`,`Unlock tier ${t}`,[10,15,20,25,30,40,50,60,75,90,110,140,170,200][i],maxUnlockedTier,t));
-[[1e3,3],[1e4,5],[1e5,10],[1e6,20],[1e7,40]].forEach(([n,g])=>ach('kills'+n,`EXTERMINATOR ${fmtN(n)}`,`Destroy ${fmtN(n)} enemies`,g,()=>LIFE().kills,n));
-[[1e6,3],[1e9,8],[1e12,20],[1e15,40]].forEach(([n,g])=>ach('dmg'+n,`DAMAGE ${fmtN(n)}`,`Deal ${fmtN(n)} total damage`,g,()=>LIFE().dmg,n));
-[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('runs'+n,`${n} RUNS`,`Finish ${n} runs`,g,()=>LIFE().runs,n));
-[[100,3],[1000,8],[10000,20]].forEach(([n,g])=>ach('lv'+n,`UPGRADER ${fmtN(n)}`,`Buy ${fmtN(n)} shop levels`,g,()=>LIFE().levels,n));
-[[10,3],[100,8],[500,20]].forEach(([n,g])=>ach('q'+n,`QUESTER ${n}`,`Claim ${n} quests`,g,()=>LIFE().quests,n));
-[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('pull'+n,`SUMMONER ${n}`,`Summon ${n} tattoos`,g,()=>LIFE().pulls,n));
-[[5,3],[10,8],[20,25],[TAT_TYPES.length,40]].forEach(([n,g])=>ach('tf'+n,`COLLECTOR ${n}`,`Discover ${n} different tattoos`,g,tatFound,n));
-[[10,10],[30,25],[60,50],[90,100]].forEach(([n,g])=>ach('stars'+n,`STARGAZER ${n}`,`Earn ${n} tier mastery stars`,g,totalStars,n));
-[[3,5],[5,15],[7,40]].forEach(([n,g])=>ach('tl'+n,`INKED LV${n}`,`Raise any tattoo to LV${n}`,g,tatTopLv,n));
+[[10,3],[20,5],[30,8]].forEach(([w,g])=>ach('wave'+w,['WAVE {0}',w],['Reach wave {0} in any tier',w],g,maxLocalWave,w));
+[2,3,4,5,6,7,8,9,10,12,15,20,25,30].forEach((t,i)=>ach('tier'+t,['TIER {0}',t],['Unlock tier {0}',t],[10,15,20,25,30,40,50,60,75,90,110,140,170,200][i],maxUnlockedTier,t));
+[[1e3,3],[1e4,5],[1e5,10],[1e6,20],[1e7,40]].forEach(([n,g])=>ach('kills'+n,['EXTERMINATOR {0}',fmtN(n)],['Destroy {0} enemies',fmtN(n)],g,()=>LIFE().kills,n));
+[[1e6,3],[1e9,8],[1e12,20],[1e15,40]].forEach(([n,g])=>ach('dmg'+n,['DAMAGE {0}',fmtN(n)],['Deal {0} total damage',fmtN(n)],g,()=>LIFE().dmg,n));
+[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('runs'+n,['{0} RUNS',n],['Finish {0} runs',n],g,()=>LIFE().runs,n));
+[[100,3],[1000,8],[10000,20]].forEach(([n,g])=>ach('lv'+n,['UPGRADER {0}',fmtN(n)],['Buy {0} shop levels',fmtN(n)],g,()=>LIFE().levels,n));
+[[10,3],[100,8],[500,20]].forEach(([n,g])=>ach('q'+n,['QUESTER {0}',n],['Claim {0} quests',n],g,()=>LIFE().quests,n));
+[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('pull'+n,['SUMMONER {0}',n],['Summon {0} tattoos',n],g,()=>LIFE().pulls,n));
+[[5,3],[10,8],[20,25],[TAT_TYPES.length,40]].forEach(([n,g])=>ach('tf'+n,['COLLECTOR {0}',n],['Discover {0} different tattoos',n],g,tatFound,n));
+[[10,10],[30,25],[60,50],[90,100]].forEach(([n,g])=>ach('stars'+n,['STARGAZER {0}',n],['Earn {0} tier mastery stars',n],g,totalStars,n));
+[[3,5],[5,15],[7,40]].forEach(([n,g])=>ach('tl'+n,['INKED LV{0}',n],['Raise any tattoo to LV{0}',n],g,tatTopLv,n));
 const achDone=a=>a.v()>=a.t;
 const achClaimable=()=>ACHS.filter(a=>achDone(a)&&!save.achClaimed.includes(a.id));
 function achCheck(){
   if(!Array.isArray(save.achClaimed))save.achClaimed=[];
   // first check on an existing save: mark already-earned ones as seen without a toast flood (still claimable)
   if(!Array.isArray(save.achSeen))save.achSeen=ACHS.filter(achDone).map(a=>a.id);
-  for(const a of ACHS)if(achDone(a)&&!save.achSeen.includes(a.id)){save.achSeen.push(a.id);toast('ACHIEVEMENT: '+a.name);snd('gem');}
+  for(const a of ACHS)if(achDone(a)&&!save.achSeen.includes(a.id)){save.achSeen.push(a.id);toast(T('ACHIEVEMENT:')+' '+a.name);snd('achieve');}
   renderQuestDot();
 }
 
@@ -3218,6 +3256,9 @@ function coachCheck(where){
   for(const c of COACH){
     if(c.where!==where||save.coach[c.id]||!c.when())continue;
     const el=document.querySelector(c.sel);if(!el||!el.offsetParent||coverOf(el))continue;
+    // a step the player keeps ignoring retires after a few showings
+    if(!save.coachN)save.coachN={};save.coachN[c.id]=(save.coachN[c.id]||0)+1;
+    if(save.coachN[c.id]>6){save.coach[c.id]=1;continue;}
     coachCur=c;coachEl=el;el.classList.add('coach');placeCoach(el,T(c.text));return;
   }
 }
@@ -3236,8 +3277,7 @@ function placeCoach(el,text){
 }
 document.addEventListener('click',e=>{
   if(!coachCur)return;
-  if(coachEl&&coachEl.contains(e.target)){coachClear(true);return;}
-  if($('coachTip').contains(e.target))coachClear(true);
+  if(coachEl&&coachEl.contains(e.target))coachClear(true);
 },true);
 function menuHints(){coachCheck('menu');}
 
@@ -3321,6 +3361,22 @@ $('helpList').addEventListener('click',e=>{
   if(helpOpen){const row=$('helpList').querySelector('.hrow.open');row.scrollIntoView({block:'nearest'});}
 });
 
+// ── FIT TEXT ──
+// Translations can be longer than the English: headers and buttons shrink their font until the text fits.
+const FIT_SEL='.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#tgtBtn span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.d-title,.p-title,.logo';
+function fitText(){
+  for(const el of document.querySelectorAll(FIT_SEL)){
+    if(!el.offsetParent)continue;
+    el.style.fontSize='';
+    if(el.scrollWidth<=el.clientWidth+1)continue;
+    const base=parseFloat(getComputedStyle(el).fontSize);let f=base;
+    while(el.scrollWidth>el.clientWidth+1&&f>base*.7){f-=1;el.style.fontSize=f+'px';}
+  }
+}
+let _fitQ=0;
+new MutationObserver(()=>{if(!_fitQ)_fitQ=requestAnimationFrame(()=>{_fitQ=0;fitText();});})
+  .observe(document.getElementById('ui'),{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+
 // ── STATIC TEXT TRANSLATION ──
 // Text written straight into the HTML is translated in place; the English original is remembered per node.
 const _origText=new WeakMap();
@@ -3349,14 +3405,14 @@ function renderSettings(){
   $('sfxVol').value=s.sfxVol;$('sfxVal').textContent=s.sfxVol;
   $('musVol').value=s.musVol;$('musVal').textContent=s.musVol;
   ['sfxVol','musVol'].forEach(id=>rangeFill($(id)));
-  const tg=(id,on)=>{$(id).className='tog'+(on?' on':'');$(id).textContent=on?'ON':'OFF';};
+  const tg=(id,on)=>{$(id).className='tog'+(on?' on':'');$(id).textContent=on?T('ON'):T('OFF');};
   tg('sfxToggle',s.sfxOn);tg('musToggle',s.musOn);
   $('fxSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.fx===s.fx));
   $('fxDesc').textContent=T(FX_DESC[s.fx]||'');
   $('langSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
   tg('dmgToggle',s.showDmgNums!==false);tg('statOvToggle',!!s.statOverlay);
   const th=THEMES.find(x=>x.id===save.theme)||THEMES[0];
-  $('themeName').textContent=th.name;
+  $('themeName').textContent=T(th.name);
   $('themeSwat').style.background=th.c[0];
 }
 function openSettings(){snd('click');renderSettings();$('setPanel').classList.add('open');}
@@ -3383,15 +3439,15 @@ $('setRedeem').addEventListener('click',()=>openModal('redeem'));
 function fmtDur(sec){const s=Math.max(0,Math.floor(sec)),d=Math.floor(s/86400),h=Math.floor(s/3600)%24,m=Math.floor(s/60)%60;return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`;}
 function renderWeekBtn(){
   const W=weeklyState();
-  $('mWeekTxt').textContent=`WEEKLY OP · ${W.got.length}/${WEEKLY_REWARDS.length}`;
+  $('mWeekTxt').textContent=`${T('WEEKLY OP')} · ${W.got.length}/${WEEKLY_REWARDS.length}`;
   $('mWeekDot').style.display=W.got.length<WEEKLY_REWARDS.length?'':'none';
 }
 function openWeekly(){
   const W=weeklyState(),keys=weeklyKeys(),left=(7*(weekIndex()+1)-3)*864e5-gameNow();
-  $('wkMeta').textContent=`TIER ${weeklyTier()} · BEST WAVE ${W.best} · NEW RULES IN ${fmtDur(left/1000)}`;
-  $('wkMuts').innerHTML=keys.map(k=>`<div class="mut"><b>${MUTATORS[k].name}</b><span>${MUTATORS[k].desc}</span></div>`).join('');
+  $('wkMeta').textContent=T('TIER {0} · BEST WAVE {1} · NEW RULES IN {2}',weeklyTier(),W.best,fmtDur(left/1000));
+  $('wkMuts').innerHTML=keys.map(k=>`<div class="mut"><b>${T(MUTATORS[k].name)}</b><span>${T(MUTATORS[k].desc)}</span></div>`).join('');
   $('wkRew').innerHTML=WEEKLY_REWARDS.map(([w,g])=>{const ok=W.got.includes(w);
-    return `<div class="wrw${ok?' ok':''}"><span>${ok?'✓':'·'} REACH WAVE ${w}</span><span>+${g} GEM</span></div>`;}).join('');
+    return `<div class="wrw${ok?' ok':''}"><span>${ok?'✓':'·'} ${T('REACH WAVE {0}',w)}</span><span>${T('+{0} GEM',g)}</span></div>`;}).join('');
   $('weekUI').classList.add('show');snd('click');
 }
 $('mWeek').addEventListener('click',openWeekly);
@@ -3415,15 +3471,15 @@ function checkAway(since){
 }
 function showAway(){
   const secs=save.awaySecs||0,cd=adCooldown();
-  $('awTxt').textContent=`${fmtDur(secs)} COUNTED · ${pc(permVal('offline'))} OF YOUR AVERAGE RATE (${fmtN(save.idleCps)}/S) · UP TO ${ECO.offlineDayH}H A DAY`;
+  $('awTxt').textContent=T('{0} COUNTED · {1} OF YOUR AVERAGE RATE ({2}/S) · UP TO {3}H A DAY',fmtDur(secs),pc(permVal('offline')),fmtN(save.idleCps),ECO.offlineDayH);
   $('awCoins').textContent=fmtN(save.awayPending);
   $('awAd').innerHTML=I('tv')+'x2';$('awAd').style.display=cd>0?'none':'';
   $('away').classList.add('show');
 }
 function collectAway(mult){
-  const c=Math.floor(save.awayPending*mult);
+  const c=Math.floor(save.awayPending*mult);snd('collect');
   save.coins+=c;save.awayPending=0;save.awaySecs=0;persist();
-  $('away').classList.remove('show');snd('buy');toast(`+${fmtN(c)} COINS`);
+  $('away').classList.remove('show');snd('buy');toast(T('+{0} COINS',fmtN(c)));
   if(state===ST.MENU)renderMenu();
 }
 $('awGet').addEventListener('click',()=>collectAway(1));
@@ -3445,13 +3501,13 @@ function gameInfo(){
 }
 function openFeedback(){
   $('fbInfo').textContent=gameInfo();
-  $('fbOpen').textContent=FEEDBACK.form?'OPEN FORM':'SOON';$('fbOpen').style.opacity=FEEDBACK.form?1:.4;
+  $('fbOpen').textContent=FEEDBACK.form?T('OPEN FORM'):T('SOON');$('fbOpen').style.opacity=FEEDBACK.form?1:.4;
   $('fbUI').classList.add('show');snd('click');
 }
 $('mBug').addEventListener('click',openFeedback);
 $('fbClose').addEventListener('click',()=>{snd('click');$('fbUI').classList.remove('show');});
 $('fbOpen').addEventListener('click',()=>{
-  if(!FEEDBACK.form){snd('deny');toast('FORM COMING SOON',true);return;}
+  if(!FEEDBACK.form){snd('deny');toast(T('FORM COMING SOON'),true);return;}
   const sep=FEEDBACK.form.includes('?')?'&':'?';
   const url=FEEDBACK.form+(FEEDBACK.infoEntry?`${sep}usp=pp_url&${FEEDBACK.infoEntry}=${encodeURIComponent(gameInfo())}`:'');
   window.open(url,'_blank','noopener');snd('click');
@@ -3494,7 +3550,7 @@ window.addEventListener('popstate',()=>{
   // bare menu: warn first; if Back comes again soon, there's nothing left to stop it and the app closes
   if(guards>0){ignorePop=true;history.go(-guards);guards=0;}
   if(!exitArmed){
-    exitArmed=true;toast('PRESS BACK AGAIN TO EXIT');
+    exitArmed=true;toast(T('PRESS BACK AGAIN TO EXIT'));
     clearTimeout(exitTO);exitTO=setTimeout(()=>{exitArmed=false;},2000);
   }
 });

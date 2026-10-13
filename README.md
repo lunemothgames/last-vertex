@@ -19,6 +19,7 @@ Everything is served as plain static files; there is nothing to build on the ser
 |---|---|
 | `index.html` | The game (generated — edit `src/index.src.html`, then run the build) |
 | `src/index.src.html`, `src/fonts/` | Game source and fonts |
+| `src/lang/<code>.json` | Translations (tr, es, pt), keyed by the English text; `node tools/i18n-keys.js` lists missing ones |
 | `sw.js` | Service worker: offline play and updates (cache name is set by the build) |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Home-screen app info and icons |
 | `splash/` | iPhone launch images |

@@ -797,13 +797,18 @@ function persist(){if(saveLocked)return;save.lastSeen=gameNow();try{localStorage
 // server's clock when online, and never running backwards — if the device clock is set back, game time
 // stays frozen at the latest moment seen until real time catches up. Pushing the clock ahead only borrows
 // from the future, and with a server check it doesn't work at all.
+// true inside the Android app (Capacitor), false in a browser / installed PWA
+const IS_APP=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
 function gameNow(){const t=Date.now()+(save.timeOffset||0);if(!(t<=(save.timeHigh||0)))save.timeHigh=t;return save.timeHigh;}
 let timeVerified=false,clockReady=false;   // clockReady: the boot-time server check is done (or timed out)
 // the host's clock from the HTTP Date header (any static host sends it); a HEAD request skips the service worker
 function syncServerTime(){
   if(!/^https?:/.test(location.protocol))return Promise.resolve(false);
   const t0=Date.now();
-  return fetch(location.pathname+'?t='+t0,{method:'HEAD',cache:'no-store'}).then(r=>{
+  // inside the Android app the page is served from the phone itself, so ask the game's website for the time
+  // (CapacitorHttp makes this a native request, so the Date header is readable)
+  const url=IS_APP?'https://ahmetozeladam.github.io/last-vertex/?t='+t0:location.pathname+'?t='+t0;
+  return fetch(url,{method:'HEAD',cache:'no-store'}).then(r=>{
     const d=Date.parse(r.headers.get('date')||'');if(!d)return false;
     const t1=Date.now(),off=d+(t1-t0)/2-t1;
     save.timeOffset=Math.abs(off)>30e3?off:0;          // ignore the header's 1s rounding
@@ -3604,7 +3609,7 @@ window.addEventListener('popstate',()=>{
 if(save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-.15)delete save.settings.speed;
 applyLang();applyFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
-if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(!IS_APP&&'serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 requestAnimationFrame(loop);
 </script>
 </body>

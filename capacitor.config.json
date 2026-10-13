@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.ahmetozeladam.lastvertex",
+  "appName": "Last Vertex",
+  "webDir": "www",
+  "backgroundColor": "#02050b",
+  "android": { "allowMixedContent": false, "webContentsDebuggingEnabled": false },
+  "plugins": { "CapacitorHttp": { "enabled": true } }
+}

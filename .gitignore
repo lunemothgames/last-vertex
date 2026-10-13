@@ -4,3 +4,9 @@ node_modules/
 
 # gift-code signing key: never commit (see tools/make-code.js)
 keys/
+
+# Android app: generated web copy and build output
+www/
+android/app/build/
+android/build/
+android/.gradle/

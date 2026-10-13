@@ -42,8 +42,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 canvas{display:block;touch-action:manipulation}
 #ui{position:absolute;top:0;left:0;pointer-events:none;text-shadow:0 0 6px var(--glow)}
 #crt{position:absolute;top:0;right:0;bottom:0;left:0;z-index:40;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
-  box-shadow:inset 0 0 90px rgba(0,0,0,.92)}
+  /* scanlines + a soft oval vignette (a tube screen darkens toward the corners, not in an even band along the edges) */
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse 85% 75% at 50% 48%,transparent 62%,rgba(0,0,0,.18) 82%,rgba(0,0,0,.42) 100%)}
 .H{font-family:'VT323',monospace;font-weight:400}
 svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
 .st{stroke:var(--a)}.fl{fill:var(--a)}.dm{stroke:var(--dim)}
@@ -820,7 +821,7 @@ const THEMES=[
   {id:'ambercyan',name:'AMBER × CYAN',note:'dual tone',            price:200,c:['#ffb43a','#7ff0ff','#6e4c18','#0b0804','#1f1609','#3af0ff','#0b0804'],r:['#8a6a35','#7ff0ff','#ffb43a','#ff4a6a']},
   {id:'green',    name:'GREEN P1',    note:'classic terminal',     price:100,c:['#3dff7a','#d4ffe0','#1d6a37','#020a05','#0b2314','#ffe24a','#03140a'],r:['#2f8a4c','#8dffb0','#ffe24a','#ff6b4a']},
   {id:'teal',     name:'CYAN TEAL',   note:'deep sea',             price:100,c:['#33f0d0','#d8fff6','#166a5c','#020a09','#082420','#ff8a4a','#03140f'],r:['#2f8a7a','#a8fff0','#ffd84a','#ff6a9a']},
-  {id:'norton',   name:'NORTON BLUE', note:'old DOS blue screen',  price:200,c:['#7fe6ff','#ffe97a','#3a66b8','#061340','#0e2470','#ffe14a','#061340'],r:['#6a8ac8','#7fe6ff','#ffe97a','#ff7aa8']},
+  {id:'norton',   name:'DOS BLUE',    note:'old DOS blue screen',  price:200,c:['#7fe6ff','#ffe97a','#3a66b8','#061340','#0e2470','#ffe14a','#061340'],r:['#6a8ac8','#7fe6ff','#ffe97a','#ff7aa8']},
   {id:'violet',   name:'VIOLET',      note:'midnight purple',      price:100,c:['#b48cff','#efe6ff','#4a3478','#06040c','#160f2a','#ffc04a','#0c0718'],r:['#6a5a8a','#8fd8ff','#ffc04a','#ff6aa0']},
   {id:'pink',     name:'HOT PINK',    note:'synth night',          price:100,c:['#ff5fd2','#ffd6f4','#6e2459','#0b0410','#22092a','#5ff2ff','#14051a'],r:['#8a4a7a','#5ff2ff','#ffe14a','#ff5f5f']},
   {id:'sunset',   name:'SUNSET',      note:'peach & gold on purple',price:200,c:['#ff8a5a','#ffd84a','#6a2e3a','#0d0512','#2a0f2a','#ff4a7a','#12060f'],r:['#8a5060','#ffb08a','#ffd84a','#ff4a7a']},
@@ -929,7 +930,9 @@ const fmtC=n=>fmtN(Math.floor(n));
 
 // ── AUDIO ────────────────────────────────────────────────────────────────────
 let AC=null,_sfxGain=null,_musGain=null;
-function getAC(){if(!AC){AC=new AudioContext();_musGain=AC.createGain();_musGain.connect(AC.destination);}if(AC.state==='suspended')AC.resume();return AC;}
+// latencyHint 0 asks for the smallest output buffer the phone allows: sounds line up with the picture
+// (the default buffer on many Android phones adds a delay you can notice when watching the screen)
+function getAC(){if(!AC){try{AC=new AudioContext({latencyHint:0});}catch(e){AC=new AudioContext();}_musGain=AC.createGain();_musGain.connect(AC.destination);}if(AC.state==='suspended')AC.resume();return AC;}
 function sfxGain(){
   if(!_sfxGain){_sfxGain=getAC().createGain();_sfxGain.connect(getAC().destination);}
   _sfxGain.gain.value=(save.settings.sfxOn?save.settings.sfxVol:0)/100;return _sfxGain;
@@ -1187,7 +1190,7 @@ const PERM_UPGRADES=[
    info:'Multiplies every coin you earn: kills, bosses, wave bounty, coin drops and idle income.'},
   {id:'lootChance',cat:'util',name:'LOOTER',     icon:'loot',base:250, g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(ECO.coinChance+v),
    info:'Normal enemies drop coins only some of the time: 50% at first. Each level raises the chance; at 100% every kill pays. Bosses always pay.'},
-  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1)+' basic',
+  {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'A reward for surviving: each time a new wave starts you get coins worth this many basic enemies of that wave.'},
   {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'ff', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'Makes the whole game run faster (enemies, bullets, wave timers), so you earn more per minute. In a run, the speed button switches between x1.0 and the speed you\'ve bought. Max x5.'},
@@ -1365,6 +1368,7 @@ function stats(){
     waveHeal:  v('waveHeal')+(T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
     // game speed: the player's chosen speed, between x1 and what the shop has unlocked
+    // settings.speed is only set while the player chose something below the max; otherwise the run uses the max
     speed:     Math.max(1,Math.min(v('gameSpeed'),save.settings.speed||Infinity)),
     aegisCD:   tb('aegis').cd,
     twin:      tb('twin').m,
@@ -2490,14 +2494,15 @@ function stepSpeed(dir){
   const max=permVal('gameSpeed'),cur=stats().speed;
   let next=dir>0?Math.floor(cur*2+1e-6)/2+.5:Math.ceil(cur*2-1e-6)/2-.5;
   next=Math.round(Math.max(1,Math.min(max,next))*10)/10;
-  if(next===cur){snd('deny');toast(dir>0?`MAX SPEED x${max.toFixed(1)}`:'MIN SPEED x1.0',true);return;}
-  save.settings.speed=next;persist();snd('blip');renderPlayUI();toast(T('SPEED x{0}',next.toFixed(1)));
+  if(next===cur){snd('deny');toast(dir>0?T('MAX SPEED x{0}',max.toFixed(1)):T('MIN SPEED x1.0'),true);return;}
+  if(next>=max-1e-6)delete save.settings.speed;else save.settings.speed=next;persist();snd('blip');renderPlayUI();toast(T('SPEED x{0}',next.toFixed(1)));
 }
 // one tap: next 0.5 step up; from the top it wraps back to x1.0
 function cycleSpeed(){
   const max=permVal('gameSpeed'),cur=stats().speed;
   if(cur>=max-1e-6){save.settings.speed=1;}
-  else{let next=Math.floor(cur*2+1e-6)/2+.5;save.settings.speed=Math.round(Math.min(max,next)*10)/10;}
+  else{let next=Math.round(Math.min(max,Math.floor(cur*2+1e-6)/2+.5)*10)/10;
+    if(next>=max-1e-6)delete save.settings.speed;else save.settings.speed=next;}   // at the max: follow future purchases
   persist();snd('blip');renderPlayUI();toast(T('SPEED x{0}',stats().speed.toFixed(1)));
 }
 $('spdCtl').addEventListener('pointerdown',e=>{e.preventDefault();cycleSpeed();});
@@ -2716,12 +2721,13 @@ function renderShop(){
     html=THEMES.map(t=>{
       const owned=save.themesOwned.includes(t.id),active=save.theme===t.id,[a,a2,dim,bg1,bg2,hot]=t.c;
       const ask=pendingTheme===t.id;
-      const btn=active?T('ACTIVE'):owned?T('USE'):ask?T('BUY?'):`<span>${I('gem')}${t.price}</span>`;
-      const cls=active?' max':owned?' ok':ask?' ask':save.gems>=t.price?'':' no';
+      const free=!save.freeTheme&&!owned;   // every player picks one theme for free
+      const btn=active?T('ACTIVE'):owned?T('USE'):ask?T(free?'TAKE?':'BUY?'):free?T('FREE'):`<span>${I('gem')}${t.price}</span>`;
+      const cls=active?' max':owned?' ok':ask?' ask':free||save.gems>=t.price?(free?' ok':''):' no';
       return `<div class="trow${active?' on':''}">
         <div class="tprev" style="background:radial-gradient(ellipse at 50% 40%,${bg2},${bg1} 85%);border-color:${dim};color:${a};text-shadow:0 0 6px ${a}">
           <span>LV_</span><i style="background:linear-gradient(90deg,${a} 0 45%,${a2} 45% 72%,${hot} 72%)"></i></div>
-        <div class="info"><div class="nm">${T(t.name)}</div><div class="fx mqw"><span>${T(t.note)}</span></div></div>
+        <div class="info"><div class="nm mqw"><span>${T(t.name)}</span></div><div class="fx mqw"><span>${T(t.note)}</span></div></div>
         <button class="buy${cls}" data-theme="${t.id}">${btn}</button></div>`;
     }).join('');
   }
@@ -2749,6 +2755,8 @@ $('shopList').addEventListener('click',e=>{
     if(n<=0){snd('deny');return;}
     let lv=save.perm[u.id]||0;
     for(let k=0;k<n;k++){const c=upCost(u,lv);if(save.coins<c)break;save.coins-=c;lv++;}
+    // buying GAME SPEED while running at the old max: keep running at the (new) max
+    if(u.id==='gameSpeed'&&save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-1e-6)delete save.settings.speed;
     LIFE().levels+=lv-(save.perm[u.id]||0);save.perm[u.id]=lv;persist();snd('buy');renderShop();achCheck();
   }else if(b.dataset.temp){
     const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.temp),c=tempCost(u);
@@ -2758,10 +2766,12 @@ $('shopList').addEventListener('click',e=>{
     const t=THEMES.find(x=>x.id===b.dataset.theme);
     if(save.theme===t.id)return;
     if(save.themesOwned.includes(t.id)){setTheme(t.id);return;}
-    if(save.gems<t.price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
+    const free=!save.freeTheme;
+    if(!free&&save.gems<t.price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
     if(pendingTheme!==t.id){pendingTheme=t.id;snd('blip');renderShop();return;}
-    save.gems-=t.price;save.themesOwned.push(t.id);pendingTheme=null;
-    setTheme(t.id);toast(t.name+' UNLOCKED');
+    if(free)save.freeTheme=t.id;else save.gems-=t.price;
+    save.themesOwned.push(t.id);pendingTheme=null;
+    setTheme(t.id);toast(T('{0} UNLOCKED',T(t.name)));
   }
 });
 function setTheme(id){
@@ -2928,7 +2938,7 @@ function renderTattoos(){
 
 // ── QUESTS ───────────────────────────────────────────────────────────────────
 // A new daily quest every `dailyEveryH` hours, a weekly one every `weeklyEveryH`. Board holds `cap`.
-const QUEST={cap:10,dailyEveryH:3,weeklyEveryH:24};
+const QUEST={cap:10,dailyEveryH:3,weeklyCount:4};   // 10 daily quests at most; 4 weekly quests every Monday
 const QUEST_DEFS=[
   {k:'kill',         txt:n=>T('Destroy {0} enemies',fmtN(n)),          d:[60,120],w:[700,1100]},
   {k:'kill_basic',   txt:n=>T('Destroy {0} basic enemies',fmtN(n)),    d:[40,80], w:[450,750]},
@@ -2961,21 +2971,35 @@ function makeQuest(kind){
   else if(d.coins)target=Math.ceil(cv*(W?rint(250,400):rint(25,45)));
   else{const r=W?d.w:d.d;target=rint(r[0],r[1]);}
   return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind,k:d.k,target,prog:0,
-    gems:W?rint(5,7):rint(1,2),coins:Math.ceil(cv*(W?rint(100,160):rint(12,20)))};
+    gems:W?rint(9,12):rint(1,2),coins:Math.ceil(cv*(W?rint(100,160):rint(12,20)))};
 }
+// Everyone runs on the same clock: daily quests arrive at fixed UTC slots (00:00, 03:00, … UTC) and
+// the week turns over on Monday 00:00 UTC for everybody (new weekly quests + new weekly-op rules).
+const weekStartMs=wk=>(wk*7-3)*864e5;                 // Monday 00:00 UTC of week index wk
 function refreshQuests(){
   if(!clockReady)return;
-  const now=gameNow(),H=3600e3;let changed=false;
-  if(!save.qNextDaily){save.qNextDaily=now-2*QUEST.dailyEveryH*H;save.qNextWeekly=now;}
-  const tick=(key,kind,every)=>{
-    while(now>=save[key]){
-      if(save.quests.length<QUEST.cap){save.quests.push(makeQuest(kind));save[key]+=every*H;changed=true;}
-      else save[key]=now+every*H;
-    }
-  };
-  tick('qNextWeekly','weekly',QUEST.weeklyEveryH);
-  tick('qNextDaily','daily',QUEST.dailyEveryH);
+  const now=gameNow(),slot=QUEST.dailyEveryH*3600e3,wk=weekIndex();let changed=false;
+  // weekly: a new set every Monday; unfinished ones from last week expire (finished ones wait to be claimed)
+  if(save.qWeek!==wk){
+    if(save.qWeek!==undefined)save.quests=save.quests.filter(q=>q.kind!=='weekly'||questDone(q));
+    const have=save.quests.filter(q=>q.kind==='weekly'&&!questDone(q)).length;
+    for(let k=have;k<QUEST.weeklyCount;k++)save.quests.push(makeQuest('weekly'));
+    save.qWeek=wk;changed=true;
+  }
+  // daily: one per UTC slot, the board holds QUEST.cap daily quests
+  if(!save.qNextDaily||save.qNextDaily%slot)save.qNextDaily=Math.floor(now/slot)*slot;   // align old saves to the shared slots
+  while(now>=save.qNextDaily){
+    if(save.quests.filter(q=>q.kind==='daily').length<QUEST.cap){save.quests.push(makeQuest('daily'));changed=true;}
+    save.qNextDaily+=slot;
+    if(save.qNextDaily<now-slot*QUEST.cap)save.qNextDaily=Math.floor(now/slot)*slot;   // long absence: no flood
+  }
+  save.qNextWeekly=weekStartMs(wk+1);
   if(changed){persist();renderQuestDot();if($('questPanel').classList.contains('open'))renderQuests();}
+}
+// "MON 03:00" in the player's own time zone and language
+function resetLabel(){
+  const d=new Date(weekStartMs(weekIndex()+1)),loc={en:'en-GB',tr:'tr-TR',es:'es-ES',pt:'pt-BR'}[LANG]||'en-GB';
+  return d.toLocaleDateString(loc,{weekday:'short'}).replace('.','').toUpperCase()+' '+d.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'});
 }
 function questDone(q){return q.prog>=q.target;}
 function qEvent(k,n=1){
@@ -2997,11 +3021,11 @@ function renderQuestDot(){$('mQuestDot').style.display=save.quests.some(questDon
 function fmtHM(ms){const s=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s/60)%60;
   return h?`${h}H ${String(m).padStart(2,'0')}M`:`${m}M ${String(s%60).padStart(2,'0')}S`;}
 function renderQuestTimers(){
-  const now=gameNow(),n=save.quests.length,full=n>=QUEST.cap;
+  const now=gameNow(),n=save.quests.length,full=save.quests.filter(q=>q.kind==='daily').length>=QUEST.cap;
   // the board count lives in the tab label, the note only says when new quests arrive
-  $('questTabs').querySelector('[data-q=q]').textContent=`${T('QUESTS')} ${n}/${QUEST.cap}`;
+  $('questTabs').querySelector('[data-q=q]').textContent=`${T('QUESTS')} ${n}`;
   $('qTimers').textContent='> '+(full?T('BOARD FULL · CLAIM ONE TO GET NEW QUESTS')
-    :T('NEW DAILY IN {0} · WEEKLY IN {1}',fmtHM(save.qNextDaily-now),fmtHM(save.qNextWeekly-now)));
+    :T('NEW DAILY IN {0} · WEEKLY RESET {1}',fmtHM(save.qNextDaily-now),resetLabel()));
 }
 let questTab='q';
 $('questTabs').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;questTab=b.dataset.q;snd('click');renderQuests();$('questPanel').querySelector('.scroll').scrollTop=0;});
@@ -3057,7 +3081,11 @@ function exportCode(){const b=btoa(unescape(encodeURIComponent(JSON.stringify(sa
 function parseCode(code){
   const m=/^(?:LVX|TT3)-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code.replace(/\s+/g,''));   // TT3: codes from before the rename
   if(!m||checksum(m[1])!==m[2])return null;
-  try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));return o&&typeof o==='object'&&o.perm?o:null;}catch(e){return null;}
+  try{
+    const txt=decodeURIComponent(escape(atob(m[1])));
+    if(/[<>]/.test(txt))return null;                         // no markup anywhere in a save
+    const o=JSON.parse(txt);return o&&typeof o==='object'&&!Array.isArray(o)&&o.perm&&typeof o.perm==='object'?o:null;
+  }catch(e){return null;}
 }
 let modalMode='';
 // a yes/no question in its own window on top of everything
@@ -3241,6 +3269,10 @@ const COACH=[
    text:'A quest is done. Open QUESTS and claim its reward.'},
   {id:'tier',  where:'menu',sel:'#tNext', when:()=>maxUnlockedTier()>1&&save.tier===1,
    text:'TIER 2 is open: stronger enemies, more coins. Switch tiers with these arrows.'},
+  {id:'theme', where:'menu',sel:'#mShop', when:()=>!save.freeTheme&&LIFE().runs>=3,
+   text:'A gift: pick one THEME for free in the SHOP (THEMES tab). It recolors the whole game.'},
+  {id:'themepick',where:'shop',sel:'#shopTabs [data-t=theme]', when:()=>!save.freeTheme&&LIFE().runs>=3,
+   text:'Open THEMES and take the one you like. It is free.'},
   {id:'weekly',where:'menu',sel:'#mWeek', when:()=>LIFE().runs>=5,
    text:'Try the WEEKLY OP: two special rules each week and extra gems.'},
 ];
@@ -3445,8 +3477,8 @@ function renderWeekBtn(){
   $('mWeekDot').style.display=W.got.length<WEEKLY_REWARDS.length?'':'none';
 }
 function openWeekly(){
-  const W=weeklyState(),keys=weeklyKeys(),left=(7*(weekIndex()+1)-3)*864e5-gameNow();
-  $('wkMeta').textContent=T('TIER {0} · BEST WAVE {1} · NEW RULES IN {2}',weeklyTier(),W.best,fmtDur(left/1000));
+  const W=weeklyState(),keys=weeklyKeys(),left=weekStartMs(weekIndex()+1)-gameNow();
+  $('wkMeta').textContent=T('TIER {0} · BEST WAVE {1} · NEW RULES {2} (IN {3})',weeklyTier(),W.best,resetLabel(),fmtDur(left/1000));
   $('wkMuts').innerHTML=keys.map(k=>`<div class="mut"><b>${T(MUTATORS[k].name)}</b><span>${T(MUTATORS[k].desc)}</span></div>`).join('');
   $('wkRew').innerHTML=WEEKLY_REWARDS.map(([w,g])=>{const ok=W.got.includes(w);
     return `<div class="wrw${ok?' ok':''}"><span>${ok?'✓':'·'} ${T('REACH WAVE {0}',w)}</span><span>${T('+{0} GEM',g)}</span></div>`;}).join('');
@@ -3567,6 +3599,8 @@ window.addEventListener('popstate',()=>{
   setTimeout(finish,1250);
   el.addEventListener('pointerdown',finish);
 })();
+// a speed saved at the old max (before it followed purchases) means "max"
+if(save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-.15)delete save.settings.speed;
 applyLang();applyFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});

@@ -1523,12 +1523,22 @@ function weeklyState(){
 }
 function startRun(weekly=false){
   if(!tierUnlocked(save.tier))save.tier=1;
+  delete save.midRun;
   autoBuyBoosts();
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;
   runTier=runWeekly?weeklyTier():save.tier;
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
   getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
   if(activeIds().length)hint('active');
+}
+function resumeRun(mr){
+  delete save.midRun;
+  startRun(mr.weekly);
+  waveNum=mr.wave;hp=Math.min(mr.hp,stats().maxHp);
+  runCoins=mr.coins||0;runKills=mr.kills||0;runDmgDealt=mr.dmgDealt||0;runDmgTaken=mr.dmgTaken||0;
+  runPlayT=mr.playT||0;runEarned=mr.earned||0;
+  paused=true;
+  persist();
 }
 // best wave and tier unlocks are stored as they happen, so closing the app mid-run loses nothing
 function saveProgress(){
@@ -1555,9 +1565,10 @@ function triggerDeath(){
   particles=[];burst(triX,TRI_Y,C.a,26,GH*.2);burst(triX,TRI_Y,C.hot,18,GH*.26);
   snd('die');setTimeout(()=>snd('crtoff'),700);
   screenFlash=0;shake={x:0,y:0,t:0};hudHidden=false;
+  delete save.midRun;
   save.lastRun={coins:runCoins,kills:runKills,wave:runWave,tier:runTier,weekly:runWeekly,
     dmgDealt:Math.round(runDmgDealt),dmgTaken:Math.round(runDmgTaken),
-    time:Math.round((Date.now()-runStart)/1000)};
+    time:Math.round(runPlayT)};
   if(runWeekly){runNewBest=runWave>(weeklyState().best||0);saveProgress();}
   else{
     runNewBest=runWave>runPrevBest;
@@ -1573,7 +1584,12 @@ function triggerDeath(){
 // Screen locked or app sent to the background: pause the run and silence everything (the music runs on
 // timers, so pausing the game alone kept it playing). Back in front: sound resumes, the run stays paused.
 function goBackground(){
-  if(state===ST.PLAY&&!paused)paused=true;
+  if(state===ST.PLAY){
+    if(!paused)paused=true;
+    save.midRun={wave:waveNum,hp,hpMax:stats().maxHp,tier:runTier,weekly:runWeekly,
+      coins:runCoins,kills:runKills,dmgDealt:runDmgDealt,dmgTaken:runDmgTaken,
+      playT:runPlayT,earned:runEarned,ts:Date.now()};
+  }
   stopMusic();
   if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
   persist();
@@ -1585,7 +1601,9 @@ function goForeground(){
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){goBackground();return;}
   goForeground();
-  const since=save.lastSeen;withTimeout(syncServerTime(),2500).then(()=>checkAway(since));
+  const since=save.lastSeen;
+  if(save.awayPending>0)showAway();
+  withTimeout(syncServerTime(),2500).then(()=>checkAway(since));
 });
 window.addEventListener('pagehide',goBackground);
 
@@ -2384,7 +2402,7 @@ function drawHUD(st){
 
   // stat overlay
   if(save.settings.statOverlay){
-    const elapsed=(Date.now()-runStart)/60000||.0001;
+    const elapsed=runPlayT/60||.0001;
     const lines=[
       `KILLS/MIN  ${(runKills/elapsed).toFixed(1)}`,
       `COINS/MIN  ${fmtN(Math.round(runCoins/elapsed))}`,
@@ -3120,14 +3138,14 @@ function parseCode(code){
 }
 let modalMode='';
 // a yes/no question in its own window on top of everything
-let _confirmYes=null;
-function confirmBox(title,body,yesLabel,onYes){
+let _confirmYes=null,_confirmNo=null;
+function confirmBox(title,body,yesLabel,onYes,onNo){
   $('cfNo').textContent=T('CANCEL');
   $('cfTitle').textContent=T(title);$('cfBody').textContent=body;$('cfYes').textContent=T(yesLabel);
-  _confirmYes=onYes;$('confirmUI').classList.add('show');snd('blip');
+  _confirmYes=onYes;_confirmNo=onNo||null;$('confirmUI').classList.add('show');snd('blip');
 }
-$('cfNo').addEventListener('click',()=>{snd('click');$('confirmUI').classList.remove('show');_confirmYes=null;});
-$('cfYes').addEventListener('click',()=>{$('confirmUI').classList.remove('show');const f=_confirmYes;_confirmYes=null;if(f)f();});
+$('cfNo').addEventListener('click',()=>{snd('click');$('confirmUI').classList.remove('show');const f=_confirmNo;_confirmYes=null;_confirmNo=null;if(f)f();});
+$('cfYes').addEventListener('click',()=>{$('confirmUI').classList.remove('show');const f=_confirmYes;_confirmYes=null;_confirmNo=null;if(f)f();});
 function openModal(mode){
   modalMode=mode;
   const ta=$('mdText');
@@ -3641,7 +3659,15 @@ window.addEventListener('popstate',()=>{
 // a speed saved at the old max (before it followed purchases) means "max"
 if(save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-.15)delete save.settings.speed;
 applyLang();applyFx();achCheck();
-withTimeout(syncServerTime(),2500).then(()=>{clockReady=true;refreshQuests();checkAway(bootLastSeen);});
+withTimeout(syncServerTime(),2500).then(()=>{
+  clockReady=true;refreshQuests();checkAway(bootLastSeen);
+  if(save.midRun&&Date.now()-save.midRun.ts<86400000){
+    const mr=save.midRun;
+    confirmBox(T('RESUME RUN?'),T('You closed the app during wave {0}. Resume from there?',mr.wave),T('RESUME'),
+      ()=>resumeRun(mr),
+      ()=>{delete save.midRun;persist();});
+  }
+});
 if(!IS_APP&&'serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 requestAnimationFrame(loop);
 </script>

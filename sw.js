@@ -1,6 +1,6 @@
 // Network-first for the game page so updates arrive; everything is cached for offline play.
-const CACHE='last-vertex-af04f0af';
-const ASSETS=['./','./apple-touch-icon.png','./favicon-32.png','./icon-192-maskable.png','./icon-192.png','./icon-512-maskable.png','./icon-512.png','./index.html','./manifest.webmanifest','./privacy.html'];
+const CACHE='last-vertex-3cb4b372';
+const ASSETS=['./','./apple-touch-icon.png','./delete-account.html','./favicon-32.png','./icon-192-maskable.png','./icon-192.png','./icon-512-maskable.png','./icon-512.png','./index.html','./manifest.webmanifest','./privacy.html'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',e=>{
   e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));

@@ -3,6 +3,17 @@
   "appName": "Last Vertex",
   "webDir": "www",
   "backgroundColor": "#02050b",
-  "android": { "allowMixedContent": false, "webContentsDebuggingEnabled": false },
-  "plugins": { "CapacitorHttp": { "enabled": true } }
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_vertex",
+      "iconColor": "#9FD8FF"
+    }
+  }
 }

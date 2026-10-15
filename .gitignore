@@ -13,3 +13,7 @@ android/.gradle/
 
 # promo videos: ~15 MB each, rebuilt by tools/make-promo-video.js (the YouTube upload is the real copy)
 store/video/
+
+# editor settings, and the Firebase config (kept on this PC only; download it again from the Firebase console if needed)
+.vscode/
+android/app/google-services.json

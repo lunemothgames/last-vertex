@@ -2,6 +2,7 @@
 //   node tools/build-app.js            sync only (open android/ in Android Studio to run)
 //   node tools/build-app.js debug      also builds android/app/build/outputs/apk/debug/app-debug.apk
 //   node tools/build-app.js release    also builds the signed .aab for Google Play (needs keys/upload.jks + keys/upload.properties)
+//   node tools/build-app.js release live   same, but with REAL ads (every other build shows Google's test ads; use live for Production only)
 const fs=require('fs'),path=require('path'),{execSync}=require('child_process');
 const root=path.join(__dirname,'..'),www=path.join(root,'www'),run=(c,cwd=root)=>execSync(c,{cwd,stdio:'inherit'});
 run('node tools/build.js');
@@ -9,6 +10,13 @@ fs.rmSync(www,{recursive:true,force:true});fs.mkdirSync(www);
 // no service worker in the app: every file is already on the phone
 for(const f of ['index.html','manifest.webmanifest','icon-192.png','icon-512.png','favicon-32.png','apple-touch-icon.png','privacy.html'])
   fs.copyFileSync(path.join(root,f),path.join(www,f));
+// real ads only on request: the flag is flipped in the app's copy, never in the web build
+if(process.argv[3]==='live'){
+  const f=path.join(www,'index.html'),s=fs.readFileSync(f,'utf8');
+  if(!s.includes('const ADS_TEST=true;'))throw new Error('ADS_TEST flag not found');
+  fs.writeFileSync(f,s.replace('const ADS_TEST=true;','const ADS_TEST=false;'));
+  console.log('REAL ADS ON in this app build');
+}
 run('npx cap sync android');
 const mode=process.argv[2];
 if(mode){

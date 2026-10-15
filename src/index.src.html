@@ -337,6 +337,16 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .mbox input{display:none;width:100%;height:40px;background:var(--a6bg);border:1px solid var(--dim);color:var(--a);
   font:13px 'IBM Plex Mono',monospace;padding:0 10px;margin-bottom:10px;user-select:text;-webkit-user-select:text}
 .mbox input.show{display:block}
+.icon-btn .dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 12px}
+.dcell{border:1px solid var(--dim);padding:6px 2px;text-align:center;font-family:'VT323',monospace;font-size:17px;line-height:1.15;color:var(--mute);text-shadow:none}
+.dcell b{display:block;font-weight:400;font-size:14px;letter-spacing:.08em;color:var(--mute)}
+.dcell span{display:flex;align-items:center;justify-content:center;gap:3px;color:var(--a)}
+.dcell svg.i{width:13px;height:13px}
+.dcell:last-child{grid-column:span 2}
+.dcell.done{opacity:.4}
+.dcell.cur{border-color:var(--a);box-shadow:0 0 10px var(--glow)}
+.dcell.cur b{color:var(--a2)}
 #clBtns .row2{margin-top:8px}
 .urow .ic{cursor:pointer}
 /* ── tattoo collection ── */
@@ -529,6 +539,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-3 4 3 4H5"/></symbol>
 <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6M12 2v3"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12"/><path d="M3 13h18M12 9v12"/><path d="M12 9C9 9 7.5 7.5 8 6s3-1.5 4 3zM12 9c3 0 4.5-1.5 4-3s-3-1.5-4 3z"/></symbol>
 <symbol id="i-nova" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="i-od" viewBox="0 0 24 24"><path d="M4 18l5-6-5-6M11 18l5-6-5-6"/><path d="M19 6v12"/></symbol>
 <symbol id="i-stasis" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9s10 4 10 9"/></symbol>
@@ -576,11 +587,12 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="topbar">
       <div class="pill"><svg class="i"><use href="#i-coin"/></svg><b id="mCoins">0</b></div>
       <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="mGems">0</b></div>
-      <button class="adbtn" id="mAd"><span id="mAdTxt">FREE +5</span></button>
+      <button class="adbtn" id="mAd"><span id="mAdTxt">AD +5</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
       <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
       <button class="icon-btn sidebtn" id="mBug" aria-label="Bug report / talk to dev" style="top:94px"><svg class="i"><use href="#i-bug"/></svg></button>
+      <button class="icon-btn sidebtn" id="mDaily" aria-label="Daily reward" style="top:134px"><svg class="i"><use href="#i-gift"/></svg><i class="dot" id="mDailyDot"></i></button>
     </div>
     <div class="logo"><span class="l1">LAST</span><span class="l2">VERTEX</span><span class="rule">════════════════</span></div>
     <div class="hero">
@@ -723,6 +735,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <div class="sc"><span class="sdesc">Show floating damage values on hits.</span><button class="tog" id="dmgToggle">ON</button></div></div>
       <div class="srow"><div class="sl"><span>STAT OVERLAY</span></div>
         <div class="sc"><span class="sdesc">In-game panel: kills/min, coins/min, enemies.</span><button class="tog" id="statOvToggle">OFF</button></div></div>
+      <div class="srow" id="setStats"><div class="sl"><span>USAGE STATS</span></div>
+        <div class="sc"><span class="sdesc">Anonymous usage statistics and crash reports help improve the game.</span><button class="tog" id="statsToggle">ON</button></div></div>
+      <div class="srow" id="setNotif"><div class="sl"><span>NOTIFICATIONS</span></div>
+        <div class="sc"><span class="sdesc">Reminders when your idle income is full or your daily reward is ready.</span><button class="tog" id="notifToggle">ON</button></div></div>
+      <div class="srow link" id="setAdPriv" style="display:none"><div class="sl"><span>AD PRIVACY OPTIONS</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
@@ -749,6 +766,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <p>Found a bug or have an idea? The form opens in your browser. This info about your game is added automatically so bugs are easier to find:</p>
     <div class="fbinfo" id="fbInfo"></div>
     <div class="row2"><button class="btn" id="fbClose">CLOSE</button><button class="btn pri" id="fbOpen">OPEN FORM</button></div></div></div>
+  <div class="ovl" id="dailyUI"><div class="mbox"><h4>DAILY REWARD</h4><p id="dyMeta"></p><div class="dgrid" id="dyGrid"></div>
+    <div class="row2"><button class="btn" id="dyClose">CLOSE</button><button class="btn pri" id="dyGet">CLAIM</button></div></div></div>
   <div class="ovl" id="cloudUI"><div class="mbox"><h4>CLOUD SAVE</h4>
     <p id="clMeta"></p>
     <input id="clEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120">
@@ -779,6 +798,7 @@ function defaultSave(){return{
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
   lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],
   tier:1,tierBest:{1:0},quests:[],qNextDaily:0,qNextWeekly:0,
+  daily:{n:0,last:''},
 }}
 let save=defaultSave();
 try{
@@ -796,6 +816,7 @@ try{
     if(!save.tatSlots)save.tatSlots=1;
     if(!save.autoBoost||typeof save.autoBoost!=='object')save.autoBoost={};
     if(!Array.isArray(save.quests))save.quests=[];
+    if(!save.daily||typeof save.daily!=='object')save.daily={n:0,last:''};
     if(!Array.isArray(save.themesOwned))save.themesOwned=['ice'];
     if(!save.themesOwned.includes('ice'))save.themesOwned.unshift('ice');
     if(!save.bestWave)save.bestWave=(save.lastRun&&save.lastRun.wave)||0;
@@ -1088,19 +1109,22 @@ function updateMusicVolume(){if(_musGain)_musGain.gain.value=(save.settings.musO
 // polynomially pricier (no hard wall), capped upgrades get exponentially pricier.
 const ECO={
   enemyHp:1,      enemyHpGrowth:1.042,  // per (effective) wave
-  enemyAtk:1,     enemyAtkGrowth:1.038,
+  enemyAtk:.78,    enemyAtkGrowth:1.038,
   bossHpMul:6,    bossAtkMul:3,  bossEvery:10, bossCoins:8,
+  bossShield:.35, bossRegen:.012,       // BULWARK boss: shield as a share of max health · REGENERATOR boss: heal per second (self and neighbours)
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
-  pickupCooldown:300,                   // seconds after collecting a gem / coin drop
+  pickupCooldown:300,                   // seconds after collecting a coin drop
+  shatterMax:6,                         // an ice burst hurts at most this many enemies (the nearest), so chains cannot snowball in a crowd
+  gemPickupCooldown:1200,               // …and a gem drop (about 2.6 gems an hour of play: field gems must not outweigh quests, the weekly op and ads)
   gemDropPerSec:.006, coinDropPerSec:.008,
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
   adGems:5,       adCooldown:900,  adDailyCap:10,
   pullCost:20,    pull10Cost:200,
   tempCostGrowth:1.05,                  // next-run boosts scale with best effective wave
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
-  kbPush:2.6,     slowTime:3,  multiExtra:2,  executeAt:.3,
+  kbPush:2.6,     slowTime:4,  multiExtra:2,  executeAt:.3,
   maxReduce:.9,   bossThorns:.25,       // damage reduction cap · bosses take a quarter of thorns
   thornHealCap:.5,                      // lifesteal from thorns refunds at most this share of the hit just taken
   offlineDayH:8,   offlineMinSec:300,   // idle income: at most 8h of time away counted per day, only after 5+ minutes away
@@ -1135,13 +1159,31 @@ function weeklyKeys(wk=weekIndex()){
   const k=Object.keys(MUTATORS),n=k.length,a=(wk*7919)%n,b=(a+1+(wk*104729)%(n-1))%n;
   return[k[a],k[b]];
 }
-function combineMods(keys){
-  const m={dmg:1,taken:1,hp:1,regen:1,ls:1,thorn:1,coin:1,ehp:1,espd:1,esz:1,ecoin:1,spawn:1,bossEvery:0,waveHealAdd:0,keys};
-  for(const k of keys)for(const [f,v] of Object.entries(MUTATORS[k]))if(typeof v==='number'){
-    if(f==='bossEvery')m.bossEvery=v;else if(f==='waveHealAdd')m.waveHealAdd+=v;else m[f]*=v;
+function combineMods(keys,src=MUTATORS){
+  const m={dmg:1,taken:1,hp:1,regen:1,ls:1,thorn:1,coin:1,ehp:1,espd:1,esz:1,ecoin:1,spawn:1,ival:1,eatk:1,armor:0,bossEvery:0,waveHealAdd:0,keys};
+  for(const k of keys)for(const [f,v] of Object.entries(src[k]))if(typeof v==='number'){
+    if(f==='bossEvery')m.bossEvery=v;else if(f==='waveHealAdd')m.waveHealAdd+=v;else if(f==='armor')m.armor=Math.max(m.armor,v);else m[f]*=v;
   }
   return m;
 }
+// Wave events: from wave 4, every 7th wave (never a boss wave) one enemy-side rule holds for that wave only. They add
+// variety, not income: coins per kill follow the enemy's health, so an event wave pays about what a normal one does.
+// armor = share of its max health a bullet needs to hit at full strength; weaker bullets are cut in proportion.
+const EVENTS={
+  rush:  {name:'RUSH',     desc:'Enemies move 40% faster',                      espd:1.4,ehp:.8,ecoin:1.1},
+  horde: {name:'HORDE',    desc:'More enemies, each a little weaker',           ival:.7,ehp:.7,eatk:.8,ecoin:.7},
+  titans:{name:'TITANS',   desc:'Half as many enemies, twice the health each',  ival:2,ehp:2,esz:1.3,ecoin:2},
+  armor: {name:'ARMOR UP', desc:'Weak bullets barely scratch them this wave',   armor:.06,ehp:.9},
+};
+const EVENT_KEYS=Object.keys(EVENTS),EVENT_FROM=4,EVENT_EVERY=7;
+function eventFor(w,tier){
+  if(w<EVENT_FROM||(w-EVENT_FROM)%EVENT_EVERY||w%ECO.bossEvery===0)return null;
+  return EVENT_KEYS[(Math.floor((w-EVENT_FROM)/EVENT_EVERY)+tier)%EVENT_KEYS.length];
+}
+// Boss kinds rotate: classic (calls shards) · BULWARK (shield) · SWARMLORD (calls runners) · REGENERATOR (heals)
+const BOSS_KINDS=['classic','bulwark','swarmlord','regen'];
+const BOSS_NAMES={classic:'BOSS',bulwark:'BULWARK',swarmlord:'SWARMLORD',regen:'REGENERATOR'};
+const bossKindFor=(w,every)=>BOSS_KINDS[(Math.max(1,Math.floor(w/every))-1)%BOSS_KINDS.length];
 const NOMODS=combineMods([]);
 const coinValueAt=w=>ECO.coinBase*Math.pow(ECO.coinGrowth,Math.max(1,w)-1)*(1+ECO.earlyBoost*Math.max(0,1-w/ECO.earlyUntil));
 
@@ -1149,11 +1191,14 @@ const coinValueAt=w=>ECO.coinBase*Math.pow(ECO.coinGrowth,Math.max(1,w)-1)*(1+EC
 const ENEMY_TYPES={
   basic:   {name:'BASIC',   hp:1,  spd:1,   atk:1,  sz:.046,coin:1,  from:1,       w:10, ci:1},
   runner:  {name:'RUNNER',  hp:.5, spd:1.8, atk:.6, sz:.034,coin:.7, from:5,       w:4,  ci:2},
+  plated:  {name:'PLATED',  hp:.9, spd:.8,  atk:1,  sz:.05, coin:1.3,from:8,       w:3,  ci:2,shield:.5},   // a light shield, early: teaches the mechanic before WARDEN
   tank:    {name:'TANK',    hp:3.5,spd:.55, atk:1.8,sz:.064,coin:2,  from:12,      w:2.5,ci:3},
   splitter:{name:'SPLITTER',hp:1.4,spd:.9,  atk:1,  sz:.052,coin:1,  from:20,      w:3,  ci:2},
+  armored: {name:'ARMORED', hp:1.5,spd:.7,  atk:1.3,sz:.058,coin:1.8,from:30,      w:2,  ci:3,armor:.1},      // bullets weaker than 10% of its health are cut in proportion
+  ghost:   {name:'GHOST',   hp:.8, spd:.95, atk:1.1,sz:.046,coin:1.5,from:45,      w:1.5,ci:1,ghost:3},       // fades out for a moment: bullets pass through it (blasts do not)
   mini:    {name:'SHARD',   hp:.35,spd:1.25,atk:.5, sz:.03, coin:0,  from:Infinity,w:0,  ci:0},
   // later tier bands: a shield that halves bullets, a healer, a teleporter
-  warden:  {name:'WARDEN',  hp:1.2,spd:.8,  atk:1.2,sz:.056,coin:1.5,from:100,     w:3,  ci:2,shield:1.2},
+  warden:  {name:'WARDEN',  hp:1.2,spd:.8,  atk:1.2,sz:.056,coin:1.5,from:60,      w:2,  ci:2,shield:1.2},   // shield starts at half strength and reaches full by wave 150 (see makeEnemy)
   mender:  {name:'MENDER',  hp:.8, spd:.7,  atk:.6, sz:.05, coin:1.5,from:175,     w:1.5,ci:1,heal:.05},
   blinker: {name:'BLINKER', hp:.9, spd:.9,  atk:1.3,sz:.044,coin:1.5,from:250,     w:2.5,ci:3,blink:3},
 };
@@ -1188,9 +1233,9 @@ const PERM_UPGRADES=[
    info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50% from the shop, 75% with tattoos.'},
   {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:200, g:1.12, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
-  {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:250,  start:0,  step:.02,  fx:v=>'+'+pc(v),
+  {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:167,  start:0,  step:.03,  fx:v=>'+'+pc(v),
    info:'Extra damage against bosses (every 10th wave), from bullets, lightning and blasts.'},
-  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:200,  start:0,  step:.01,  fx:v=>'+'+pc(v),
+  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:100,  start:0,  step:.02,  fx:v=>'+'+pc(v),
    info:'Extra bullet damage against enemies below 30% of their health, to finish off wounded enemies faster.'},
   {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
    info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier.'},
@@ -1209,11 +1254,11 @@ const PERM_UPGRADES=[
    info:'Heals you for this share of the damage your bullets deal. Thorns damage heals too, but never more than half of the hit you just took.'},
   {id:'waveHeal',  cat:'def', name:'PATCH UP',   icon:'patch',  base:400, g:1.2,  max:40,   start:0,  step:.005, fx:v=>pc(v),
    info:'Heals this share of your max health at the end of every wave.'},
-  {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
-  {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:160,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.'},
-  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:100,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:83,  start:0,  step:.006, fx:v=>pc(v),
    info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage.'},
   // ── utility
   {id:'coinMult',  cat:'util',name:'COIN BONUS', icon:'coins', base:60,  p:2.6,  max:4500, start:1,  step:.02,  fx:v=>'x'+v.toFixed(2),
@@ -1239,46 +1284,46 @@ const PITY=50;                              // an epic is guaranteed within this
 const cdTxt=x=>' · '+T('{0}s cooldown',x.cd.toFixed(0));
 const TAT_TYPES=[
   // ── common: plain stats
-  {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.6]},          desc:x=>T('+{0} bullet damage',pc(x.dmg))},
-  {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.06,.36]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
-  {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.1,.6]},            desc:x=>T('+{0} max health',pc(x.hp))},
-  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.004,.025]},       desc:x=>T('heals {0} of your max health every second',pc2(x.pct))},
-  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.05,.3]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR, 90% max)',pc(x.red))},
-  {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.15,1.2]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
-  {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.08,.4],drop:[.15,.6]},
+  {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.55]},          desc:x=>T('+{0} bullet damage',pc(x.dmg))},
+  {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.04,.2]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
+  {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.16,.96]},            desc:x=>T('+{0} max health',pc(x.hp))},
+  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.0065,.04]},       desc:x=>T('heals {0} of your max health every second',pc2(x.pct))},
+  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR, 90% max)',pc(x.red))},
+  {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.08,.4]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
+  {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
   // ── uncommon: build pieces + defensive actives
   {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
-  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.5]},           desc:x=>T('+x{0} crit power: critical hits deal that much more',x.m.toFixed(2))},
+  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.3]},           desc:x=>T('+x{0} crit power: critical hits deal that much more',x.m.toFixed(2))},
   {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>T('+{0} chance to take no damage from a perimeter hit (50% max)',pc(x.d))},
-  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.1,.5]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
-  {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.1,.4],a:[.08,.35],vuln:[.4,1.6]},
+  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.18,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
+  {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.08,.3],a:[.08,.3],vuln:[.25,.8]},
    desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
-  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.04,.14]},            desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner',(x.r*100).toFixed(1))},
-  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:1,w:5,  act:1,v:{dur:[4,8],cd:[40,25]},
+  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.06,.2]},            desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner',(x.r*100).toFixed(1))},
+  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:1,w:5,  act:1,v:{dur:[3.5,7],cd:[42,28]},
    desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage',x.dur.toFixed(1))+cdTxt(x)},
-  {id:'mend',        name:'MEND',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.25,.6],cd:[60,35]},
+  {id:'mend',        name:'MEND',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],cd:[60,35]},
    desc:x=>T('ACTIVE · heals {0} of your max health at once',pc(x.heal))+cdTxt(x)},
   // ── rare: mechanics + offensive actives
-  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[10,4]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely, then recharges in {0}s',x.cd.toFixed(1))},
+  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[6,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely, then recharges in {0}s',x.cd.toFixed(1))},
   {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses',pc(x.b))},
-  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.18,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
-  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.01,.06]},           desc:x=>T('+{0} of the damage your bullets deal heals you',pc(x.l))},
+  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
+  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.03,.15]},           desc:x=>T('+{0} of the damage your bullets deal heals you',pc(x.l))},
   {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>T('+{0} chance for a bullet to go through an enemy and keep flying (75% max)',pc(x.p))},
-  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:2,w:3.5,v:{p:[.15,.4]},
+  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:2,w:3.5,v:{p:[.05,.12]},
    desc:x=>T('a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p))},
   {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[6,18],cd:[50,30]},
    desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
-  {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[1.8,3],dur:[8,12],cd:[45,30]},
+  {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[1.6,2.4],dur:[8,12],cd:[45,30]},
    desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
   // ── epic: new mechanics
-  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.25],n:[2,5]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
-  {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[5,20],cd:[20,8]},
+  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.22],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
+  {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[4,12],cd:[23,10]},
    desc:x=>T('when your health drops below 30%: a shockwave hits every enemy in the lower half for {0}x bullet damage and throws them back',x.m.toFixed(1))+cdTxt(x)},
-  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.8]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
-  {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.8]},
+  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
+  {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
    desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
-  {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[3,8],dur:[10,15],cd:[90,90]},
+  {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
@@ -1344,7 +1389,8 @@ save.coins=Math.floor(save.coins||0);
 function tb(id){return tatFx(TT[id],save.equipped.includes(id)?tatOf(id).lv:0);}
 // timed effects of active tattoos in the current run (overdrive / midas)
 let runFx={odT:0,odM:1,midT:0,midM:1};
-let runMods=null;                       // weekly-op mutators of the current run (null = normal rules)
+let runMods=null;                       // weekly-op mutators of the current run, or the current wave event (null = normal rules)
+let runEvent=null;                      // key of the wave event that is running (normal runs only)
 function totalCoinMult(tier){
   const T=save.temp||{};
   return permVal('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(tier||save.tier)*(1+totalStars()*STAR.coin);
@@ -1482,7 +1528,7 @@ document.addEventListener('keydown',e=>{
 function playClick(x,y){
   const pbx=GW*.82,pby=GH*.012,pbw=GW*.16,pbh=GH*.048;
   if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){paused=true;snd('click');return true;}
-  const ad=adCooldown()>0?{x:-1e9,y:-1e9,w:0,h:0}:adRect();
+  const ad=!IS_APP||adCooldown()>0?{x:-1e9,y:-1e9,w:0,h:0}:adRect();
   if(x>=ad.x&&x<=ad.x+ad.w&&y>=ad.y-GH*.01&&y<=ad.y+ad.h+GH*.01){handleRunAd();return true;}
   for(let i=pickups.length-1;i>=0;i--){
     const g=pickups[i];const dx=x-g.x,dy=y-g.y;
@@ -1518,12 +1564,68 @@ function adCooldown(){
   return Math.max(0,ECO.adCooldown-(gameNow()-(save.adLastUsed||0))/1000);
 }
 function fmtCD(s){const t=Math.ceil(s),h=Math.floor(t/3600),mm=Math.floor(t/60)%60,ss=String(t%60).padStart(2,'0');return h?h+':'+String(mm).padStart(2,'0')+':'+ss:mm+':'+ss;}
-function useAd(){
-  if(adCooldown()>0){snd('deny');return false;}
-  save.gems+=ECO.adGems;save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;
-  persist();snd('gem');achCheck();return true;
+// ── REWARDED ADS (AdMob, Android app only) ───────────────────────────────────
+// The browser version has no ads and no ad button (free gems there would carry over to the app through cloud save).
+// In the app the reward is granted only once the player has really earned it; with no ad available nothing is granted and the cooldown is not used.
+// The IDs are public. Every build shows Google's test ads except one made with `node tools/build-app.js release live`
+// (testers must never click real ads).
+const ADS={unit:'ca-app-pub-1586140876162989/8250633837',testUnit:'ca-app-pub-3940256099942544/5224354917'};
+const ADS_TEST=true;
+const AD=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;
+const adOpts=()=>({adId:ADS_TEST?ADS.testUnit:ADS.unit,isTesting:ADS_TEST});
+let adsInitP=null,adLoaded=false,adBusy=false,adsPrivacy=false;
+// consent first (Google's UMP form, EU/UK/TR rules), then the SDK
+function adsInit(){
+  if(adsInitP)return adsInitP;
+  const A=AD();if(!A)return Promise.resolve(false);
+  adsInitP=(async()=>{
+    let ci=await A.requestConsentInfo();
+    if(ci.isConsentFormAvailable&&ci.status==='REQUIRED')ci=await A.showConsentForm();
+    adsPrivacy=ci.privacyOptionsRequirementStatus==='REQUIRED';
+    if(!ci.canRequestAds)return false;
+    await A.initialize();
+    statsConsent=true;statsApply();
+    return true;
+  })().then(ok=>{if(!ok)adsInitP=null;return ok;},()=>{adsInitP=null;return false;});
+  return adsInitP;
 }
-function handleRunAd(){const r=adRect();if(useAd())spawnText(r.x+r.w/2,r.y-GH*.01,`+${ECO.adGems} GEM`,C.a2);}
+// keep one ad loaded in advance so the button answers at once
+function adPreload(){
+  const A=AD();if(!A||adLoaded||adBusy)return;
+  adsInit().then(ok=>ok&&A.prepareRewardVideoAd(adOpts())).then(r=>{if(r)adLoaded=true;}).catch(()=>{adLoaded=false;});
+}
+// → true only when the player earned the reward (always true in the browser)
+async function playRewardedAd(){
+  const A=AD();if(!A||adBusy)return false;   // browser: no ads, so no reward
+  adBusy=true;
+  const hs=[];let rewarded=false,shown=false;
+  try{
+    if(!adLoaded){
+      toast(T('LOADING AD…'));
+      if(!await adsInit())throw new Error('no ads');
+      await A.prepareRewardVideoAd(adOpts());
+    }
+    adLoaded=false;
+    let finish;const done=new Promise(r=>{finish=r;});
+    hs.push(await A.addListener('onRewardedVideoAdShowed',()=>{shown=true;if(state===ST.PLAY)paused=true;}));
+    hs.push(await A.addListener('onRewardedVideoAdReward',()=>{rewarded=true;}));
+    hs.push(await A.addListener('onRewardedVideoAdDismissed',()=>finish()));
+    hs.push(await A.addListener('onRewardedVideoAdFailedToShow',()=>finish()));
+    A.showRewardVideoAd().then(()=>{rewarded=true;},()=>finish());
+    await Promise.race([done,new Promise(r=>setTimeout(r,300000))]);   // never hang
+  }catch(e){}
+  hs.forEach(h=>{try{h.remove();}catch(e){}});
+  adBusy=false;setTimeout(adPreload,500);
+  if(!rewarded){snd('deny');toast(shown?T('WATCH THE WHOLE AD TO GET THE REWARD'):T('NO AD AVAILABLE. TRY AGAIN LATER.'),true);}
+  return rewarded;
+}
+async function useAd(place){
+  if(adCooldown()>0){snd('deny');return false;}
+  if(!await playRewardedAd())return false;
+  save.gems+=ECO.adGems;save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;
+  persist();snd('gem');achCheck();track('ad_reward',{place});return true;
+}
+function handleRunAd(){const r=adRect();useAd('run').then(ok=>{if(ok)spawnText(r.x+r.w/2,r.y-GH*.01,`+${ECO.adGems} GEM`,C.a2);});}
 // weekly: a run with this week's mutators, one tier below your highest (it never touches tier records)
 let runWeekly=false;
 const weeklyTier=()=>Math.max(1,maxUnlockedTier()-1);
@@ -1539,6 +1641,7 @@ function startRun(weekly=false){
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;
   runTier=runWeekly?weeklyTier():save.tier;
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
+  track('run_start',{tier:runTier,weekly:runWeekly?1:0,run_no:LIFE().runs+1});
   getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
   if(activeIds().length)hint('active');
 }
@@ -1561,7 +1664,7 @@ function saveProgress(){
     if(runWave>(save.tierBest[runTier]||0)){save.tierBest[runTier]=runWave;save.bestWave=bestEffWave();}
     const after=tierStars(runTier);
     if(after>before){toast(T('★ TIER {0} MASTERY {1}/{2}',runTier,after,MASTERY.length));snd('star');achCheck();}
-    if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()));}
+    if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()));track('tier_unlock',{tier:maxUnlockedTier()});}
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
     if(runPlayT>=120){const r=runEarned/runPlayT;save.idleCps=save.idleCps?save.idleCps*.7+r*.3:r;}
@@ -1589,6 +1692,7 @@ function triggerDeath(){
   // next-run boosts last exactly one run
   save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
+  track('run_end',{tier:runTier,wave:runWave,secs:Math.round(runPlayT),weekly:runWeekly?1:0,best:runNewBest?1:0,run_no:LIFE().runs});
   persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;keepAwake(false);
 }
 // ── SLEEP / WAKE ──
@@ -1605,8 +1709,10 @@ function goBackground(){
   if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
   persist();
   cloudSync(false);
+  scheduleNotifs();
 }
 function goForeground(){
+  clearNotifs();
   if(AC){AC.resume().catch(()=>{});startMusic(state!==ST.PLAY);}
   if(state===ST.PLAY)keepAwake(true);   // the browser drops the wake lock while hidden
 }
@@ -1615,7 +1721,7 @@ document.addEventListener('visibilitychange',()=>{
   goForeground();
   const since=save.lastSeen;
   if(save.awayPending>0)showAway();
-  withTimeout(syncServerTime(),2500).then(()=>{checkAway(since);cloudSync(false);});
+  withTimeout(syncServerTime(),2500).then(()=>{checkAway(since);cloudSync(false);renderDailyDot();setTimeout(maybeDaily,900);});
 });
 window.addEventListener('pagehide',goBackground);
 
@@ -1661,12 +1767,17 @@ function makeEnemy(type,x,y,boss){
   const hpB=ECO.enemyHp*Math.pow(ECO.enemyHpGrowth,ew-1),atkB=ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1);
   const spdB=GH*.032*(1+Math.min(ew,150)*.005);
   const M=runMods||NOMODS;
-  const hp=(boss?hpB*ECO.bossHpMul:hpB*T.hp)*M.ehp,atk=boss?atkB*ECO.bossAtkMul:atkB*T.atk,spd=(boss?spdB*.5:spdB*T.spd)*M.espd;
+  const hp=(boss?hpB*ECO.bossHpMul:hpB*T.hp)*M.ehp,atk=boss?atkB*ECO.bossAtkMul:atkB*T.atk*M.eatk,spd=(boss?spdB*.5:spdB*T.spd)*M.espd;
   const e={type:boss?'boss':type,x,y,sz:GW*(boss?.13:T.sz)*M.esz,hp,maxHp:hp,spd,baseSpd:spd,atk,boss,hitFlash:0,kbVy:0,slowT:0,frozenT:0,
     coin:(boss?ECO.bossCoins:T.coin)*M.ecoin,scale:.1,spinAngle:Math.random()*6,wobble:0,summonT:ECO.bossSummonEvery,enraged:false};
-  if(!boss&&T.shield)e.shield=e.maxShield=hp*T.shield;
+  if(!boss&&T.shield){
+    const ramp=type==='warden'?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1;
+    e.shield=e.maxShield=hp*T.shield*ramp;
+  }
+  if(!boss&&(T.armor||M.armor))e.armorThr=Math.max(T.armor||0,M.armor||0);
   if(!boss&&T.heal)e.healT=1;
   if(!boss&&T.blink)e.blinkT=T.blink*(.5+Math.random()*.5);
+  if(!boss&&T.ghost){e.ghostT=T.ghost*(.5+Math.random()*.5);e.phased=false;}
   enemies.push(e);return e;
 }
 // new enemies enter just below the HUD band
@@ -1683,6 +1794,9 @@ function spawnEnemy(){
 }
 function spawnWave(){
   waveNum++;
+  // wave event: a rule for this wave alone (weekly runs keep their own mutators)
+  runEvent=null;
+  if(!runWeekly){runMods=null;runEvent=eventFor(waveNum,runTier);if(runEvent)runMods=combineMods([runEvent],EVENTS);}
   // WAVE BOUNTY: surviving into a new wave (from wave 2) pays N basic enemies' worth of this wave's coins, silently
   if(waveNum>1){const st=stats();if(st.bounty>0){const c=Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty);
     if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);snd('bounty');}}}
@@ -1698,9 +1812,15 @@ function spawnWave(){
     const type=pickType(ew),sz=GW*ENEMY_TYPES[type].sz,m=sz+GW*.05;
     makeEnemy(type,m+Math.random()*(GW-2*m),spawnY(sz)-i*(GH*.07+Math.random()*GH*.04),false);
   }
-  if(boss)makeEnemy('basic',GW/2,spawnY(GW*.13),true);
+  let bossKind=null;
+  if(boss){
+    const b=makeEnemy('basic',GW/2,spawnY(GW*.13),true);
+    bossKind=b.kind=bossKindFor(waveNum,(runMods&&runMods.bossEvery)||ECO.bossEvery);
+    if(bossKind==='bulwark')b.shield=b.maxShield=b.maxHp*ECO.bossShield;
+    if(bossKind==='regen'){b.healT=1;b.healAmt=ECO.bossRegen;}
+  }
   runWave=waveNum;
-  waveAnim={active:true,timer:2,num:waveNum,boss};snd(boss?'boss':'wave');
+  waveAnim={active:true,timer:2,num:waveNum,boss,ev:runEvent,bossKind};snd(boss?'boss':'wave');
   if(boss){screenFlash=.5;shake={x:0,y:0,t:.3};}
 }
 // damage that doesn't come from a bullet (arc, nova, shockwave); deaths are handled in the enemy loop
@@ -1723,7 +1843,7 @@ function segBoxHit(x0,y0,x1,y1,cx,cy,r){
   }
   return t0;
 }
-const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0);
+const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0&&!e.phased);
 function cycleTarget(){
   save.settings.target=((save.settings.target||0)+1)%TARGET_MODES.length;persist();snd('blip');renderPlayUI();
   spawnText(GW/2,GH*.4,T('TARGET:')+' '+T(TARGET_MODES[save.settings.target]),C.a2);
@@ -1889,7 +2009,7 @@ function updatePlay(dt){
     const perSpawn=Math.max(1,Math.round(Math.floor(1+waveNum/20)*(runMods?runMods.spawn:1)));
     waveSpawnTimer-=dt;
     if(waveSpawnTimer<=0){
-      waveSpawnTimer=interval;
+      waveSpawnTimer=interval*(runMods?runMods.ival:1);
       for(let i=0;i<perSpawn;i++)spawnEnemy();
     }
     // wave duration countdown
@@ -1905,13 +2025,13 @@ function updatePlay(dt){
   if(waveAnim.active){waveAnim.timer-=dt;if(waveAnim.timer<=0)waveAnim.active=false;}
 
   // random drops; each kind waits ECO.pickupCooldown (shortened by LUCK) after being collected
-  const now=Date.now(),cdMs=ECO.pickupCooldown*1000/st.dropRate,gnow=gameNow();
-  if(!pickups.some(g=>g.kind==='gem')&&gnow-(save.lastGemPickup||0)>cdMs&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate){spawnPickup('gem');hint('drops');}
+  const now=Date.now(),cdMs=ECO.pickupCooldown*1000/st.dropRate,gemCdMs=ECO.gemPickupCooldown*1000/st.dropRate,gnow=gameNow();
+  if(!pickups.some(g=>g.kind==='gem')&&gnow-(save.lastGemPickup||0)>gemCdMs&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate){spawnPickup('gem');hint('drops');}
   if(!pickups.some(g=>g.kind==='coin')&&gnow-(save.lastCoinPickup||0)>cdMs&&Math.random()<dt*ECO.coinDropPerSec*st.dropRate){spawnPickup('coin');hint('drops');}
   pickups=pickups.filter(g=>(now-g.spawnTime)<120000);
 
   fireCooldown=Math.max(fireCooldown-dt,-1);
-  if(fireCooldown<=0&&bullets.length<150&&enemies.some(e=>e.y>=st.rangeY&&e.hp>0)){fireBullets(st);fireCooldown=1/st.rate;}
+  if(fireCooldown<=0&&bullets.length<150&&enemies.some(e=>e.y>=st.rangeY&&e.hp>0&&!e.phased)){fireBullets(st);fireCooldown=1/st.rate;}
 
   bullets.forEach(b=>{
     b.trail.unshift({x:b.x,y:b.y});
@@ -1920,7 +2040,7 @@ function updatePlay(dt){
     // homing: a bullet follows the enemy it was fired at, so knockback / dodging can't make it miss;
     // if that enemy dies first, the bullet flies on in a straight line
     if(b.tgt){
-      if(b.tgt.hp<=0)b.tgt=null;
+      if(b.tgt.hp<=0||b.tgt.phased)b.tgt=null;
       else{const sp=Math.hypot(b.vx,b.vy),dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;}
     }
     b.x+=b.vx*dt;b.y+=b.vy*dt;
@@ -1932,14 +2052,16 @@ function updatePlay(dt){
     for(let guard=0;guard<12;guard++){
       let e=null,tBest=2;
       for(const o of enemies){
-        if(o.hp<=0||(b.hits&&b.hits.has(o)))continue;
+        if(o.hp<=0||o.phased||(b.hits&&b.hits.has(o)))continue;
         const t=segBoxHit(b.px,b.py,b.x,b.y,o.x,o.y,o.sz*.55);
         if(t>=0&&t<tBest){tBest=t;e=o;}
       }
       if(!e)break;
       const hx=b.px+(b.x-b.px)*tBest,hy=b.py+(b.y-b.py)*tBest;   // where the bullet touched the enemy
       const isCrit=Math.random()<st.crit;
-      const dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+      let dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+      // ARMOR: a bullet weaker than armorThr x its max health is cut in proportion (thorns / blasts skip it)
+      if(e.armorThr)dmg*=Math.min(1,dmg/(e.maxHp*e.armorThr));
       // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
       if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
       else e.hp-=dmg;
@@ -1983,7 +2105,7 @@ function updatePlay(dt){
     if(e.healT!==undefined&&!frozen&&e.hp>0){
       e.healT-=dt;
       if(e.healT<=0){
-        e.healT=1;e.pulse=1;const r2=(GW*.25)**2,h=ENEMY_TYPES.mender.heal;
+        e.healT=1;e.pulse=1;const r2=(GW*.25)**2,h=e.healAmt??ENEMY_TYPES.mender.heal;
         for(const o of enemies)if(o.hp>0&&(o.x-e.x)**2+(o.y-e.y)**2<r2)o.hp=Math.min(o.maxHp,o.hp+o.maxHp*h);
       }
     }
@@ -1995,6 +2117,11 @@ function updatePlay(dt){
         e.y=Math.min(LINE_Y-e.sz,e.y+GH*.1);burst(e.x,e.y,enemyCol(e),8,GH*.05);
       }
     }
+    // GHOST: fades out for a moment every few seconds; bullets pass through it while it is faded (blasts still hit)
+    if(e.ghostT!==undefined&&!frozen&&e.hp>0&&e.y>GH*HUD_TOP){
+      e.ghostT-=dt;
+      if(e.ghostT<=0){e.phased=!e.phased;e.ghostT=ENEMY_TYPES.ghost.ghost*(e.phased?.4:1);}
+    }
     // boss: calls two shards every few seconds, enrages below half health
     if(e.boss&&!frozen&&e.hp>0){
       if(!e.enraged&&e.hp<e.maxHp*ECO.bossEnrageAt){
@@ -2003,8 +2130,9 @@ function updatePlay(dt){
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
-        e.summonT=ECO.bossSummonEvery*(e.enraged?.6:1);
-        for(const dx of[-1,1]){const m=makeEnemy('mini',e.x+dx*e.sz*.6,e.y+e.sz*.3,false);m.kbVy=0;}
+        e.summonT=ECO.bossSummonEvery*(e.enraged?.6:1)*(e.kind==='swarmlord'?1.4:1);
+        if(e.kind==='swarmlord'){for(let k=-1;k<=1;k++){const m=makeEnemy('runner',e.x+k*e.sz*.6,e.y+e.sz*.3,false);m.kbVy=0;m.coin=0;}}
+        else for(const dx of[-1,1]){const m=makeEnemy('mini',e.x+dx*e.sz*.6,e.y+e.sz*.3,false);m.kbVy=0;}
         burst(e.x,e.y,C.hot,8,GH*.06);
       }
     }
@@ -2051,10 +2179,13 @@ function updatePlay(dt){
 function runShatter(st){
   const q=shatterQ;shatterQ=[];const r2=(GW*SHATTER_R)**2;
   for(const b of q.slice(0,12)){
+    const near=[];
     for(const o of enemies){
-      if(o.hp<=0||(o.x-b.x)**2+(o.y-b.y)**2>r2)continue;
-      hurt(o,b.dmg*(o.boss?.25:1));o.slowT=Math.max(o.slowT,ECO.slowTime);
+      if(o.hp<=0)continue;
+      const d=(o.x-b.x)**2+(o.y-b.y)**2;if(d<=r2)near.push([d,o]);
     }
+    near.sort((p,q)=>p[0]-q[0]);
+    for(const [,o] of near.slice(0,ECO.shatterMax)){hurt(o,b.dmg*(o.boss?.25:1));o.slowT=Math.max(o.slowT,ECO.slowTime);}
     novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});snd('shatter');burst(b.x,b.y,C.a2,10,GH*.08);
   }
 }
@@ -2132,6 +2263,9 @@ function enemyPath(type,s){
   else if(type==='tank'){for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;cx.lineTo(Math.cos(a)*s*1.08,Math.sin(a)*s*1.08);}}
   else if(type==='splitter'){const n=s*.3;cx.moveTo(-s,-s);cx.lineTo(-n,-s);cx.lineTo(0,-s+n);cx.lineTo(n,-s);cx.lineTo(s,-s);cx.lineTo(s,s);cx.lineTo(n,s);cx.lineTo(0,s-n);cx.lineTo(-n,s);cx.lineTo(-s,s);}
   else if(type==='mini'){cx.rect(-s,-s,s*2,s*2);}
+  else if(type==='armored'){cx.moveTo(-s*1.1,-s*.55);cx.lineTo(-s*.65,-s);cx.lineTo(s*.65,-s);cx.lineTo(s*1.1,-s*.55);cx.lineTo(s*1.1,s*.9);cx.lineTo(-s*1.1,s*.9);}
+  else if(type==='plated'){cx.moveTo(-s,-s*.9);cx.lineTo(s,-s*.9);cx.lineTo(s,s*.2);cx.lineTo(0,s*1.1);cx.lineTo(-s,s*.2);}
+  else if(type==='ghost'){cx.moveTo(-s,s);cx.lineTo(-s,-s*.2);cx.arc(0,-s*.2,s,Math.PI,0);cx.lineTo(s,s);cx.lineTo(s*.5,s*.6);cx.lineTo(0,s);cx.lineTo(-s*.5,s*.6);}
   else if(type==='warden'){for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;cx.lineTo(Math.cos(a)*s*1.1,Math.sin(a)*s*1.1);}}
   else if(type==='mender'){const k=s*.38;cx.moveTo(-k,-s);cx.lineTo(k,-s);cx.lineTo(k,-k);cx.lineTo(s,-k);cx.lineTo(s,k);cx.lineTo(k,k);cx.lineTo(k,s);cx.lineTo(-k,s);cx.lineTo(-k,k);cx.lineTo(-s,k);cx.lineTo(-s,-k);cx.lineTo(-k,-k);}
   else if(type==='blinker'){cx.moveTo(-s,-s);cx.lineTo(s,-s);cx.lineTo(s*.2,0);cx.lineTo(s,s);cx.lineTo(-s,s);cx.lineTo(-s*.2,0);}
@@ -2144,6 +2278,9 @@ function enemyInner(type,s){
   if(type==='runner'){cx.moveTo(0,-s*.45);cx.lineTo(s*.3,0);cx.lineTo(0,s*.45);cx.lineTo(-s*.3,0);cx.closePath();}
   else if(type==='tank'){for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;cx.lineTo(Math.cos(a)*s*.55,Math.sin(a)*s*.55);}cx.closePath();}
   else if(type==='splitter'){cx.moveTo(0,-s*.55);cx.lineTo(0,s*.55);}
+  else if(type==='armored'){cx.moveTo(-s*.6,-s*.1);cx.lineTo(s*.6,-s*.1);cx.moveTo(-s*.6,s*.3);cx.lineTo(s*.6,s*.3);}
+  else if(type==='plated'){cx.moveTo(-s*.5,-s*.3);cx.lineTo(0,s*.35);cx.lineTo(s*.5,-s*.3);}
+  else if(type==='ghost'){cx.rect(-s*.4,-s*.35,s*.22,s*.22);cx.rect(s*.18,-s*.35,s*.22,s*.22);}
   else if(type==='mini'){}
   else if(type==='boss'){
     // core: an eye-like diamond inside a ring
@@ -2239,7 +2376,8 @@ function drawPlay(){
     if(fa<=0)return;
     const frozen=e.frozenT>0;
     const col=e.hitFlash>0?'#ffffff':frozen?C.a2:enemyCol(e);
-    cx.save();cx.globalAlpha=fa;cx.translate(e.x,e.y);cx.scale(e.scale,e.scale);
+    const ga=e.phased?fa*.25:fa;
+    cx.save();cx.globalAlpha=ga;cx.translate(e.x,e.y);cx.scale(e.scale,e.scale);
     if(e.boss){
       // outer warning ring, spinning the other way; pulses red when enraged
       const pr=e.sz*.78+(e.enraged?Math.sin(lastTime*.02)*e.sz*.05:0);
@@ -2252,9 +2390,10 @@ function drawPlay(){
     enemyPath(e.type,s);
     cx.fillStyle=hexA(col,e.hitFlash>0?.85:.16);cx.fill();
     cx.shadowColor=col;cx.shadowBlur=GW*(e.boss?.045:e.elite?.038:.022);
-    cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;cx.stroke();
+    cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;if(e.phased)cx.setLineDash([3,3]);cx.stroke();cx.setLineDash([]);
+    if(e.armorThr&&e.type!=='armored'){cx.save();cx.setLineDash([]);cx.lineWidth=1;cx.globalAlpha*=.8;enemyPath(e.type,s*1.22);cx.stroke();cx.restore();}
     if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
-    cx.shadowBlur=0;cx.globalAlpha=.6*fa;cx.lineWidth=1;
+    cx.shadowBlur=0;cx.globalAlpha=.6*ga;cx.lineWidth=1;
     enemyInner(e.type,s);
     cx.restore();
     // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
@@ -2337,13 +2476,13 @@ function drawPlay(){
 
 // ad button: just above the perimeter, right side
 function drawAdButton(){
-  if(adCooldown()>0)return;          // hidden while no ad is available
+  if(!IS_APP||adCooldown()>0)return;   // no ads in the browser; hidden while none is available
   const r=adRect(),cool=adCooldown(),ready=cool===0;
   cx.letterSpacing='0px';
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
   // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
-  const col=ready?C.a2:C.mute,label=ready?T('FREE +{0}',ECO.adGems):adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=0;
+  const col=ready?C.a2:C.mute,label=ready?T('AD +{0}',ECO.adGems):adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=0;
   cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
   cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
   if(ready)drawGemIcon(x0+tv*1.25+tw+is*.85,r.y+r.h*.5,is,col);
@@ -2435,7 +2574,13 @@ function drawWaveBanner(){
   cx.fillRect(0,GH*.44,GW,1);cx.fillRect(0,GH*.6,GW,1);
   cx.textAlign='center';cx.letterSpacing='0px';
   glowText(`>> ${T('WAVE {0}',waveAnim.num)} <<`,GW/2,GH*.53,waveAnim.boss?C.hot:C.a,GW*.13,18);
-  if(waveAnim.boss&&Math.floor(lastTime/250)%2===0)glowText(T('!! BOSS INCOMING !!'),GW/2,GH*.578,C.hot,GW*.06,10);
+  if(waveAnim.boss&&Math.floor(lastTime/250)%2===0)glowText(T('!! BOSS INCOMING !!'),GW/2,GH*.566,C.hot,GW*.055,10);
+  if(waveAnim.boss&&waveAnim.bossKind&&waveAnim.bossKind!=='classic')glowText('~ '+T(BOSS_NAMES[waveAnim.bossKind])+' ~',GW/2,GH*.592,C.hot,GW*.045,8);
+  if(waveAnim.ev){
+    const E=EVENTS[waveAnim.ev];
+    glowText('~ '+T(E.name)+' ~',GW/2,GH*.566,C.a2,GW*.055,10);
+    glowText(T(E.desc),GW/2,GH*.592,C.mute,GW*.032,0);
+  }
   cx.restore();
 }
 
@@ -2575,7 +2720,7 @@ function renderMenu(){
   setTimeout(offerLowFx,600);
   $('mCoins').textContent=fmtC(save.coins);
   $('mGems').textContent=fmtN(save.gems);
-  renderTierSel();achCheck();renderMenuAd();menuHints();
+  renderTierSel();achCheck();renderMenuAd();renderDailyDot();menuHints();
 }
 function renderTierSel(){
   const t=save.tier,maxT=maxUnlockedTier();
@@ -2614,11 +2759,14 @@ $('tNext').addEventListener('click',()=>{
 });
 function renderMenuAd(){
   // the ad button only exists while an ad is available
-  $('mAd').style.display=adCooldown()>0?'none':'';
-  $('mAdTxt').textContent=T('FREE +{0}',ECO.adGems);
+  $('mAd').style.display=IS_APP&&adCooldown()<=0?'':'none';   // the browser has no ads, so no gem button either
+  $('mAdTxt').textContent=T('AD +{0}',ECO.adGems);
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
-function menuAd(){if(useAd()){toast(T('+{0} GEM',ECO.adGems));renderMenu();}else toast(adsLeftToday()<=0?I('gem')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('gem')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);}
+function menuAd(){
+  if(adCooldown()>0){snd('deny');toast(adsLeftToday()<=0?I('gem')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('gem')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);return;}
+  useAd('menu').then(ok=>{if(ok){toast(T('+{0} GEM',ECO.adGems));renderMenu();}});
+}
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
 $('mTat').addEventListener('click',openTattoos);
@@ -2862,7 +3010,7 @@ function doPull(count){
   count=Math.min(count,left);
   const cost=count===10?ECO.pull10Cost:ECO.pullCost*count;
   if(save.gems<cost){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
-  save.gems-=cost;LIFE().pulls+=count;snd('summon');
+  save.gems-=cost;LIFE().pulls+=count;snd('summon');track('summon',{count});
   const results=[];
   for(let i=0;i<count;i++){
     const t=rollType();if(!t)break;
@@ -3393,7 +3541,7 @@ function applyFx(){
 // enemy shapes for the help page (same outlines as in the game)
 const HELP_SHAPES={
   basic:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',runner:'M12 1l7 11-7 11-7-11z',tank:'M12 2l9 5v10l-9 5-9-5V7z',
-  splitter:'M3 3h6l3 3 3-3h6v18h-6l-3-3-3 3H3z',warden:'M12 2l10 7-4 12H6L2 9z',mender:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
+  splitter:'M3 3h6l3 3 3-3h6v18h-6l-3-3-3 3H3z',armored:'M2 8l4-5h12l4 5v13H2z',plated:'M3 3h18v10l-9 9-9-9z',ghost:'M4 21V11a8 8 0 0 1 16 0v10l-3.5-3-2.5 3-2-3-2 3-2.5-3z',warden:'M12 2l10 7-4 12H6L2 9z',mender:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
   blinker:'M4 3h16l-7 9 7 9H4l7-9z',elite:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',boss:'M12 1l2 4 4-2-1 4 4 1-3 3 3 3-4 1 1 4-4-2-2 4-2-4-4 2 1-4-4-1 3-3-3-3 4-1-1-4 4 2z'};
 function enemyRow(key,col,name,text){
   const dash=key==='elite'?' stroke-dasharray="3 2"':'';
@@ -3416,23 +3564,26 @@ const HELP_TOPICS=[
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
   ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
     <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = most health, WEAK = least health. Bullets follow their target.',I('target'))}</p>`],
-  ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that calls in shards and speeds up below half health.')}</p>
+  ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>`],
   ['enemies','boss','ENEMIES',()=>{const r=C.r;return `<div class="hen">`+[
     enemyRow('basic',r[1],T('BASIC'),T('The standard enemy.')),
     enemyRow('runner',r[2],T('RUNNER'),T('Fast but fragile.')),
     enemyRow('tank',r[3],T('TANK'),T('Slow, lots of health, hits hard.')),
+    enemyRow('plated',r[2],T('PLATED'),T('A light shield soaks bullets until it breaks. A first look at what is coming later.')),
     enemyRow('splitter',r[2],T('SPLITTER'),T('Breaks into two small SHARDS when it dies.')),
-    enemyRow('warden',r[2],T('WARDEN'),T('From tier 5. A shield soaks bullets until it breaks; thorns and blasts go around it.')),
+    enemyRow('armored',r[3],T('ARMORED'),T('Bullets weaker than a tenth of its health are cut in proportion. Strong hits and blasts get through.')),
+    enemyRow('ghost',r[1],T('GHOST'),T('Fades out for a moment: bullets pass through it. Blasts and thorns still hit.')),
+    enemyRow('warden',r[2],T('WARDEN'),T('From tier 3. A strong shield soaks bullets until it breaks; thorns and blasts go around it.')),
     enemyRow('mender',r[1],T('MENDER'),T('From tier 8. Heals the enemies around it, so take it out first.')),
     enemyRow('blinker',r[3],T('BLINKER'),T('From tier 11. Jumps forward every few seconds.')),
     enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),
-    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave. Huge health, calls in shards, enrages below half health.')),
+    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health.')),
   ].join('')+`</div>`;}],
   ['damage','shield','TAKING DAMAGE',()=>`<p>${T('Each enemy that touches the perimeter deals its attack as damage, then bounces back and comes again.')}</p>
     <p>${T('MAX HP and REGEN keep you standing, ARMOR and DODGE soften or skip hits, THORNS hurts whoever hits you and LIFESTEAL heals you as you deal damage.')}</p>`],
   ['money','coins','COINS & GEMS',()=>`<p>${T('{0} COINS come from kills, bosses, wave bounty, coin drops, quests and idle income. Spend them in the SHOP.',I('coin'))}</p>
-    <p>${T('{0} GEMS come from quests, achievements, the weekly op, ads and gem drops. Spend them on tattoos, tattoo slots and themes.',I('gem'))}</p>
+    <p>${T(IS_APP?'{0} GEMS come from quests, achievements, the weekly op, ads and gem drops. Spend them on tattoos, tattoo slots and themes.':'{0} GEMS come from quests, achievements, the weekly op and gem drops. Spend them on tattoos, tattoo slots and themes.',I('gem'))}</p>
     <p>${T('Coins and gems sometimes float on the field during a run: tap them to collect.')}</p>`],
   ['shop','bag','SHOP',()=>`<p>${T('PERMANENT upgrades last forever, sorted into ATTACK, DEFENSE and UTILITY. Tap an icon to see exactly what it does; x1 / x5 / x10 / MAX choose how many levels you buy at once.')}</p>
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
@@ -3513,7 +3664,8 @@ function renderSettings(){
   $('fxSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.fx===s.fx));
   $('fxDesc').textContent=T(FX_DESC[s.fx]||'');
   $('langSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
-  tg('dmgToggle',s.showDmgNums!==false);tg('statOvToggle',!!s.statOverlay);
+  tg('dmgToggle',s.showDmgNums!==false);tg('statOvToggle',!!s.statOverlay);tg('notifToggle',notifOn());tg('statsToggle',save.settings.stats!==false);
+  $('setAdPriv').style.display=adsPrivacy?'':'none';
   const th=THEMES.find(x=>x.id===save.theme)||THEMES[0];
   $('themeName').textContent=T(th.name);
   $('themeSwat').style.background=th.c[0];
@@ -3538,6 +3690,7 @@ $('setTheme').addEventListener('click',()=>{$('setPanel').classList.remove('open
 $('setExport').addEventListener('click',()=>{persist();openModal('export');});
 $('setImport').addEventListener('click',()=>openModal('import'));
 $('setRedeem').addEventListener('click',()=>openModal('redeem'));
+$('setAdPriv').addEventListener('click',()=>{const A=AD();if(A)A.showPrivacyOptionsForm().catch(()=>{});});
 
 // ── CLOUD SAVE ───────────────────────────────────────────────────────────────
 // Opt-in: nothing is uploaded until the player turns it on. The cloud holds one copy of the save per player;
@@ -3639,7 +3792,7 @@ $('clBtns').addEventListener('click',async e=>{
   }
   clBusy=true;
   try{
-    if(a==='on'){await CLOUD.ensure();lsSet(CL_ON,'1');await cloudSync(true);}
+    if(a==='on'){await CLOUD.ensure();lsSet(CL_ON,'1');track('cloud_on');await cloudSync(true);}
     else if(a==='sync')await cloudSync(true);
     else if(a==='link'||a==='signin'){
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){snd('deny');toast(T('INVALID EMAIL'),true);return;}
@@ -3704,7 +3857,7 @@ function showAway(){
   const secs=save.awaySecs||0,cd=adCooldown();
   $('awTxt').textContent=T('{0} COUNTED · {1} OF YOUR AVERAGE RATE ({2}/S) · UP TO {3}H A DAY',fmtDur(secs),pc(permVal('offline')),fmtN(save.idleCps),ECO.offlineDayH);
   $('awCoins').textContent=fmtN(save.awayPending);
-  $('awAd').innerHTML=I('tv')+'x2';$('awAd').style.display=cd>0?'none':'';
+  $('awAd').innerHTML=I('tv')+'x2';$('awAd').style.display=IS_APP&&cd<=0?'':'none';
   $('away').classList.add('show');
 }
 function collectAway(mult){
@@ -3712,11 +3865,143 @@ function collectAway(mult){
   save.coins+=c;save.awayPending=0;save.awaySecs=0;persist();
   $('away').classList.remove('show');snd('buy');toast(T('+{0} COINS',fmtN(c)));
   if(state===ST.MENU)renderMenu();
+  setTimeout(afterAway,600);
 }
 $('awGet').addEventListener('click',()=>collectAway(1));
 $('awAd').addEventListener('click',()=>{
   if(adCooldown()>0){snd('deny');return;}
-  adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;collectAway(2);
+  playRewardedAd().then(ok=>{
+    if(!ok)return;
+    adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;track('ad_reward',{place:'idle'});collectAway(2);
+  });
+});
+
+// ── DAILY REWARD ─────────────────────────────────────────────────────────────
+// 7-day ladder. Missing a day never resets it: the next claim continues where the player left off.
+// c = seconds of the player's average idle income, so coin days scale with progress. Gems stay small
+// (about 19 a week, next to 50 a day from ads) because they will be sold for money.
+const DAILY=[{g:2},{c:600},{g:3},{c:1200},{g:4},{c:1800},{g:10,c:3600}];
+function dailyToday(){return new Date(gameNow()).toDateString();}
+function dailyReady(){return save.daily.last!==dailyToday();}
+const dailyCoins=c=>Math.max(100,Math.floor((save.idleCps||0)*c));
+const dailyHtml=d=>[d.g?I('gem')+d.g:'',d.c?I('coin')+fmtN(dailyCoins(d.c)):''].filter(Boolean).join(' ');
+function renderDailyDot(){$('mDailyDot').style.display=dailyReady()?'':'none';}
+function renderDaily(){
+  const idx=save.daily.n%DAILY.length,ready=dailyReady();
+  $('dyGrid').innerHTML=DAILY.map((d,i)=>`<div class="dcell${i<idx?' done':''}${i===idx?' cur':''}"><b>${T('DAY {0}',i+1)}</b><span>${dailyHtml(d)}</span></div>`).join('');
+  const nd=new Date(gameNow());nd.setHours(24,0,0,0);
+  $('dyMeta').textContent=ready?T('Your reward for today is ready. Missing a day never resets your progress.'):T('Claimed. Next reward in {0}.',fmtDur((nd-gameNow())/1000));
+  $('dyGet').style.display=ready?'':'none';
+  renderDailyDot();
+}
+function openDaily(){renderDaily();$('dailyUI').classList.add('show');snd('click');}
+function claimDaily(){
+  if(!dailyReady()){snd('deny');return;}
+  const d=DAILY[save.daily.n%DAILY.length],c=d.c?dailyCoins(d.c):0;
+  save.gems+=d.g||0;save.coins+=c;
+  save.daily={n:save.daily.n+1,last:dailyToday()};
+  persist();snd('gem');track('daily_claim',{day:save.daily.n});
+  toast([d.g?T('+{0} GEM',d.g):'',c?T('+{0} COINS',fmtN(c)):''].filter(Boolean).join(' · '));
+  renderDaily();if(state===ST.MENU)renderMenu();
+  setTimeout(askNotif,700);
+}
+// the reward window opens by itself once a day, but never on top of another popup or before the first run (the dot is enough then)
+function maybeDaily(){if(state===ST.MENU&&(save.life.runs||0)>0&&dailyReady()&&!anyPanelOpen()&&!$('confirmUI').classList.contains('show'))openDaily();}
+$('mDaily').addEventListener('click',openDaily);
+$('dyGet').addEventListener('click',claimDaily);
+$('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.remove('show');});
+
+// ── REMINDERS (Android app only) ─────────────────────────────────────────────
+// Local notifications: scheduled on the phone when the app goes to the background, cleared when it comes back.
+// Nothing leaves the device. Plugins are called through Capacitor.Plugins (there is no bundler).
+const LN=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+const notifOn=()=>IS_APP&&save.settings.notif!==false;
+async function notifPerm(ask){
+  const ln=LN();if(!ln)return false;
+  try{
+    let p=await ln.checkPermissions();
+    if(p.display==='prompt'&&ask)p=await ln.requestPermissions();
+    return p.display==='granted';
+  }catch(e){return false;}
+}
+// 23:00–08:00 is quiet time: a reminder that would land there waits until 10:00
+function notifTime(ts){
+  const d=new Date(ts),h=d.getHours();
+  if(h>=8&&h<23)return d;
+  if(h>=23)d.setDate(d.getDate()+1);
+  d.setHours(10,0,0,0);return d;
+}
+async function scheduleNotifs(){
+  const ln=LN();if(!ln||!notifOn()||saveLocked)return;
+  try{
+    if(!await notifPerm(false))return;
+    await ln.cancel({notifications:[{id:1},{id:2}]});
+    const now=Date.now(),list=[];
+    // idle income is full once the rest of today's budget is used up
+    const full=ECO.offlineDayH*3600,left=save.idleDay!==new Date(gameNow()).toDateString()?full:Math.max(0,full-(save.idleUsed||0));
+    const cap=timeVerified?left:Math.min(left,ECO.offlineUnverifiedH*3600);
+    if(save.idleCps>0&&cap>=3600)list.push({id:1,title:T('IDLE INCOME FULL'),body:T('Come back and collect your coins.'),schedule:{at:notifTime(now+cap*1000),allowWhileIdle:true}});
+    // daily reward: in 3 hours if it is waiting already, otherwise tomorrow morning
+    let at;
+    if(dailyReady())at=notifTime(now+3*3600e3);
+    else{at=new Date(now);at.setDate(at.getDate()+1);at.setHours(10,0,0,0);}
+    list.push({id:2,title:T('DAILY REWARD READY'),body:T('Come and claim it.'),schedule:{at,allowWhileIdle:true}});
+    await ln.schedule({notifications:list});
+  }catch(e){}
+}
+function clearNotifs(){
+  const ln=LN();if(!ln)return;
+  try{ln.cancel({notifications:[{id:1},{id:2}]}).catch(()=>{});ln.removeAllDeliveredNotifications().catch(()=>{});}catch(e){}
+}
+// asked once, at a moment that makes sense (after the first idle collect or daily reward), never on first launch
+function askNotif(){
+  if(!IS_APP||save.notifAsked||save.settings.notif===false)return;
+  save.notifAsked=1;persist();
+  confirmBox('REMINDERS?',T('Get a notification when your idle income is full or your daily reward is ready? You can change this in Settings.'),'ALLOW',
+    ()=>{notifPerm(true).then(ok=>{if(!ok){save.settings.notif=false;persist();}});},
+    ()=>{save.settings.notif=false;persist();});
+  $('cfNo').textContent=T('NOT NOW');
+}
+function afterAway(){if(dailyReady())maybeDaily();else askNotif();}
+if(!IS_APP)$('setNotif').style.display='none';
+$('notifToggle').addEventListener('click',async()=>{
+  const on=!notifOn();snd('click');
+  if(on&&!await notifPerm(true)){snd('deny');toast(T('ALLOW NOTIFICATIONS IN YOUR PHONE SETTINGS'),true);return;}
+  save.settings.notif=on;persist();renderSettings();
+});
+
+// ── USAGE STATS & CRASH REPORTS (Firebase, Android app only) ─────────────────
+// Off in the manifest. Switched on only after the consent flow has finished (the same Google consent form as the ads)
+// and only while the player keeps USAGE STATS on in Settings. No user ID, no personal data: a handful of game events
+// (run start/end, tier unlocks, summons, daily reward, ad rewards) and errors. Session and retention numbers are automatic.
+const FA=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.FirebaseAnalytics;
+const FC=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.FirebaseCrashlytics;
+let statsConsent=false,statsOn=null,errSent=0;
+function statsApply(){
+  const on=statsConsent&&save.settings.stats!==false;
+  if(on===statsOn)return;statsOn=on;
+  try{
+    if(FA())FA().setEnabled({enabled:on}).catch(()=>{});
+    if(FC())FC().setEnabled({enabled:on}).catch(()=>{});
+  }catch(e){}
+}
+function track(name,params){
+  if(!statsOn)return;
+  const A=FA();if(!A)return;
+  try{A.logEvent({name,params}).catch(()=>{});}catch(e){}
+}
+// JavaScript errors are where this game would really break; at most 5 per session are sent
+function reportErr(msg){
+  if(!statsOn||errSent>=5)return;
+  const C=FC();if(!C)return;
+  errSent++;
+  try{C.recordException({message:String(msg).slice(0,300)}).catch(()=>{});}catch(e){}
+}
+window.addEventListener('error',e=>reportErr((e.message||'error')+' @'+(e.lineno||'?')));
+window.addEventListener('unhandledrejection',e=>reportErr('promise: '+((e.reason&&e.reason.message)||e.reason)));
+if(!IS_APP)$('setStats').style.display='none';
+$('statsToggle').addEventListener('click',()=>{
+  save.settings.stats=save.settings.stats===false;persist();statsApply();snd('click');renderSettings();
 });
 
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
@@ -3758,6 +4043,7 @@ function handleBack(){
   if(on('tipWrap')){$('tipWrap').classList.remove('show');return true;}
   if(on('confirmUI')){if(!cloudAsking)$('cfNo').click();return true;}   // the cloud choice needs an explicit answer
   if(on('cloudUI')){$('cloudUI').classList.remove('show');return true;}
+  if(on('dailyUI')){$('dyClose').click();return true;}
   if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}
@@ -3799,9 +4085,9 @@ window.addEventListener('popstate',()=>{
 })();
 // a speed saved at the old max (before it followed purchases) means "max"
 if(save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-.15)delete save.settings.speed;
-applyLang();applyFx();achCheck();
+applyLang();applyFx();achCheck();clearNotifs();statsApply();setTimeout(adPreload,4000);
 withTimeout(syncServerTime(),2500).then(()=>{
-  clockReady=true;refreshQuests();checkAway(bootLastSeen);cloudSync(false);
+  clockReady=true;refreshQuests();checkAway(bootLastSeen);cloudSync(false);renderDailyDot();setTimeout(maybeDaily,900);
   if(save.midRun&&Date.now()-save.midRun.ts<86400000){
     const mr=save.midRun;
     confirmBox(T('RESUME RUN?'),T('You closed the app during wave {0}. Resume from there?',mr.wave),T('RESUME'),

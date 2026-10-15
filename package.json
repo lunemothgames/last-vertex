@@ -11,7 +11,9 @@
     "code": "node tools/make-code.js",
     "store-art": "node tools/make-store-art.js",
     "promo-video": "node tools/make-promo-video.js all",
-    "check-listing": "node tools/check-listing.js"
+    "check-listing": "node tools/check-listing.js",
+    "pace": "node tools/sim-pace.js",
+    "exp": "node tools/sim-exp.js"
   },
   "engines": {
     "node": ">=18"
@@ -22,9 +24,13 @@
     "puppeteer-core": "23.11.1"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
     "@capacitor-community/in-app-review": "^8.0.0",
+    "@capacitor-firebase/analytics": "^8.5.2",
+    "@capacitor-firebase/crashlytics": "^8.5.2",
     "@capacitor/android": "^8.5.3",
     "@capacitor/app": "^8.1.2",
-    "@capacitor/core": "^8.5.3"
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/local-notifications": "^8.3.1"
   }
 }

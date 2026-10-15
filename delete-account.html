@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delete your account · Last Vertex: Idle Defense</title>
+<style>
+:root{--fg:#9fd8ff;--hi:#f0f9ff;--mute:#6f9cbf;--bg:#02050b;--line:#28506e}
+html,body{background:var(--bg);color:var(--fg);margin:0}
+body{font:15px/1.65 ui-monospace,'IBM Plex Mono',Consolas,monospace;padding:28px 18px 48px}
+main{max-width:720px;margin:0 auto}
+h1{color:var(--hi);font-size:22px;letter-spacing:.06em;margin:0 0 4px}
+h2{color:var(--hi);font-size:16px;letter-spacing:.06em;margin:28px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+p,li{margin:6px 0}
+.m{color:var(--mute)}
+a{color:var(--hi)}
+input,button{font:inherit;color:var(--hi);background:#06121f;border:1px solid var(--line);padding:10px 12px;margin:6px 0;width:100%;box-sizing:border-box;border-radius:0}
+button{cursor:pointer;background:var(--fg);color:#03101c;font-weight:600;letter-spacing:.06em}
+button:disabled{opacity:.5;cursor:default}
+label{display:block;margin:8px 0}
+label input{width:auto;margin-right:8px}
+#msg{margin-top:10px;min-height:1.6em}
+#msg.err{color:#ff7aa2}#msg.ok{color:#7affd9}
+[hidden]{display:none!important}
+</style>
+</head>
+<body><main>
+<h1>Delete your account</h1>
+<p class="m">Last Vertex: Idle Defense</p>
+
+<p>The game only creates an account if you turn on <b>Cloud Save</b>. It is an anonymous account by default; you can optionally add an email address to it. This page explains how to delete that account and everything stored with it.</p>
+
+<h2>Delete it in the game (recommended)</h2>
+<ol>
+<li>Open the game and go to <b>Settings</b> (the gear icon).</li>
+<li>Tap <b>Cloud Save</b>.</li>
+<li>Tap <b>Delete Cloud Data</b> and confirm.</li>
+</ol>
+<p>The deletion is immediate and permanent. It removes your cloud account, your email address (if you added one) and your cloud save from our server. The save stored on your own device is not touched; to remove that too, uninstall the app or clear its data.</p>
+
+<h2>Delete it here (accounts with an email)</h2>
+<p>If you added an email address to your cloud account you can delete the account from this page, even if you lost your phone. We send a one-time code to that address to prove the account is yours, then delete it right away.</p>
+<form id="f1"><input id="em" type="email" autocomplete="email" placeholder="your email address" required maxlength="120"><button id="b1" type="submit">SEND CODE</button></form>
+<form id="f2" hidden><input id="cd" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="code from the email" required maxlength="10"><label><input id="ok" type="checkbox" required> I understand this permanently deletes my cloud account and cloud save.</label><button id="b2" type="submit">DELETE MY ACCOUNT</button></form>
+<p id="msg" role="status"></p>
+
+<h2>What is deleted</h2>
+<ul>
+<li>your random player ID and sign-in data</li>
+<li>your email address, if you added one</li>
+<li>your game progress stored in the cloud</li>
+</ul>
+<p>Nothing else about you is stored on the server. See the <a href="privacy.html">privacy policy</a> for details.</p>
+
+<h2>Accounts without an email</h2>
+<p>Anonymous accounts (no email added) cannot be linked to a person, so they cannot be looked up or deleted from here. If you can still open the game, delete the account in Settings as described above. If you can not, the account stays unreachable once the app is uninstalled and contains only a game save.</p>
+<script>
+(function(){
+var URL_='https://dcrguwmxtuglnfkrbemg.supabase.co',KEY='sb_publishable_12EiU86CM9IkzUFqIUNUvQ_RbaA7zC3';
+var $=function(i){return document.getElementById(i);},msg=$('msg'),email='';
+function say(t,c){msg.textContent=t;msg.className=c||'';}
+function call(path,body,tok){
+  return fetch(URL_+path,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json',Authorization:'Bearer '+(tok||KEY)},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok){var e=new Error('http');e.status=r.status;throw e;}return r.status===204?null:r.json().catch(function(){return null;});});
+}
+$('f1').addEventListener('submit',function(e){
+  e.preventDefault();email=$('em').value.trim();$('b1').disabled=true;say('Sending…');
+  call('/auth/v1/otp',{email:email,create_user:false}).then(function(){
+    say('A code was sent to '+email+'. Enter it below.','ok');$('f2').hidden=false;$('cd').focus();
+  }).catch(function(x){
+    say(x.status===422?'No account with an email was found for this address.':x.status===429?'Too many tries. Please wait a minute and try again.':'Something went wrong. Please try again later.','err');
+  }).then(function(){$('b1').disabled=false;});
+});
+$('f2').addEventListener('submit',function(e){
+  e.preventDefault();$('b2').disabled=true;say('Deleting…');
+  call('/auth/v1/verify',{type:'email',email:email,token:$('cd').value.replace(/\D/g,'')}).then(function(s){
+    return call('/rest/v1/rpc/delete_my_account',{},s.access_token);
+  }).then(function(){
+    say('Done. Your cloud account and cloud save have been deleted.','ok');$('f1').hidden=true;$('f2').hidden=true;
+  }).catch(function(x){
+    say(x.status===403||x.status===401||x.status===422?'The code is wrong or has expired.':'Something went wrong. Please try again later.','err');$('b2').disabled=false;
+  });
+});
+})();
+</script>
+</main></body>
+</html>

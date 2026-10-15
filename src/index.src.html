@@ -334,6 +334,10 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .mbox textarea{width:100%;height:110px;resize:none;background:var(--a6bg);border:1px solid var(--dim);color:var(--a);
   font:11px/1.4 'IBM Plex Mono',monospace;padding:8px;word-break:break-all;margin-bottom:12px;user-select:text;-webkit-user-select:text}
 .mbox .btn{height:44px;font-size:22px}
+.mbox input{display:none;width:100%;height:40px;background:var(--a6bg);border:1px solid var(--dim);color:var(--a);
+  font:13px 'IBM Plex Mono',monospace;padding:0 10px;margin-bottom:10px;user-select:text;-webkit-user-select:text}
+.mbox input.show{display:block}
+#clBtns .row2{margin-top:8px}
 .urow .ic{cursor:pointer}
 /* ── tattoo collection ── */
 .inv{grid-template-columns:repeat(4,1fr)}
@@ -722,6 +726,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
+      <div class="srow link" id="setCloud"><div class="sl"><span>CLOUD SAVE</span><b id="cloudState">OFF</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setRedeem" style="margin-top:34px"><div class="sl"><span>REDEEM GIFT CODE</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <a class="ver plink" href="privacy.html" target="_blank" rel="noopener">PRIVACY POLICY</a>
       <div class="ver" id="verTxt">LAST VERTEX // SYS OK</div>
@@ -744,6 +749,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <p>Found a bug or have an idea? The form opens in your browser. This info about your game is added automatically so bugs are easier to find:</p>
     <div class="fbinfo" id="fbInfo"></div>
     <div class="row2"><button class="btn" id="fbClose">CLOSE</button><button class="btn pri" id="fbOpen">OPEN FORM</button></div></div></div>
+  <div class="ovl" id="cloudUI"><div class="mbox"><h4>CLOUD SAVE</h4>
+    <p id="clMeta"></p>
+    <input id="clEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120">
+    <input id="clCode" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="10">
+    <div id="clBtns"></div></div></div>
   <div class="ovl" id="away"><div class="mbox"><h4>WHILE YOU WERE AWAY</h4><p id="awTxt"></p><div class="awc"><svg class="i"><use href="#i-coin"/></svg><span id="awCoins">0</span></div>
     <div class="row2"><button class="btn" id="awAd"><svg class="i"><use href="#i-tv"/></svg>x2</button><button class="btn pri" id="awGet">COLLECT</button></div></div></div>
   <div class="ovl" id="confirmUI" style="z-index:31"><div class="mbox"><h4 id="cfTitle"></h4><p id="cfBody"></p>
@@ -756,6 +766,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 
 <script>
 'use strict';
+/*@@CLOUD@@*/
 // ── SAVE ─────────────────────────────────────────────────────────────────────
 const SAVE_KEY='tt3';   // keep: the key from the game's first name, renaming it would lose saves
 function defaultSave(){return{
@@ -1593,6 +1604,7 @@ function goBackground(){
   stopMusic();
   if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
   persist();
+  cloudSync(false);
 }
 function goForeground(){
   if(AC){AC.resume().catch(()=>{});startMusic(state!==ST.PLAY);}
@@ -1603,7 +1615,7 @@ document.addEventListener('visibilitychange',()=>{
   goForeground();
   const since=save.lastSeen;
   if(save.awayPending>0)showAway();
-  withTimeout(syncServerTime(),2500).then(()=>checkAway(since));
+  withTimeout(syncServerTime(),2500).then(()=>{checkAway(since);cloudSync(false);});
 });
 window.addEventListener('pagehide',goBackground);
 
@@ -3505,6 +3517,7 @@ function renderSettings(){
   const th=THEMES.find(x=>x.id===save.theme)||THEMES[0];
   $('themeName').textContent=T(th.name);
   $('themeSwat').style.background=th.c[0];
+  $('cloudState').textContent=cloudLabel();
 }
 function openSettings(){snd('click');renderSettings();$('setPanel').classList.add('open');}
 function closeSettings(){snd('click');$('setPanel').classList.remove('open');}
@@ -3525,6 +3538,133 @@ $('setTheme').addEventListener('click',()=>{$('setPanel').classList.remove('open
 $('setExport').addEventListener('click',()=>{persist();openModal('export');});
 $('setImport').addEventListener('click',()=>openModal('import'));
 $('setRedeem').addEventListener('click',()=>openModal('redeem'));
+
+// ── CLOUD SAVE ───────────────────────────────────────────────────────────────
+// Opt-in: nothing is uploaded until the player turns it on. The cloud holds one copy of the save per player;
+// CL_KNOWN is the server's updated_at of the copy this device last saw, so a write from another device is
+// noticed (never silently overwritten) and the player picks which version to keep.
+const CL_ON='lvcloudon',CL_KNOWN='lvcloudk',CL_TIME='lvcloudt';
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(e){}};
+const cloudOn=()=>CLOUD.enabled&&lsGet(CL_ON)==='1';
+let cloudBusy=false,cloudAsking=false,cloudSig='';
+const cloudSigOf=()=>JSON.stringify({...save,lastSeen:0,timeHigh:0,timeOffset:0});
+async function cloudSync(manual,retry){
+  if(!cloudOn()||cloudBusy||cloudAsking||saveLocked)return false;
+  cloudBusy=true;
+  try{
+    const remote=await CLOUD.pull(),known=remote?lsGet(CL_KNOWN):null;
+    if(remote&&remote.updatedAt!==known){
+      if(state===ST.PLAY&&!manual)return false;   // never interrupt a run; asked again later
+      cloudBusy=false;cloudAsk(remote);return false;
+    }
+    const sig=cloudSigOf();
+    if(!manual&&known&&sig===cloudSig)return true;
+    persist();
+    const r=await CLOUD.push(save,known);
+    if(r.ok){lsSet(CL_KNOWN,r.updatedAt);lsSet(CL_TIME,String(Date.now()));cloudSig=sig;if(manual)toast(T('CLOUD SAVE UPDATED'));return true;}
+    if(!retry){cloudBusy=false;return cloudSync(manual,true);}   // another device wrote in between: look again
+    return false;
+  }catch(e){if(manual)toast(T('CLOUD SAVE FAILED'),true);return false;}
+  finally{cloudBusy=false;}
+}
+const cloudSummary=d=>T('TIER {0} · BEST WAVE {1} · {2} GEMS',d.tier||1,d.bestWave||0,fmtN(d.gems||0));
+function cloudAsk(remote){
+  const o=remote.data;
+  if(cloudAsking||!o||typeof o!=='object'||!o.perm||typeof o.perm!=='object'||/[<>]/.test(JSON.stringify(o)))return;
+  cloudAsking=true;
+  const body=T('Found a save in the cloud. Which one do you want to keep?')+'\n\n'
+    +T('CLOUD ({0}):',new Date(remote.updatedAt).toLocaleString())+' '+cloudSummary(o)+'\n'+T('THIS DEVICE:')+' '+cloudSummary(save);
+  confirmBox('CLOUD SAVE FOUND',body,'USE CLOUD',()=>{
+    cloudAsking=false;
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){toast(T('STORAGE ERROR'),true);return;}
+    lsSet(CL_KNOWN,remote.updatedAt);saveLocked=true;location.reload();
+  },()=>{
+    cloudAsking=false;lsSet(CL_KNOWN,remote.updatedAt);   // adopt the cloud's marker so this push replaces it
+    cloudSync(true);
+  });
+  $('cfNo').textContent=T('KEEP THIS DEVICE');$('cfBody').style.whiteSpace='pre-line';
+}
+const cloudLabel=()=>!cloudOn()?T('OFF'):CLOUD.email||T('ON');
+let clStep='idle',clLink=false,clBusy=false;
+function renderCloud(){
+  const on=cloudOn(),em=CLOUD.email,t=lsGet(CL_TIME),last=t?T('Last synced: {0}',new Date(+t).toLocaleString()):'';
+  $('clEmail').classList.toggle('show',on&&!em&&clStep==='idle');
+  $('clEmail').placeholder=T('your@email.com');$('clCode').placeholder=T('CODE FROM THE EMAIL');
+  $('clCode').classList.toggle('show',on&&clStep==='code');
+  let meta,rows;
+  if(!on){
+    meta=T('Back up your progress online and continue on another device. Nothing is uploaded until you turn this on.');
+    rows=[[['CLOSE','close'],['TURN ON','on','pri']]];
+  }else if(clStep==='code'){
+    meta=T('A code was sent to {0}. Enter it below.',$('clEmail').value.trim());
+    rows=[[['BACK','back'],['VERIFY','verify','pri']]];
+  }else if(em){
+    meta=T('Signed in as {0}.',em)+' '+last;
+    rows=[[['TURN OFF','off'],['SYNC NOW','sync','pri']],[['DELETE CLOUD DATA','delete','hot']],[['CLOSE','close']]];
+  }else{
+    meta=T('This cloud save has no email yet. Add one to recover it on a new phone, or sign in to an account you already have.')+' '+last;
+    rows=[[['SIGN IN','signin'],['ADD EMAIL','link']],[['TURN OFF','off'],['SYNC NOW','sync','pri']],[['DELETE CLOUD DATA','delete','hot']],[['CLOSE','close']]];
+  }
+  $('clMeta').textContent=meta;
+  $('clBtns').innerHTML=rows.map(r=>`<div class="row2">${r.map(([l,a,c])=>`<button class="btn ${c||''}" data-act="${a}">${T(l)}</button>`).join('')}</div>`).join('');
+}
+function openCloud(){if(!CLOUD.enabled)return;clStep='idle';renderCloud();$('cloudUI').classList.add('show');snd('click');}
+if(!CLOUD.enabled)$('setCloud').style.display='none';
+$('setCloud').addEventListener('click',openCloud);
+$('clBtns').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b||clBusy)return;
+  const a=b.dataset.act,email=$('clEmail').value.trim();snd('click');
+  if(a==='close'){$('cloudUI').classList.remove('show');renderSettings();return;}
+  if(a==='back'){clStep='idle';renderCloud();return;}
+  if(a==='off'){
+    confirmBox('TURN OFF CLOUD SAVE?',CLOUD.email
+      ?T('This device stops syncing. The cloud copy stays and you can sign in again with your email.')
+      :T('This device forgets its cloud account. Without an email the cloud save can no longer be reached.'),'TURN OFF',()=>{
+      CLOUD.signOut();[CL_ON,CL_KNOWN,CL_TIME].forEach(k=>lsSet(k,null));cloudSig='';clStep='idle';renderCloud();renderSettings();
+    });
+    return;
+  }
+  if(a==='delete'){
+    confirmBox('DELETE CLOUD DATA?',T('This permanently deletes your cloud save and your cloud account. The save on this device stays.'),'DELETE',async()=>{
+      clBusy=true;
+      try{
+        await CLOUD.deleteAccount();
+        [CL_ON,CL_KNOWN,CL_TIME].forEach(k=>lsSet(k,null));cloudSig='';clStep='idle';
+        snd('buy');toast(T('CLOUD DATA DELETED'));
+      }catch(err){snd('deny');toast(T('CLOUD SAVE FAILED'),true);}
+      finally{clBusy=false;renderCloud();renderSettings();}
+    });
+    return;
+  }
+  clBusy=true;
+  try{
+    if(a==='on'){await CLOUD.ensure();lsSet(CL_ON,'1');await cloudSync(true);}
+    else if(a==='sync')await cloudSync(true);
+    else if(a==='link'||a==='signin'){
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){snd('deny');toast(T('INVALID EMAIL'),true);return;}
+      try{await CLOUD.sendCode(email,a==='link');}
+      catch(err){
+        snd('deny');
+        toast(err.status===429?T('TOO MANY TRIES. WAIT A BIT.')
+          :err.status===422?T(a==='link'?'THIS EMAIL ALREADY HAS AN ACCOUNT. USE SIGN IN.':'NO ACCOUNT FOR THIS EMAIL.')
+          :T('CLOUD SAVE FAILED'),true);return;
+      }
+      clLink=a==='link';clStep='code';$('clCode').value='';toast(T('CODE SENT'));
+    }else if(a==='verify'){
+      const code=$('clCode').value.replace(/\D/g,'');
+      if(code.length<6){snd('deny');toast(T('INVALID CODE'),true);return;}
+      try{await CLOUD.verifyCode(email,code,clLink);}
+      catch(err){snd('deny');toast(T('WRONG OR EXPIRED CODE'),true);return;}
+      clStep='idle';
+      if(!clLink){lsSet(CL_KNOWN,null);cloudSig='';}   // a different account: compare with this device before writing
+      toast(T('SIGNED IN'));snd('buy');
+      await cloudSync(true);
+    }
+  }catch(err){snd('deny');toast(T('CLOUD SAVE FAILED'),true);}
+  finally{clBusy=false;renderCloud();}
+});
+setInterval(()=>{if(state!==ST.PLAY)cloudSync(false);},120000);
 
 // ── WEEKLY OP ────────────────────────────────────────────────────────────────
 function fmtDur(sec){const s=Math.max(0,Math.floor(sec)),d=Math.floor(s/86400),h=Math.floor(s/3600)%24,m=Math.floor(s/60)%60;return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m`;}
@@ -3616,7 +3756,8 @@ document.addEventListener('pointerdown',topUpGuards,true);
 function handleBack(){
   const on=(id,c='show')=>$(id).classList.contains(c);
   if(on('tipWrap')){$('tipWrap').classList.remove('show');return true;}
-  if(on('confirmUI')){$('cfNo').click();return true;}
+  if(on('confirmUI')){if(!cloudAsking)$('cfNo').click();return true;}   // the cloud choice needs an explicit answer
+  if(on('cloudUI')){$('cloudUI').classList.remove('show');return true;}
   if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}
@@ -3660,7 +3801,7 @@ window.addEventListener('popstate',()=>{
 if(save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-.15)delete save.settings.speed;
 applyLang();applyFx();achCheck();
 withTimeout(syncServerTime(),2500).then(()=>{
-  clockReady=true;refreshQuests();checkAway(bootLastSeen);
+  clockReady=true;refreshQuests();checkAway(bootLastSeen);cloudSync(false);
   if(save.midRun&&Date.now()-save.midRun.ts<86400000){
     const mr=save.midRun;
     confirmBox(T('RESUME RUN?'),T('You closed the app during wave {0}. Resume from there?',mr.wave),T('RESUME'),

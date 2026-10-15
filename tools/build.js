@@ -24,7 +24,11 @@ const langDir=path.join(root,'src','lang'),langs={};
 if(fs.existsSync(langDir))for(const f of fs.readdirSync(langDir).filter(f=>/^[a-z]{2}\.json$/.test(f)))
   langs[f.slice(0,-5)]=JSON.parse(fs.readFileSync(path.join(langDir,f),'utf8'));
 if(!src.includes('/*@@LANG@@*/'))throw new Error('language placeholder missing in src/index.src.html');
-const out=src.replace('/*@@FONTS@@*/',()=>css).replace('/*@@LANG@@*/',()=>'Object.assign(LANG_DATA,'+JSON.stringify(langs)+');');
+// cloud client: src/cloud.js with src/cloud.config.json (Supabase URL + public anon key) inlined at /*@@CLOUD@@*/
+if(!src.includes('/*@@CLOUD@@*/'))throw new Error('cloud placeholder missing in src/index.src.html');
+const cloudCfg=fs.readFileSync(path.join(root,'src','cloud.config.json'),'utf8').trim();
+const cloudJs=fs.readFileSync(path.join(root,'src','cloud.js'),'utf8').replace('/*@@CLOUD_CONFIG@@*/{url:\'\',key:\'\'}',()=>cloudCfg);
+const out=src.replace('/*@@FONTS@@*/',()=>css).replace('/*@@LANG@@*/',()=>'Object.assign(LANG_DATA,'+JSON.stringify(langs)+');').replace('/*@@CLOUD@@*/',()=>cloudJs);
 
 const js=out.slice(out.indexOf('<script>')+8,out.lastIndexOf('</script>'));
 try{new Function(js);}catch(e){console.error('SYNTAX ERROR:',e.message);process.exit(1);}

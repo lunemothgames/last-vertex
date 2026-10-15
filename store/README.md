@@ -6,7 +6,7 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
 | Dosya | Ne işe yarıyor |
 |---|---|
 | `listing.md` | Mağaza adı, kısa ve uzun açıklama (EN, TR, ES, PT), kategori — kopyala-yapıştır |
-| `icon-512.png` | Mağaza ikonu (512×512) |
+| `icons/icon-512.png` | Mağaza ikonu (512×512) |
 | `feature-graphic.png` | Mağaza sayfasının üstündeki büyük görsel (1024×500) |
 | `screenshots/<dil>/` | Her dil için 7 başlıklı ekran görüntüsü (1080×1920), dosya sırasıyla yükle |
 | `video/promo-<dil>.mp4` | 30 sn dikey tanıtım videosu (sessiz). Repo'da yok, `npm run promo-video` ile üretilir |

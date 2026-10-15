@@ -106,7 +106,7 @@ const THEME_FAN=['amber','green','pink'];   // left, centre, right on the themes
   }
 
   // hi-res icon (Play wants 512x512 PNG)
-  fs.copyFileSync(path.join(root,'icon-512.png'),path.join(out,'icon-512.png'));console.log('wrote store/icon-512.png');
+  fs.copyFileSync(path.join(root,'icons','icon-512.png'),path.join(out,'icon-512.png'));console.log('wrote store/icon-512.png');
 
   // feature graphic 1024x500: the logo and emblem on the game background
   const font=f=>'data:font/woff2;base64,'+fs.readFileSync(path.join(root,'src','fonts',f)).toString('base64');

@@ -65,22 +65,22 @@ const IPHONES=[[440,956,3],[402,874,3],[430,932,3],[393,852,3],[428,926,3],[390,
     console.log('wrote',file);
   };
   const icon=m=>`<div style="width:100vw;height:100vh">${iconSvg(m)}</div>`;
-  await shot(icon(false),512,512,1,'icon-512.png');
-  await shot(icon(false),192,192,1,'icon-192.png');
-  await shot(icon(true),512,512,1,'icon-512-maskable.png');
-  await shot(icon(true),192,192,1,'icon-192-maskable.png');
-  await shot(icon(false),180,180,1,'apple-touch-icon.png');
-  await shot(icon(false),32,32,1,'favicon-32.png');
-  fs.mkdirSync(path.join(root,'splash'),{recursive:true});
+  await shot(icon(false),512,512,1,'icons/icon-512.png');
+  await shot(icon(false),192,192,1,'icons/icon-192.png');
+  await shot(icon(true),512,512,1,'icons/icon-512-maskable.png');
+  await shot(icon(true),192,192,1,'icons/icon-192-maskable.png');
+  await shot(icon(false),180,180,1,'icons/apple-touch-icon.png');
+  await shot(icon(false),32,32,1,'icons/favicon-32.png');
+  fs.mkdirSync(path.join(root,'icons','splash'),{recursive:true});
   const links=[];
   for(const [w,h,d] of IPHONES){
-    const f=`splash/launch-${w*d}x${h*d}.jpg`;
+    const f=`icons/splash/launch-${w*d}x${h*d}.jpg`;
     await p.setViewport({width:w,height:h,deviceScaleFactor:d});
     await p.setContent(splashHtml(),{waitUntil:'load'});await p.evaluate(()=>document.fonts.ready);
     await p.screenshot({path:path.join(root,f),type:'jpeg',quality:88});console.log('wrote',f);
     links.push(`<link rel="apple-touch-startup-image" href="${f}" media="(device-width: ${w}px) and (device-height: ${h}px) and (-webkit-device-pixel-ratio: ${d}) and (orientation: portrait)">`);
   }
-  fs.writeFileSync(path.join(root,'splash','links.html'),links.join('\n')+'\n');
-  console.log('launch image <link> tags → splash/links.html (already pasted into src/index.src.html)');
+  fs.writeFileSync(path.join(root,'icons','splash','links.html'),links.join('\n')+'\n');
+  console.log('launch image <link> tags → icons/splash/links.html (already pasted into src/index.src.html)');
   await b.close();
 })();

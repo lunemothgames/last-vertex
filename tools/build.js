@@ -42,7 +42,9 @@ const rootFiles=fs.readdirSync(root).filter(f=>{
   const st=fs.statSync(path.join(root,f));
   return st.isFile()&&STATIC_EXTS.has(path.extname(f).toLowerCase());
 }).map(f=>`'./${f}'`);
-const assetList=`['./',${rootFiles.join(',')}]`;
+// the icons the manifest and the page use (the iPhone launch images stay out of the offline cache)
+const iconFiles=fs.existsSync(path.join(root,'icons'))?fs.readdirSync(path.join(root,'icons')).filter(f=>f.endsWith('.png')).map(f=>`'./icons/${f}'`):[];
+const assetList=`['./',${rootFiles.concat(iconFiles).join(',')}]`;
 
 // Update sw.js: cache version (content hash) + asset list.
 const hash=crypto.createHash('sha1').update(out).digest('hex').slice(0,8);
@@ -51,6 +53,6 @@ const sw=fs.readFileSync(swPath,'utf8');
 const swNew=sw
   .replace(/const CACHE='[^']*'/,`const CACHE='last-vertex-${hash}'`)
   .replace(/const ASSETS=\[[^\]]*\]/,`const ASSETS=${assetList}`);
-if(swNew!==sw){fs.writeFileSync(swPath,swNew);console.log(`sw.js cache → last-vertex-${hash}, assets: ${rootFiles.length}`);}
+if(swNew!==sw){fs.writeFileSync(swPath,swNew);console.log(`sw.js cache → last-vertex-${hash}, assets: ${rootFiles.length+iconFiles.length}`);}
 
 console.log(`index.html built (${(out.length/1024).toFixed(0)} KB), syntax OK`);

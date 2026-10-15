@@ -8,8 +8,11 @@ const root=path.join(__dirname,'..'),www=path.join(root,'www'),run=(c,cwd=root)=
 run('node tools/build.js');
 fs.rmSync(www,{recursive:true,force:true});fs.mkdirSync(www);
 // no service worker in the app: every file is already on the phone
-for(const f of ['index.html','manifest.webmanifest','icon-192.png','icon-512.png','favicon-32.png','apple-touch-icon.png','privacy.html'])
+for(const f of ['index.html','manifest.webmanifest','privacy.html'])
   fs.copyFileSync(path.join(root,f),path.join(www,f));
+fs.mkdirSync(path.join(www,'icons'));
+for(const f of fs.readdirSync(path.join(root,'icons')).filter(f=>/.png$/.test(f)))
+  fs.copyFileSync(path.join(root,'icons',f),path.join(www,'icons',f));
 // real ads only on request: the flag is flipped in the app's copy, never in the web build
 if(process.argv[3]==='live'){
   const f=path.join(www,'index.html'),s=fs.readFileSync(f,'utf8');

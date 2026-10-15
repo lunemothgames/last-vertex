@@ -187,7 +187,7 @@ Disponível em Português, English, Türkçe e Español. Sem conta, sem login. S
 ## Graphics (all in this folder)
 | Play asset | File | Size |
 |---|---|---|
-| App icon | `icon-512.png` | 512 × 512 |
+| App icon | `icons/icon-512.png` | 512 × 512 |
 | Feature graphic | `feature-graphic.png` | 1024 × 500 |
 | Phone screenshots (2–8) | `screenshots/<lang>/*.png`, in file order | 1080 × 1920 |
 | Promo video | `video/promo-<lang>.mp4` → upload to YouTube, paste the link | 1080 × 1920, 30 s |

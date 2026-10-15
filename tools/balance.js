@@ -166,7 +166,7 @@ ${tatDetails}
 <h2 id="waves">WAVES & REWARDS</h2>
 <div class="tw"><table><tr><th>WAVE</th><th>ENEMIES</th><th>ENEMY HP</th><th>ENEMY ATK</th><th>BOSS HP</th><th>BOSS ATK</th><th>COIN / DROP</th><th>BOSS COINS</th><th>FIELD COIN</th></tr>${waveRows}</table></div>
 </div></body></html>`;
-const out=process.argv[2]||path.join(__dirname,'..','_docs','balance.html');
+const out=process.argv[2]||path.join(__dirname,'balance.html');
 fs.mkdirSync(path.dirname(out),{recursive:true});
 fs.writeFileSync(out,html);
 console.log('written',out,(html.length/1024).toFixed(0)+'KB');

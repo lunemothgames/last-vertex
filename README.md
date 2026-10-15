@@ -21,20 +21,20 @@ Everything is served as plain static files; there is nothing to build on the ser
 | `src/index.src.html`, `src/fonts/` | Game source and fonts |
 | `src/lang/<code>.json` | Translations (tr, es, pt), keyed by the English text; `node tools/i18n-keys.js` lists missing ones |
 | `sw.js` | Service worker: offline play and updates (cache name is set by the build) |
-| `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png` | Home-screen app info and icons |
-| `splash/` | iPhone launch images |
+| `manifest.webmanifest` | Home-screen app info |
+| `icons/` | App icons, `icons/splash/` (iPhone launch images) and `icons/source/` (the logo the icons are made from) |
 | `privacy.html` | Privacy policy (linked in Settings and the store listing) |
 | `store/` | Google Play listing text, store art and the release guide (`store/README.md`) |
-| `android/`, `capacitor.config.json`, `assets/` | The Android app (Capacitor) and the logo its icons are made from; `node tools/build-app.js debug\|release` (`www/` is a generated copy) |
+| `android/`, `capacitor.config.json` | The Android app (Capacitor); `node tools/build-app.js debug\|release` (`www/` is a generated copy) |
 | `tools/` | Build, balance simulation and icon scripts (not used by the game at runtime) |
-| `_docs/balance.html` | Generated balance reference |
+| `tools/balance.html` | Generated balance reference |
 
 ## Development (needs Node.js 18+)
 
 ```
 npm run build      # src/index.src.html → index.html, updates sw.js
 npm run sim        # long-term balance simulation (see tools/sim.js for modes)
-npm run balance    # regenerate _docs/balance.html
+npm run balance    # regenerate tools/balance.html
 npm install        # once, for the icon script
 npm run icons      # regenerate icons and launch images
 ```

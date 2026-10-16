@@ -55,7 +55,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .spin{animation:spin 24s linear infinite}
 .spin.r{animation-direction:reverse;animation-duration:16s}
 .bob{animation:bob 3.2s ease-in-out infinite}
-
 /* ── shared bits ── */
 .pill{display:flex;align-items:center;gap:6px;font-family:'VT323',monospace;font-size:22px;padding:1px 8px;border:1px solid var(--dim)}
 .pill b{font-weight:400}
@@ -121,7 +120,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 #pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
 .p-title{font-family:'VT323',monospace;font-size:60px;letter-spacing:.1em}
 .p-title span{animation:blink 1s steps(1) infinite}
-.p-title{margin-bottom:24px}
+.p-title{margin-bottom:24px;max-width:92%;white-space:nowrap;text-align:center}
 .p-btns{display:flex;flex-direction:column;gap:12px;width:220px}
 #pauseUI .conf{display:none}
 #pauseUI.confirm .main{display:none}
@@ -162,6 +161,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .seg button{flex:1;height:28px;font-family:'VT323',monospace;font-size:18px;color:var(--mute);text-shadow:none}
 .seg button::before{content:'[ '}.seg button::after{content:' ]'}
 .seg .on{color:var(--a);text-shadow:0 0 6px var(--glow)}
+.note#qTimers{white-space:pre-line}
+.tabs button{position:relative}
+.tabs button.has::after{content:'';position:absolute;top:3px;right:3px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
 .note{font-size:10px;color:var(--mute);margin:10px 14px 0;letter-spacing:.06em;text-shadow:none}
 .list{display:flex;flex-direction:column;gap:8px;padding:8px 14px 0}
 .urow{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px dashed var(--dim);position:relative}
@@ -251,7 +253,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .gc .n{font-family:'VT323',monospace;font-size:11px;line-height:1;color:var(--a);text-align:center;max-width:100%;overflow-wrap:break-word}   /* long names (KRİTİK HASAR) wrap instead of spilling out */
 .gc .lv{font-family:'VT323',monospace;font-size:14px;line-height:1}
 .gcards.one .gc .n{font-size:16px}.gcards.one .gc .lv{font-size:20px}
-.gc .new{position:absolute;top:-7px;right:-4px;background:var(--hot);color:var(--ink);font-family:'VT323',monospace;font-size:12px;padding:0 3px;text-shadow:none}
+.gc .new{position:absolute;top:-7px;right:0;background:var(--hot);color:var(--ink);font-family:'VT323',monospace;font-size:12px;padding:0 3px;text-shadow:none}
 .gc.r2,.gc.r3{box-shadow:0 0 12px rgba(var(--rc-rgb),0.55)}
 .gacha-overlay .btn{width:220px}
 
@@ -354,7 +356,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .ctile{border:1px solid var(--rc);color:var(--rc);background:rgba(var(--rc-rgb),0.07);display:flex;flex-direction:column;
   align-items:center;gap:2px;padding:8px 4px 6px;position:relative;cursor:pointer;overflow:hidden;text-shadow:0 0 6px var(--rc);touch-action:manipulation}
 .ctile svg.i{width:24px;height:24px}
-.ctile .n{font-family:'VT323',monospace;font-size:15px;color:var(--a);white-space:nowrap;line-height:1}
+.ctile .n{font-family:'VT323',monospace;font-size:14px;color:var(--a);white-space:normal;max-width:100%;overflow:hidden;text-align:center;line-height:1}   /* long names (CAN YENİLEME) wrap onto two lines; one long word shrinks via fitText */
 .ctile .lv{font-family:'VT323',monospace;font-size:17px;line-height:1}
 .ctile .pb{width:100%;height:4px;margin-top:2px;background:rgba(var(--rc-rgb),0.18)}
 .ctile .pb i{display:block;height:100%;background:var(--rc)}
@@ -439,6 +441,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .fxmid #ui,.fxmid #ui *{text-shadow:none!important}
 .fxmid #crt{background:none}
 .fxmid .spin,.fxmid .look,.fxmid .eye,.fxmid .bob{animation:none}
+.fxmid svg *{filter:none!important}   /* a still SVG with a drop-shadow filter was drawn twice (ghost shapes) in some WebViews */
 /* FX QUALITY · LOW looks like MID; its savings are in the canvas (30 fps, fewer particles and stars) */
 .fxseg{display:flex;gap:6px;margin-top:8px}
 .fxseg button{flex:1;height:32px;border:1px solid var(--dim);color:var(--mute);font-family:'VT323',monospace;font-size:20px;letter-spacing:.08em;text-shadow:none}
@@ -483,8 +486,10 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 @keyframes bootOn{0%{filter:brightness(1)}30%{filter:brightness(2.2)}60%{clip-path:inset(49.5% 0 49.5% 0);filter:brightness(3)}100%{clip-path:inset(50% 0 50% 0);opacity:0}}
 /* ── toast ── */
 #toast{position:absolute;left:50%;top:44%;transform:translateX(-50%);z-index:30;padding:6px 14px;border:1px solid var(--a);
-  background:var(--bg1);font-family:'VT323',monospace;font-size:22px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s}
+  background:var(--bg1);font-family:'VT323',monospace;font-size:22px;white-space:normal;text-align:center;max-width:296px;opacity:0;pointer-events:none;transition:opacity .12s}
 #toast.show{opacity:1}
+#toast.big{text-align:center;font-size:30px;line-height:1.1;padding:10px 22px;border-width:2px;color:var(--a2);box-shadow:0 0 18px rgba(var(--a-rgb),.5)}
+#toast.big small{display:block;font-size:20px;color:var(--a)}
 #toast.hot{border-color:var(--hot);color:var(--hot)}
 #toast svg.i{width:18px;height:18px;vertical-align:-3px}
 .fbinfo{font-size:10px;line-height:1.6;color:var(--a);border:1px dashed var(--dim);padding:8px;margin-bottom:12px;word-break:break-word;user-select:text;-webkit-user-select:text}
@@ -499,6 +504,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
 <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
+<symbol id="i-adplay" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none"/><path d="M10 7.8l6 4.2-6 4.2z" fill="currentColor"/></symbol>
 <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
 <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"/></symbol>
 <symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13"/><path d="M10 9l5 2.5-5 2.5z"/></symbol>
@@ -587,7 +593,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="topbar">
       <div class="pill"><svg class="i"><use href="#i-coin"/></svg><b id="mCoins">0</b></div>
       <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="mGems">0</b></div>
-      <button class="adbtn" id="mAd"><span id="mAdTxt">AD +5</span></button>
+      <button class="adbtn" id="mAd"><svg class="i"><use href="#i-adplay"/></svg><span id="mAdTxt">+5</span><svg class="i"><use href="#i-gem"/></svg></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
       <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
@@ -741,8 +747,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <div class="sc"><span class="sdesc">Reminders when your idle income is full or your daily reward is ready.</span><button class="tog" id="notifToggle">ON</button></div></div>
       <div class="srow link" id="setAdPriv" style="display:none"><div class="sl"><span>AD PRIVACY OPTIONS</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
-      <div class="srow link" id="setExport"><div class="sl"><span>EXPORT SAVE</span><b>COPY CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
-      <div class="srow link" id="setImport"><div class="sl"><span>IMPORT SAVE</span><b>PASTE CODE</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setCloud"><div class="sl"><span>CLOUD SAVE</span><b id="cloudState">OFF</b></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setRedeem" style="margin-top:34px"><div class="sl"><span>REDEEM GIFT CODE</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <a class="ver plink" href="privacy.html" target="_blank" rel="noopener">PRIVACY POLICY</a>
@@ -930,6 +934,8 @@ const safeProbe=document.createElement('div');
 safeProbe.style.cssText='position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)';
 document.body.appendChild(safeProbe);
 function resize(){
+  const ae=document.activeElement;
+  if(GW&&ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;   // the phone keyboard shrinks the window: keep the game at its size
   const cs=getComputedStyle(safeProbe),sat=parseFloat(cs.paddingTop)||0,sab=parseFloat(cs.paddingBottom)||0;
   const vw=window.innerWidth,vh=window.innerHeight-sat-sab;
   // the field stretches between 9:16 and 9:21 (tall phones); outside that it is boxed
@@ -945,6 +951,7 @@ function resize(){
   buildStars();
 }
 window.addEventListener('resize',resize);resize();
+document.addEventListener('focusout',()=>setTimeout(resize,350));
 const LINE_FRAC=.83,TRI_FRAC=.90;
 const FONT='"VT323",monospace';
 const fnt=px=>`${Math.round(px)}px ${FONT}`;
@@ -1396,12 +1403,12 @@ function totalCoinMult(tier){
   return permVal('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(tier||save.tier)*(1+totalStars()*STAR.coin);
 }
 function coinMultBreakdown(tier){
-  const T=save.temp||{};
+  const tmp=save.temp||{};
   const rows=[];
   rows.push([T('PERM SHOP'),`x${permVal('coinMult').toFixed(2)}`]);
   rows.push([T('TIER BONUS'),`x${tierCoinMult(tier||save.tier).toFixed(2)}`]);
   if(tb('coin_mult').c>0)rows.push([T('COINS TATTOO'),`x${(1+tb('coin_mult').c).toFixed(2)}`]);
-  if(T.lucky)rows.push([T('LUCKY BOOST'),'x1.50']);
+  if(tmp.lucky)rows.push([T('LUCKY BOOST'),'x1.50']);
   if(totalStars())rows.push([T('MASTERY ★{0}',totalStars()),`x${(1+totalStars()*STAR.coin).toFixed(2)}`]);
   rows.push([T('TOTAL'),`x${totalCoinMult(tier||save.tier).toFixed(2)}`]);
   return rows;
@@ -1555,11 +1562,17 @@ function coinDropValue(){
 function spawnPickup(kind){pickups.push({kind,x:GW*.1+Math.random()*GW*.8,y:GH*(HUD_TOP+.04)+Math.random()*GH*.4,r:GW*.03,spawnTime:Date.now()});}
 
 // ── AD / RUN ─────────────────────────────────────────────────────────────────
-function adRect(){const w=GW*.3,h=GH*.034;return{x:GW*.97-w,y:GH*LINE_FRAC-h-GH*.012,w,h};}
+// just wide enough for [play icon] +5 [gem]
+function adRect(){
+  const h=GH*.034,is=h*.5;cx.letterSpacing='0px';cx.font=fnt(h*.9);
+  const w=Math.round(is*2.425+cx.measureText('+'+ECO.adGems).width+h*.8);
+  return{x:GW*.97-w,y:GH*LINE_FRAC-h-GH*.012,w,h};
+}
 const todayKey=()=>{const d=new Date(gameNow());return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
 function adsLeftToday(){if(save.adDay!==todayKey()){save.adDay=todayKey();save.adCount=0;}return ECO.adDailyCap-(save.adCount||0);}
 // seconds until the next ad: normal cooldown, or until midnight once the daily cap is used up
 function adCooldown(){
+  if(ADS_TEST)return 0;   // test builds (Google test ads): no cooldown and no daily cap; build-app.js turns ADS_TEST off for release builds
   if(adsLeftToday()<=0){const m=new Date(gameNow());m.setHours(24,0,0,0);return Math.max(1,(m-gameNow())/1000);}
   return Math.max(0,ECO.adCooldown-(gameNow()-(save.adLastUsed||0))/1000);
 }
@@ -1573,20 +1586,29 @@ const ADS={unit:'ca-app-pub-1586140876162989/8250633837',testUnit:'ca-app-pub-39
 const ADS_TEST=true;
 const AD=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;
 const adOpts=()=>({adId:ADS_TEST?ADS.testUnit:ADS.unit,isTesting:ADS_TEST});
-let adsInitP=null,adLoaded=false,adBusy=false,adsPrivacy=false;
+let adsInitP=null,adLoaded=false,adBusy=false,adsPrivacy=false,adsWhy='';
 // consent first (Google's UMP form, EU/UK/TR rules), then the SDK
 function adsInit(){
   if(adsInitP)return adsInitP;
   const A=AD();if(!A)return Promise.resolve(false);
   adsInitP=(async()=>{
-    let ci=await A.requestConsentInfo();
-    if(ci.isConsentFormAvailable&&ci.status==='REQUIRED')ci=await A.showConsentForm();
+    adsWhy='consent';
+    let ci;
+    try{
+      ci=await A.requestConsentInfo();
+      if(ci.isConsentFormAvailable&&ci.status==='REQUIRED'){adsWhy='form';ci=await A.showConsentForm();}
+    }catch(e){
+      // test builds: the AdMob consent message may not be set up yet; go on so the test ads and analytics can be tried
+      if(!ADS_TEST)throw e;
+      ci={canRequestAds:true};
+    }
     adsPrivacy=ci.privacyOptionsRequirementStatus==='REQUIRED';
-    if(!ci.canRequestAds)return false;
+    if(!ci.canRequestAds){adsWhy='canRequest=false st='+ci.status;return false;}
+    adsWhy='init';
     await A.initialize();
     statsConsent=true;statsApply();
     return true;
-  })().then(ok=>{if(!ok)adsInitP=null;return ok;},()=>{adsInitP=null;return false;});
+  })().then(ok=>{if(!ok)adsInitP=null;return ok;},e=>{adsWhy+=' '+String((e&&(e.message||e.code))||e);adsInitP=null;return false;});
   return adsInitP;
 }
 // keep one ad loaded in advance so the button answers at once
@@ -1598,32 +1620,34 @@ function adPreload(){
 async function playRewardedAd(){
   const A=AD();if(!A||adBusy)return false;   // browser: no ads, so no reward
   adBusy=true;
-  const hs=[];let rewarded=false,shown=false;
+  const hs=[];let rewarded=false,shown=false,err='';
   try{
     if(!adLoaded){
       toast(T('LOADING AD…'));
-      if(!await adsInit())throw new Error('no ads');
+      if(!await adsInit())throw new Error(adsWhy);
       await A.prepareRewardVideoAd(adOpts());
     }
     adLoaded=false;
     let finish;const done=new Promise(r=>{finish=r;});
-    hs.push(await A.addListener('onRewardedVideoAdShowed',()=>{shown=true;if(state===ST.PLAY)paused=true;}));
+    hs.push(await A.addListener('onRewardedVideoAdShowed',()=>{shown=true;clearTimeout(_toastTO);$('toast').className='';if(state===ST.PLAY)paused=true;}));
     hs.push(await A.addListener('onRewardedVideoAdReward',()=>{rewarded=true;}));
     hs.push(await A.addListener('onRewardedVideoAdDismissed',()=>finish()));
-    hs.push(await A.addListener('onRewardedVideoAdFailedToShow',()=>finish()));
-    A.showRewardVideoAd().then(()=>{rewarded=true;},()=>finish());
+    hs.push(await A.addListener('onRewardedVideoAdFailedToShow',e=>{err='show '+JSON.stringify(e||'').slice(0,80);finish();}));
+    A.showRewardVideoAd().then(()=>{rewarded=true;},e=>{err='show '+String((e&&(e.message||e.code))||e);finish();});
     await Promise.race([done,new Promise(r=>setTimeout(r,300000))]);   // never hang
-  }catch(e){}
+  }catch(e){err=String((e&&(e.message||e.code))||e);}
   hs.forEach(h=>{try{h.remove();}catch(e){}});
   adBusy=false;setTimeout(adPreload,500);
-  if(!rewarded){snd('deny');toast(shown?T('WATCH THE WHOLE AD TO GET THE REWARD'):T('NO AD AVAILABLE. TRY AGAIN LATER.'),true);}
+  if(!rewarded){snd('deny');toast(shown?T('WATCH THE WHOLE AD TO GET THE REWARD'):(ADS_TEST&&err?'['+err.slice(0,50)+'] ':'')+T('NO AD AVAILABLE. TRY AGAIN LATER.'),true);}
   return rewarded;
 }
 async function useAd(place){
   if(adCooldown()>0){snd('deny');return false;}
   if(!await playRewardedAd())return false;
   save.gems+=ECO.adGems;save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;
-  persist();snd('gem');achCheck();track('ad_reward',{place});return true;
+  persist();snd('gem');achCheck();track('ad_watched',{place});
+  toast(`${T('AD REWARD')}<br>${I('gem')} ${T('+{0} GEM',ECO.adGems)}<small>${T('TOTAL: {0}',fmtN(save.gems))}</small>`,false,true,3200);
+  return true;
 }
 function handleRunAd(){const r=adRect();useAd('run').then(ok=>{if(ok)spawnText(r.x+r.w/2,r.y-GH*.01,`+${ECO.adGems} GEM`,C.a2);});}
 // weekly: a run with this week's mutators, one tier below your highest (it never touches tier records)
@@ -2482,8 +2506,13 @@ function drawAdButton(){
   hudBox(r.x,r.y,r.w,r.h);
   if(ready){cx.strokeStyle=hexA(C.a2,.6);cx.strokeRect(Math.round(r.x)+.5,Math.round(r.y)+.5,Math.round(r.w)-1,Math.round(r.h)-1);}
   // [tv icon] +5 [gem]  ·  while cooling down: [tv icon] 12:34
-  const col=ready?C.a2:C.mute,label=ready?T('AD +{0}',ECO.adGems):adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=0;
+  const col=ready?C.a2:C.mute,label=ready?'+'+ECO.adGems:adsLeftToday()<=0?T('DONE'):fmtCD(cool),fz=r.h*.9,is=r.h*.5,tv=is*.9;
   cx.font=fnt(fz);const tw=cx.measureText(label).width,gem=ready?is*1.3:0,w=tv*1.25+tw+gem,x0=r.x+(r.w-w)/2;
+  { // ring with a play triangle
+    const ic=x0+is*.5,iy=r.y+r.h*.5,ir=is*.5;
+    cx.strokeStyle=col;cx.lineWidth=Math.max(1,is*.1);cx.beginPath();cx.arc(ic,iy,ir,0,Math.PI*2);cx.stroke();
+    cx.fillStyle=col;cx.beginPath();cx.moveTo(ic-ir*.28,iy-ir*.45);cx.lineTo(ic+ir*.5,iy);cx.lineTo(ic-ir*.28,iy+ir*.45);cx.closePath();cx.fill();
+  }
   cx.textAlign='left';glowText(label,x0+tv*1.25,r.y+r.h*.74,col,fz,ready?5:0);
   if(ready)drawGemIcon(x0+tv*1.25+tw+is*.85,r.y+r.h*.5,is,col);
 }
@@ -2554,11 +2583,8 @@ function drawHUD(st){
   // stat overlay
   if(save.settings.statOverlay){
     const elapsed=runPlayT/60||.0001;
-    const lines=[
-      `KILLS/MIN  ${(runKills/elapsed).toFixed(1)}`,
-      `COINS/MIN  ${fmtN(Math.round(runCoins/elapsed))}`,
-      `ENEMIES    ${enemies.length}`,
-    ];
+    const lab=[T('KILLS/MIN'),T('COINS/MIN'),T('ENEMIES')],val=[(runKills/elapsed).toFixed(1),fmtN(Math.round(runCoins/elapsed)),enemies.length],pw=Math.max(...lab.map(l=>l.length))+2;
+    const lines=lab.map((l,i)=>l.padEnd(pw)+val[i]);
     const lh=fs*.95,px=GW*.035,py=iy+step*1.05+fs*1.25;
     cx.textAlign='left';
     lines.forEach((l,i)=>glowText(l,px,py+lh*i,C.mute,fs*.78,0));
@@ -2632,9 +2658,9 @@ function formatTime(s){return Math.floor(s/60)+'m '+Math.round(s%60)+'s';}
 const $=id=>document.getElementById(id);
 const I=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
 let _toastTO=null;
-function toast(msg,hot,html){
-  const t=$('toast');if(html)t.innerHTML=msg;else t.textContent=msg;t.className='show'+(hot?' hot':'');
-  clearTimeout(_toastTO);_toastTO=setTimeout(()=>{t.className='';},1500);
+function toast(msg,hot,html,ms){
+  const t=$('toast');if(html)t.innerHTML=msg;else t.textContent=msg;t.className='show'+(hot?' hot':'')+(ms?' big':'');
+  clearTimeout(_toastTO);_toastTO=setTimeout(()=>{t.className='';},ms||1500);
 }
 function anyPanelOpen(){return document.querySelector('.panel.open,.gacha-overlay.show,.ovl.show')!==null;}
 
@@ -2745,8 +2771,7 @@ $('tName').addEventListener('click',()=>{
 });
 $('tSub').addEventListener('click',()=>{
   const rows=coinMultBreakdown(save.tier);
-  const isTotal=([k])=>k==='TOTAL';
-  const html='<table class="tip-breakdown">'+rows.map(r=>`<tr class="${isTotal(r)?'total':''}">`+
+  const html='<table class="tip-breakdown">'+rows.map((r,i)=>`<tr class="${i===rows.length-1?'total':''}">`+
     `<td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')+'</table>';
   showTip(T('COIN MULTIPLIER'),html,T('TAP ANYWHERE TO CLOSE'),true);
   snd('blip');
@@ -2760,12 +2785,12 @@ $('tNext').addEventListener('click',()=>{
 function renderMenuAd(){
   // the ad button only exists while an ad is available
   $('mAd').style.display=IS_APP&&adCooldown()<=0?'':'none';   // the browser has no ads, so no gem button either
-  $('mAdTxt').textContent=T('AD +{0}',ECO.adGems);
+  $('mAdTxt').textContent='+'+ECO.adGems;
 }
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
 function menuAd(){
   if(adCooldown()>0){snd('deny');toast(adsLeftToday()<=0?I('gem')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('gem')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);return;}
-  useAd('menu').then(ok=>{if(ok){toast(T('+{0} GEM',ECO.adGems));renderMenu();}});
+  useAd('menu').then(ok=>{if(ok)renderMenu();});
 }
 $('mPlay').addEventListener('click',()=>{snd('click');startRun(false);});
 $('mShop').addEventListener('click',()=>openShop('perm'));
@@ -3078,7 +3103,7 @@ function tatChart(t,lv){
 function tatInfo(t){
   const c=tatOf(t.id),esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('SUMMON CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
-  if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLowerCase()))+odds,'',true);return;}
+  if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
   const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE SUMMON POOL');
   const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+odds+tatChart(t,c.lv);
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):''} · ${status}`,true);
@@ -3225,7 +3250,11 @@ function qReach(k,v){
     if(questDone(q)){toast(T('QUEST COMPLETE'));snd('quest');renderQuestDot();}
   }
 }
-function renderQuestDot(){$('mQuestDot').style.display=save.quests.some(questDone)||(Array.isArray(save.achClaimed)&&achClaimable().length)?'':'none';}
+function renderQuestDot(){
+  const q=save.quests.some(questDone),a=!!(Array.isArray(save.achClaimed)&&achClaimable().length);
+  $('mQuestDot').style.display=q||a?'':'none';
+  $('questTabs').querySelector('[data-q=q]').classList.toggle('has',q);$('questTabs').querySelector('[data-q=a]').classList.toggle('has',a);
+}
 // compact countdown for one-line notes: 2H 59M, or 12M 05S in the last hour
 function fmtHM(ms){const s=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s/60)%60;
   return h?`${h}H ${String(m).padStart(2,'0')}M`:`${m}M ${String(s%60).padStart(2,'0')}S`;}
@@ -3234,7 +3263,7 @@ function renderQuestTimers(){
   // the board count lives in the tab label, the note only says when new quests arrive
   $('questTabs').querySelector('[data-q=q]').textContent=`${T('QUESTS')} ${n}`;
   $('qTimers').textContent='> '+(full?T('BOARD FULL · CLAIM ONE TO GET NEW QUESTS')
-    :T('NEW DAILY IN {0} · WEEKLY RESET {1}',fmtHM(save.qNextDaily-now),resetLabel()));
+    :T('NEW DAILY IN {0}',fmtHM(save.qNextDaily-now))+'\n> '+T('WEEKLY RESET {0}',resetLabel()));
 }
 let questTab='q';
 $('questTabs').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;questTab=b.dataset.q;snd('click');renderQuests();$('questPanel').querySelector('.scroll').scrollTop=0;});
@@ -3252,6 +3281,7 @@ function renderAchievements(){
   }).join('');
 }
 function renderQuests(){
+  renderQuestDot();
   $('questTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.q===questTab));
   if(questTab==='a'){$('questGems').textContent=fmtN(save.gems);renderAchievements();return;}
   $('questGems').textContent=fmtN(save.gems);
@@ -3284,19 +3314,7 @@ $('questList').addEventListener('click',e=>{
 });
 setInterval(()=>{refreshQuests();if($('questPanel').classList.contains('open')&&questTab==='q')renderQuestTimers();},1000);
 
-// ── SAVE EXPORT / IMPORT ─────────────────────────────────────────────────────
-function checksum(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return(h>>>0).toString(16).padStart(8,'0');}
-function exportCode(){const b=btoa(unescape(encodeURIComponent(JSON.stringify(save))));return'LVX-'+b+'-'+checksum(b);}
-function parseCode(code){
-  const m=/^(?:LVX|TT3)-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code.replace(/\s+/g,''));   // TT3: codes from before the rename
-  if(!m||checksum(m[1])!==m[2])return null;
-  try{
-    const txt=decodeURIComponent(escape(atob(m[1])));
-    if(/[<>]/.test(txt))return null;                         // no markup anywhere in a save
-    const o=JSON.parse(txt);return o&&typeof o==='object'&&!Array.isArray(o)&&o.perm&&typeof o.perm==='object'?o:null;
-  }catch(e){return null;}
-}
-let modalMode='';
+// ── CONFIRM / GIFT-CODE WINDOW ────────────────────────────────────────────────
 // a yes/no question in its own window on top of everything
 let _confirmYes=null,_confirmNo=null;
 function confirmBox(title,body,yesLabel,onYes,onNo){
@@ -3306,43 +3324,15 @@ function confirmBox(title,body,yesLabel,onYes,onNo){
 }
 $('cfNo').addEventListener('click',()=>{snd('click');$('confirmUI').classList.remove('show');const f=_confirmNo;_confirmYes=null;_confirmNo=null;if(f)f();});
 $('cfYes').addEventListener('click',()=>{$('confirmUI').classList.remove('show');const f=_confirmYes;_confirmYes=null;_confirmNo=null;if(f)f();});
-function openModal(mode){
-  modalMode=mode;
+function openModal(){
   const ta=$('mdText');
-  if(mode==='redeem'){
-    $('mdTitle').textContent=T('REDEEM GIFT CODE');
-    $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once.');
-    ta.value='';ta.readOnly=false;$('mdAct').textContent=T('REDEEM');
-  }else if(mode==='export'){
-    $('mdTitle').textContent=T('EXPORT SAVE');
-    $('mdBody').textContent=T('Copy this code and keep it somewhere safe (notes, mail to yourself). Paste it into IMPORT SAVE on any device to restore your progress.');
-    ta.value=exportCode();ta.readOnly=true;$('mdAct').textContent=T('COPY');
-  }else{
-    $('mdTitle').textContent=T('IMPORT SAVE');
-    $('mdBody').textContent=T('Paste a save code. This REPLACES your current progress on this device.');
-    ta.value='';ta.readOnly=false;$('mdAct').textContent=T('LOAD');
-  }
+  $('mdTitle').textContent=T('REDEEM GIFT CODE');
+  $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once.');
+  ta.value='';ta.readOnly=false;$('mdAct').textContent=T('REDEEM');
   $('modal').classList.add('show');snd('click');
-  if(mode==='export'){ta.focus();ta.select();}
 }
 $('mdClose').addEventListener('click',()=>{$('modal').classList.remove('show');snd('click');});
-$('mdAct').addEventListener('click',()=>{
-  const ta=$('mdText');
-  if(modalMode==='export'){
-    ta.select();
-    const done=()=>{toast(T('CODE COPIED'));snd('buy');};
-    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ta.value).then(done,()=>{document.execCommand('copy');done();});
-    else{document.execCommand('copy');done();}
-    return;
-  }
-  if(modalMode==='redeem'){redeemGift(ta.value);return;}
-  const o=parseCode(ta.value.trim());
-  if(!o){snd('deny');toast(T('INVALID CODE'),true);return;}
-  confirmBox('OVERWRITE PROGRESS?',T('The progress on this device will be replaced by the pasted save. This cannot be undone.'),'OVERWRITE',()=>{
-    try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){toast(T('STORAGE ERROR'),true);return;}
-    saveLocked=true;location.reload();
-  });
-});
+$('mdAct').addEventListener('click',()=>redeemGift($('mdText').value));
 
 // ── GIFT CODES ───────────────────────────────────────────────────────────────
 // LVG-<payload>.<signature>: payload is base64url JSON {i:id, g:gems, c:coins, t:{tattoo:copies}, th:[theme ids]|'all', x:expiry day}.
@@ -3598,7 +3588,7 @@ const HELP_TOPICS=[
     <p>${T('Double-tap the field to hide the HUD. Pause with the button at the top right or your phone\'s back button.')}</p>`],
   ['idle','moon','IDLE INCOME',()=>`<p>${T('While the game is closed you keep earning a share of your average income from recent runs (IDLE INCOME in the shop raises it). Up to 8 hours a day count; collect it when you come back.')}</p>`],
   ['saves','gear','SETTINGS & SAVES',()=>`<p>${T('FX QUALITY: pick MID or LOW if the game feels slow on your phone.')}</p>
-    <p>${T('Your progress is stored only on this phone. Use EXPORT SAVE to copy a backup code and IMPORT SAVE to restore it, on this or another device. Gift codes go in REDEEM GIFT CODE.')}</p>`],
+    <p>${T('Your progress is stored on this phone. Turn on CLOUD SAVE to back it up and to continue on another device. Gift codes go in REDEEM GIFT CODE.')}</p>`],
 ];
 let helpOpen='';
 function renderHelp(){
@@ -3687,8 +3677,6 @@ $('musToggle').addEventListener('click',()=>{save.settings.musOn=!save.settings.
 $('dmgToggle').addEventListener('click',()=>{save.settings.showDmgNums=!save.settings.showDmgNums;persist();snd('click');renderSettings();});
 $('statOvToggle').addEventListener('click',()=>{save.settings.statOverlay=!save.settings.statOverlay;persist();snd('click');renderSettings();});
 $('setTheme').addEventListener('click',()=>{$('setPanel').classList.remove('open');openShop('theme');});
-$('setExport').addEventListener('click',()=>{persist();openModal('export');});
-$('setImport').addEventListener('click',()=>openModal('import'));
 $('setRedeem').addEventListener('click',()=>openModal('redeem'));
 $('setAdPriv').addEventListener('click',()=>{const A=AD();if(A)A.showPrivacyOptionsForm().catch(()=>{});});
 
@@ -3739,10 +3727,11 @@ function cloudAsk(remote){
   $('cfNo').textContent=T('KEEP THIS DEVICE');$('cfBody').style.whiteSpace='pre-line';
 }
 const cloudLabel=()=>!cloudOn()?T('OFF'):CLOUD.email||T('ON');
-let clStep='idle',clLink=false,clBusy=false;
+let clStep='idle',clLink=false,clBusy=false,clMore=false;
 function renderCloud(){
   const on=cloudOn(),em=CLOUD.email,t=lsGet(CL_TIME),last=t?T('Last synced: {0}',new Date(+t).toLocaleString()):'';
-  $('clEmail').classList.toggle('show',on&&!em&&clStep==='idle');
+  if(!on)clMore=false;
+  $('clEmail').classList.toggle('show',on&&!em&&clStep==='idle'&&!clMore);
   $('clEmail').placeholder=T('your@email.com');$('clCode').placeholder=T('CODE FROM THE EMAIL');
   $('clCode').classList.toggle('show',on&&clStep==='code');
   let meta,rows;
@@ -3752,17 +3741,20 @@ function renderCloud(){
   }else if(clStep==='code'){
     meta=T('A code was sent to {0}. Enter it below.',$('clEmail').value.trim());
     rows=[[['BACK','back'],['VERIFY','verify','pri']]];
+  }else if(clMore){
+    meta=T('Turn cloud save off, or delete the copy stored online.');
+    rows=[[['TURN OFF','off']],[['DELETE CLOUD DATA','delete','hot']],[['BACK','less']]];
   }else if(em){
-    meta=T('Signed in as {0}.',em)+' '+last;
-    rows=[[['TURN OFF','off'],['SYNC NOW','sync','pri']],[['DELETE CLOUD DATA','delete','hot']],[['CLOSE','close']]];
+    meta=T('Signed in as {0}.',em)+' '+T('Your progress syncs by itself.')+' '+last;
+    rows=[[['MANAGE DATA','more'],['CLOSE','close']]];
   }else{
-    meta=T('This cloud save has no email yet. Add one to recover it on a new phone, or sign in to an account you already have.')+' '+last;
-    rows=[[['SIGN IN','signin'],['ADD EMAIL','link']],[['TURN OFF','off'],['SYNC NOW','sync','pri']],[['DELETE CLOUD DATA','delete','hot']],[['CLOSE','close']]];
+    meta=T('Type your email and tap ADD EMAIL to protect this save. Already have an account? Tap SIGN IN TO EXISTING ACCOUNT.')+' '+last;
+    rows=[[['ADD EMAIL','link','pri']],[['SIGN IN TO EXISTING ACCOUNT','signin']],[['MANAGE DATA','more'],['CLOSE','close']]];
   }
   $('clMeta').textContent=meta;
   $('clBtns').innerHTML=rows.map(r=>`<div class="row2">${r.map(([l,a,c])=>`<button class="btn ${c||''}" data-act="${a}">${T(l)}</button>`).join('')}</div>`).join('');
 }
-function openCloud(){if(!CLOUD.enabled)return;clStep='idle';renderCloud();$('cloudUI').classList.add('show');snd('click');}
+function openCloud(){if(!CLOUD.enabled)return;clStep='idle';clMore=false;renderCloud();$('cloudUI').classList.add('show');snd('click');}
 if(!CLOUD.enabled)$('setCloud').style.display='none';
 $('setCloud').addEventListener('click',openCloud);
 $('clBtns').addEventListener('click',async e=>{
@@ -3770,6 +3762,7 @@ $('clBtns').addEventListener('click',async e=>{
   const a=b.dataset.act,email=$('clEmail').value.trim();snd('click');
   if(a==='close'){$('cloudUI').classList.remove('show');renderSettings();return;}
   if(a==='back'){clStep='idle';renderCloud();return;}
+  if(a==='more'||a==='less'){clMore=a==='more';renderCloud();return;}
   if(a==='off'){
     confirmBox('TURN OFF CLOUD SAVE?',CLOUD.email
       ?T('This device stops syncing. The cloud copy stays and you can sign in again with your email.')
@@ -3793,14 +3786,13 @@ $('clBtns').addEventListener('click',async e=>{
   clBusy=true;
   try{
     if(a==='on'){await CLOUD.ensure();lsSet(CL_ON,'1');track('cloud_on');await cloudSync(true);}
-    else if(a==='sync')await cloudSync(true);
     else if(a==='link'||a==='signin'){
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){snd('deny');toast(T('INVALID EMAIL'),true);return;}
       try{await CLOUD.sendCode(email,a==='link');}
       catch(err){
         snd('deny');
         toast(err.status===429?T('TOO MANY TRIES. WAIT A BIT.')
-          :err.status===422?T(a==='link'?'THIS EMAIL ALREADY HAS AN ACCOUNT. USE SIGN IN.':'NO ACCOUNT FOR THIS EMAIL.')
+          :err.status===422?T(a==='link'?'THIS EMAIL ALREADY HAS AN ACCOUNT. SIGN IN TO IT.':'NO ACCOUNT FOR THIS EMAIL.')
           :T('CLOUD SAVE FAILED'),true);return;
       }
       clLink=a==='link';clStep='code';$('clCode').value='';toast(T('CODE SENT'));
@@ -3872,7 +3864,7 @@ $('awAd').addEventListener('click',()=>{
   if(adCooldown()>0){snd('deny');return;}
   playRewardedAd().then(ok=>{
     if(!ok)return;
-    adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;track('ad_reward',{place:'idle'});collectAway(2);
+    adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;track('ad_watched',{place:'idle'});collectAway(2);
   });
 });
 

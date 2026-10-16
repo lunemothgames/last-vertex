@@ -38,8 +38,8 @@ for(const m of src.matchAll(/HINTS=\{([\s\S]*?)\n\};/g))strs(m[1]).forEach(add);
 
 // texts that are not language, and keys only built at run time
 const NOISE=new Set(['ECDSA','English text','EN','ES','PT','TR','BEST 0 · COINS x1.0','TIER 1','LAST VERTEX // SYS OK','> BOOTING_']);
-['DAILY','OVERWRITE','OVERWRITE PROGRESS?','SLOW DEVICE?','USE LOW',
- 'CLOUD SAVE FOUND','USE CLOUD','TURN OFF CLOUD SAVE?','TURN OFF','TURN ON','REMINDERS?','ALLOW','BULWARK','SWARMLORD','REGENERATOR','DELETE CLOUD DATA','DELETE CLOUD DATA?','DELETE','SYNC NOW','SIGN IN','ADD EMAIL','VERIFY','BACK'].forEach(k=>keys.add(k));
+['DAILY','SIGN IN TO EXISTING ACCOUNT','MANAGE DATA','x3 CHANCE','OVERWRITE','OVERWRITE PROGRESS?','SLOW DEVICE?','USE LOW',
+ 'CLOUD SAVE FOUND','USE CLOUD','TURN OFF CLOUD SAVE?','TURN OFF','TURN ON','REMINDERS?','ALLOW','BULWARK','SWARMLORD','REGENERATOR','DELETE CLOUD DATA','DELETE CLOUD DATA?','DELETE','SIGN IN','ADD EMAIL','VERIFY','BACK'].forEach(k=>keys.add(k));
 NOISE.forEach(k=>keys.delete(k));
 const out=[...keys].filter(k=>!/^[a-z_\-]+$/.test(k)&&!/^[\d\s.,x%/+\-·:★☆>]+$/.test(k)&&k!=='LAST'&&k!=='VERTEX'&&k.length<700).sort();
 const dir=path.join(root,'src','lang');fs.mkdirSync(dir,{recursive:true});

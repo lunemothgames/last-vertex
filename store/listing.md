@@ -181,8 +181,8 @@ Disponível em Português, English, Türkçe e Español. Sem conta, sem login. S
 
 ## Contact details
 - Email: required by Play — use the game's support address (a dedicated one is better than your personal mail)
-- Website: `https://ahmetozeladam.github.io/last-vertex/`
-- Privacy policy: `https://ahmetozeladam.github.io/last-vertex/privacy.html`
+- Website: `https://lunemothgames.github.io/last-vertex/`
+- Privacy policy: `https://lunemothgames.github.io/last-vertex/privacy.html`
 
 ## Graphics (all in this folder)
 | Play asset | File | Size |

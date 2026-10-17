@@ -10,7 +10,7 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
 | `feature-graphic.png` | Mağaza sayfasının üstündeki büyük görsel (1024×500) |
 | `screenshots/<dil>/` | Her dil için 7 başlıklı ekran görüntüsü (1080×1920), dosya sırasıyla yükle |
 | `video/promo-<dil>.mp4` | 30 sn dikey tanıtım videosu (sessiz). Repo'da yok, `npm run promo-video` ile üretilir |
-| `../privacy.html` | Gizlilik politikası; adresi: `https://ahmetozeladam.github.io/last-vertex/privacy.html` |
+| `../privacy.html` | Gizlilik politikası; adresi: `https://lunemothgames.github.io/last-vertex/privacy.html` |
 
 ---
 

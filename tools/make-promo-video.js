@@ -1,9 +1,9 @@
-// Renders a 30 s portrait promo video (1080x1920, 30 fps, no sound) into store/video/promo-<lang>.mp4.
+// Renders a 30 s portrait promo video (1080x1920, 30 fps, with the game's own sound and music) into store/video/promo-<lang>.mp4.
 // Usage:  npm i (once)  →  npm run build  →  node tools/make-promo-video.js [en|tr|es|pt|all]   (default: en)
 // For the Play listing upload it to YouTube (public or unlisted, ads off) and paste the link; it also works as a Short / TikTok.
 // The game runs on a virtual clock: every video frame advances it exactly 1/30 s, however long the screenshot takes,
 // so the result is smooth even though rendering is far slower than real time.
-const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
+const fs=require('fs'),os=require('os'),path=require('path'),{spawn,execFileSync}=require('child_process');
 const puppeteer=require('puppeteer-core');
 const FFMPEG=require('ffmpeg-static');
 const TEXT=require('./store-text');
@@ -28,13 +28,27 @@ const GACHA=[['ricochet',{isNew:1,lv:1}],['attack_speed',{lv:3}],['nova',{levele
 // injected before the game's own scripts: a clock that only moves when we say so
 const VIRTUAL_CLOCK=`(()=>{
   const t0=Date.now();let vt=t0;const raf=[];
+  // the video is a browser run, but the app shows the ad button: pretend to be the app (no plugins, so no real ad calls)
+  window.Capacitor={isNativePlatform:()=>true,Plugins:{}};
+  // sound: the game's own synth runs on an offline audio context whose clock is the number of RECORDED frames (__rf), so it lines up with the picture
+  window.__rec=false;window.__rf=0;const vtimers=[];let vid=0;
+  window.AudioContext=window.webkitAudioContext=function(){
+    const real=new OfflineAudioContext(2,44100*40,44100);window.__off=real;
+    return new Proxy(real,{get(t,k){if(k==='currentTime')return window.__rf/${FPS};if(k==='state')return'running';if(k==='resume')return()=>Promise.resolve();
+      const v=t[k];return typeof v==='function'?v.bind(t):v;}});
+  };
+  // the music schedules itself with setTimeout: move those timers onto recorded time
+  const rst=window.setTimeout.bind(window),rct=window.clearTimeout.bind(window);
+  window.setTimeout=(fn,ms,...a)=>{if(fn===window.scheduleNote||fn===window.playPad){vtimers.push({id:++vid,at:window.__rf*1000/${FPS}+(ms||0),fn:()=>fn(...a)});return -vid;}return rst(fn,ms,...a);};
+  window.clearTimeout=id=>{if(id<0){const i=vtimers.findIndex(x=>x.id===-id);if(i>=0)vtimers.splice(i,1);return;}rct(id);};
   Date.now=()=>vt;performance.now=()=>vt-t0;
   window.requestAnimationFrame=cb=>{raf.push(cb);return raf.length;};window.cancelAnimationFrame=()=>{};
-  window.__step=(n=1)=>{for(let i=0;i<n;i++){vt+=1000/${FPS};raf.splice(0).forEach(cb=>{try{cb(vt-t0);}catch(e){console.error(e);}});}};
+  window.__step=(n=1)=>{for(let i=0;i<n;i++){vt+=1000/${FPS};raf.splice(0).forEach(cb=>{try{cb(vt-t0);}catch(e){console.error(e);}});
+    if(window.__rec){window.__rf++;const now=window.__rf*1000/${FPS};for(const x of vtimers.filter(x=>x.at<=now)){vtimers.splice(vtimers.indexOf(x),1);try{x.fn();}catch(e){console.error(e);}}}}};
 })();`;
 
 async function render(b,lang){
-  const p=await b.newPage();
+  const p=await b.newPage();p.on('pageerror',e=>console.log('page error:',e.message));
   await p.setViewport({width:360,height:640,deviceScaleFactor:3,isMobile:true});
   await p.evaluateOnNewDocument(VIRTUAL_CLOCK);
   const cdp=await p.createCDPSession();await cdp.send('Animation.enable');
@@ -43,6 +57,7 @@ async function render(b,lang){
   await p.reload();await p.evaluate(()=>{__step(60);toast=()=>{};});
   await new Promise(r=>setTimeout(r,300));await p.evaluate(()=>{for(const id of ['splash','boot']){const e=document.getElementById(id);if(e)e.dispatchEvent(new Event('pointerdown'));}});   // skip the studio splash and the boot screen (real timers)
   await new Promise(r=>setTimeout(r,900));
+  await p.evaluate(()=>{const real=snd;window.snd=t=>{if(window.__rec)real(t);};window.__rec=true;});
   await p.evaluate(()=>{let r=12345;Math.random=()=>{r=(r*16807)%2147483647;return r/2147483647;};});
   // caption band drawn over the game
   await p.evaluate(()=>{
@@ -57,9 +72,9 @@ async function render(b,lang){
     d.textContent=text;d.style.top=top;d.style.display='block';d.style.fontSize='40px';
     for(let fs=40;d.scrollWidth>356&&fs>20;fs-=2)d.style.fontSize=fs+'px';},text,top);
 
-  const file=path.join(outDir,`promo-${lang}.mp4`);
+  const file=path.join(outDir,`promo-${lang}.mp4`),silent=path.join(os.tmpdir(),`lv-promo-${lang}-silent.mp4`),wav=path.join(os.tmpdir(),`lv-promo-${lang}.wav`);
   const ff=spawn(FFMPEG,['-y','-loglevel','error','-f','image2pipe','-framerate',String(FPS),'-c:v','mjpeg','-i','-',
-    '-c:v','libx264','-pix_fmt','yuv420p','-preset','medium','-crf','18','-movflags','+faststart',file],{stdio:['pipe','inherit','inherit']});
+    '-c:v','libx264','-pix_fmt','yuv420p','-preset','medium','-crf','18','-movflags','+faststart',silent],{stdio:['pipe','inherit','inherit']});
   const done=new Promise((res,rej)=>ff.on('close',c=>c?rej(new Error('ffmpeg exit '+c)):res()));
   let n=0,tSpan=Date.now();
   // one video frame: advance the game 1/30 s (keeping the triangle alive), grab the screen
@@ -73,7 +88,7 @@ async function render(b,lang){
   }
   const frames=async(k,at={})=>{for(let i=0;i<k;i++)await frame(at[i]);};
   // fast-forward the game (not recorded) until `cond` holds or `max` frames have passed
-  const until=(cond,max)=>p.evaluate((cond,max)=>{const f=new Function('return ('+cond+')');for(let i=0;i<max&&!f();i++)__step(1);},cond,max);
+  const until=(cond,max)=>p.evaluate((cond,max)=>{const f=new Function('return ('+cond+')');__rec=false;for(let i=0;i<max&&!f();i++)__step(1);__rec=true;},cond,max);
   const T=TEXT[lang];
 
   // 1 · a busy field, OVERDRIVE then NOVA                                           (6 s)
@@ -118,7 +133,19 @@ async function render(b,lang){
   await cap(T.end,'31%');   // just under the logo
   await frames(120);
 
-  ff.stdin.end();await done;await p.close();
+  ff.stdin.end();await done;
+  // render the recorded sound and put it under the picture (loudness evened out: the game's own mix is quiet)
+  const b64=await p.evaluate(async fps=>{
+    const buf=await __off.startRendering(),len=Math.min(buf.length,Math.ceil((__rf/fps+.5)*44100)),L=buf.getChannelData(0),R=buf.getChannelData(1);
+    const out=new Uint8Array(44+len*4),dv=new DataView(out.buffer),w=(o,s)=>[...s].forEach((c,i)=>dv.setUint8(o+i,c.charCodeAt(0)));
+    w(0,'RIFF');dv.setUint32(4,36+len*4,true);w(8,'WAVEfmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,2,true);dv.setUint32(24,44100,true);dv.setUint32(28,44100*4,true);dv.setUint16(32,4,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,len*4,true);
+    for(let i=0;i<len;i++){dv.setInt16(44+i*4,Math.max(-1,Math.min(1,L[i]))*32767,true);dv.setInt16(46+i*4,Math.max(-1,Math.min(1,R[i]))*32767,true);}
+    let s='';for(let i=0;i<out.length;i+=32768)s+=String.fromCharCode.apply(null,out.subarray(i,i+32768));return btoa(s);
+  },FPS);
+  fs.writeFileSync(wav,Buffer.from(b64,'base64'));
+  execFileSync(FFMPEG,['-y','-loglevel','error','-i',silent,'-i',wav,'-map','0:v','-map','1:a','-c:v','copy','-af','loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st=28.5:d=1.5','-c:a','aac','-b:a','160k','-shortest','-movflags','+faststart',file]);
+  fs.rmSync(silent,{force:true});fs.rmSync(wav,{force:true});
+  await p.close();
   console.log(`wrote ${path.relative(root,file).replace(/\\/g,'/')} (${n} frames, ${(n/FPS).toFixed(1)} s)`);
 }
 

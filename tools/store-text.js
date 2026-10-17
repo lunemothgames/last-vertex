@@ -9,7 +9,7 @@ module.exports={
     shop:  ['UPGRADE EVERYTHING','Damage, fire rate, armor, dodge and more'],
     weekly:['NEW CHALLENGE EVERY WEEK','Rule-changing mutators and gem rewards'],
     themes:['12 RETRO THEMES','Scanlines, phosphor glow, smooth on old phones'],
-    end:   'PLAY FREE · WORKS OFFLINE',
+    end:   'PLAY ANYWHERE · OFFLINE OK',
   },
   tr:{
     run:   ['IDLE KULE SAVUNMASI','Tek üçgen. Sonsuz dalga. 30 tier.'],
@@ -19,7 +19,7 @@ module.exports={
     shop:  ['HER ŞEYİ GELİŞTİR','Hasar, atış hızı, zırh, kaçınma ve fazlası'],
     weekly:['HER HAFTA YENİ MEYDAN OKUMA','Kuralları değiştiren modlar ve elmas ödülleri'],
     themes:['12 RETRO TEMA','Tarama çizgileri, fosfor parıltısı, eski telefonlarda akıcı'],
-    end:   'ÜCRETSİZ · İNTERNETSİZ OYNA',
+    end:   'HER YERDE · İNTERNETSİZ OYNA',
   },
   es:{
     run:   ['DEFENSA DE TORRES IDLE','Un triángulo. Oleadas infinitas. 30 tiers.'],
@@ -29,7 +29,7 @@ module.exports={
     shop:  ['MEJÓRALO TODO','Daño, cadencia, blindaje, esquiva y más'],
     weekly:['UN RETO NUEVO CADA SEMANA','Mutadores que cambian las reglas y premios en gemas'],
     themes:['12 TEMAS RETRO','Scanlines, brillo de fósforo, fluido en móviles viejos'],
-    end:   'GRATIS · JUEGA SIN CONEXIÓN',
+    end:   'JUEGA DONDE SEA · OFFLINE',
   },
   pt:{
     run:   ['DEFESA DE TORRE IDLE','Um triângulo. Ondas infinitas. 30 tiers.'],
@@ -39,6 +39,6 @@ module.exports={
     shop:  ['MELHORE TUDO','Dano, cadência, armadura, esquiva e mais'],
     weekly:['UM DESAFIO NOVO POR SEMANA','Mutadores que mudam as regras e prêmios em gemas'],
     themes:['12 TEMAS RETRÔ','Scanlines, brilho de fósforo, leve em celulares antigos'],
-    end:   'GRÁTIS · JOGUE OFFLINE',
+    end:   'JOGUE ONDE QUISER · OFFLINE',
   },
 };

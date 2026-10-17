@@ -1,4 +1,4 @@
-package io.github.ahmetozeladam.lastvertex;
+package com.lunemoth.lastvertex;
 
 import android.os.Bundle;
 import androidx.core.view.WindowCompat;

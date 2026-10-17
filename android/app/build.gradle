@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "io.github.ahmetozeladam.lastvertex"
+    namespace = "com.lunemoth.lastvertex"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.github.ahmetozeladam.lastvertex"
+        applicationId "com.lunemoth.lastvertex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

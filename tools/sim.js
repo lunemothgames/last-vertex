@@ -12,14 +12,16 @@ const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','i
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor};"].join('\n'))(save,1,1);
+  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor};"].join('\n'))(save,1,1);
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
 // what-ifs for the content added in October 2026:
 //   SIM_ENEMY='{"armored":{"w":0}}'  change/remove an enemy type · SIM_BOSSKIND=classic  every boss is the classic one
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_ENEMY||'{}')))Object.assign(ENEMY_TYPES[id],o);
 for(const [k,o] of Object.entries(JSON.parse(process.env.SIM_EVT||'{}')))if(G.EVENTS&&G.EVENTS[k])G.EVENTS[k]=Object.assign({name:k},o);   // SIM_EVT='{"horde":{"ival":0.7}}' replaces an event's rules
 for(const k of (process.env.SIM_EVOFF||'').split(',').filter(Boolean))if(G.EVENTS&&G.EVENTS[k])G.EVENTS[k]={name:k};   // SIM_EVOFF=horde,rush  makes those events do nothing
-const NOEV=process.env.SIM_NOEVENTS==='1';   // SIM_NOEVENTS=1: switch wave events off to see their share
+const EVT=Object.assign(G.EV_TUNE||{},JSON.parse(process.env.SIM_TUNE||'{}'));   // SIM_TUNE='{"clingAtk":0.4}' changes the behaviour numbers of the events (dive, rise, berserk, cling)
+const FORCE=process.env.SIM_FORCEEV;   // SIM_FORCEEV=cling: that event on EVERY wave from wave 4 (not boss waves), to measure what one event does
+let NOEV=process.env.SIM_NOEVENTS==='1';   // SIM_NOEVENTS=1: switch wave events off to see their share
 Object.assign(ECO,JSON.parse(process.env.SIM_ECO||'{}'));
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_PU||'{}')))Object.assign(PU[id],o);
 // tattoo value what-ifs: SIM_TT='{"reaper":{"k":[0.15,0.4]}}' (each effect is [Lv1, Lv7])
@@ -67,18 +69,18 @@ function run(tier,maxW=1e9){
   setTier(tier);const st=stats();
   const LINE=.83,avgCrit=1+st.crit*(st.critM-1);
   const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
-  let hp=st.maxHp,coins=0,t=0,w=0,aegis=0,shock=0,shots=0;const dt=.1;
+  let hp=st.maxHp,coins=0,t=0,w=0,aegis=0,shock=0,shots=0;let tdAll=0;const dt=.1,evSeed=Math.floor(Math.random()*1e6);
   const TRACE=process.env.SIM_TRACE==='1';let tkills=0,tdmg=0,tcontacts=0,tspawn=0;
   for(;;){
-    w++;if(w>maxW)return{w:w-1,coins,t:t/st.speed};
+    w++;if(w>maxW)return{w:w-1,coins,t:t/st.speed,dmg:tdAll/st.maxHp};
     const ew=w+(tier-1)*TIERS.offset,boss=w%ECO.bossEvery===0;
-    const evk=G.eventFor&&!NOEV?G.eventFor(w,tier):null,M=evk?G.combineMods([evk],G.EVENTS):G.NOMODS;
+    const evk=NOEV?null:FORCE?(w>=4&&w%ECO.bossEvery?FORCE:null):G.eventFor?G.eventFor(w,tier,evSeed):null,M=evk?G.combineMods([evk],G.EVENTS):G.NOMODS;
     const bk=boss&&G.bossKindFor&&!process.env.SIM_BOSSKIND?G.bossKindFor(w,ECO.bossEvery):'classic';
     const hpB=ECO.enemyHp*Math.pow(ECO.enemyHpGrowth,ew-1),atkB=ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1),spB=.032*(1+Math.min(ew,150)*.005);
     const pool=Object.values(ENEMY_TYPES).filter(x=>x.w>0&&ew>=x.from),tw=pool.reduce((s,x)=>s+x.w,0);
     const pick=()=>{let r=Math.random()*tw;for(const x of pool){r-=x.w;if(r<0)return x;}return pool[0];};
     const mk=(T,y)=>({y,hp:hpB*T.hp*(M.ehp||1),max:hpB*T.hp*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),kb:0,slow:0,frz:0,boss:false,
-      sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false});
+      sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0});
     const E=[],dur=Math.min(45,18+w*.5),iv=Math.max(.5,2.2-w*.04)*(M.ival||1),per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++)E.push(mk(pick(),.1-i*.09));
     if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
@@ -87,6 +89,18 @@ function run(tier,maxW=1e9){
     const midas=()=>A.midas&&A.midas.left>0?A.midas.m:1;
     const kill=e=>{coins+=e.boss?cv*e.coin*midas():(e.coin&&Math.random()<st.coinChance?cv*e.coin*midas()*(Math.random()<st.jackpot?3:1):0);};
     const hit=(e,d)=>{e.hp-=d;hp=Math.min(st.maxHp,hp+d*st.ls);};
+    // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
+    const riseF=e=>{if(!(e.rs&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
+    const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
+    const contact=(e,mul,sp)=>{
+      let taken=0;
+      if(Math.random()<st.dodge){}
+      else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;tdmg+=taken;tdAll+=taken;}
+      tcontacts++;
+      const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;
+      if(taken>0)hp=Math.min(st.maxHp,hp+Math.min(th*st.ls,taken*ECO.thornHealCap));
+    };
     while(left>0||E.length){
       t+=dt;left-=dt;aegis=Math.max(0,aegis-dt);shock=Math.max(0,shock-dt);
       if(left>0){spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0;i<per;i++)E.push(mk(pick(),.1));}}
@@ -105,25 +119,25 @@ function run(tier,maxW=1e9){
       for(const e of E){
         e.kb*=Math.pow(.03,dt);if(Math.abs(e.kb)<e.sp*.05)e.kb=0;
         if(e.frz>0){e.frz-=dt;continue;}
+        if(e.rg&&e.hp>0)e.hp=Math.min(e.max,e.hp+e.max*e.rg*dt);
+        if(e.bz&&!e.bzOn&&e.hp>0&&e.hp<e.max*EVT.berserkAt){e.bzOn=1;e.atk*=EVT.berserkAtk;}
         if(e.heal){e.ht-=dt;if(e.ht<=0){e.ht=1;for(const o of E)if(o.hp>0&&Math.abs(o.y-e.y)<.13)o.hp=Math.min(o.max,o.hp+o.max*e.heal);}}
         if(e.blink){e.bt-=dt;if(e.bt<=0&&e.y>.1){e.bt=e.blink;e.y=Math.min(LINE-.02,e.y+.1);}}
         if(e.gh&&e.hp>0&&e.y>.1){e.gt-=dt;if(e.gt<=0){e.ph=!e.ph;e.gt=e.gh*(e.ph?.4:1);}}
         if(e.slow>0)e.slow-=dt;
-        const sp=e.sp*(e.slow>0?1-st.slowAmt:1);e.y+=(sp+e.kb)*dt;
+        const sp=e.clOn?0:e.sp*(e.slow>0?1-st.slowAmt:1)*evMul(e);e.y+=(sp+e.kb)*dt;
         if(e.boss&&ECO.bossPulse&&e.y>.1){if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt)e.enr=true;e.pt-=dt;if(e.pt<=0){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
           if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{const d=e.atk*ECO.bossPulse*st.dmgTaken;hp-=d;tdmg+=d;}}}
         if(e.boss){e.summon-=dt;if(e.summon<=0){
           if(e.kind==='swarmlord'){e.summon=ECO.bossSummonEvery*1.4;for(let k=0;k<3;k++)E.push({...mk(ENEMY_TYPES.runner,e.y),coin:0});}
           else{e.summon=ECO.bossSummonEvery;for(let k=0;k<2;k++)E.push({...mk(ENEMY_TYPES.mini,e.y),coin:0});}}}
-        if(e.y>LINE&&sp+e.kb>0){
-          let taken=0;
-          if(Math.random()<st.dodge){}
-          else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;
-          else{taken=e.atk*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;tdmg+=taken;}
-          tcontacts++;
-          const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;
-          if(taken>0)hp=Math.min(st.maxHp,hp+Math.min(th*st.ls,taken*ECO.thornHealCap));
+        if(e.clOn){
+          e.kb=0;e.y=LINE-.01;e.clT-=dt;
+          if(e.clT<=0){e.clT=EVT.clingEvery;contact(e,EVT.clingAtk);}
+        }else if(e.y>LINE&&sp+e.kb>0){
+          contact(e,1);
           e.kb=-e.sp*3.5;e.y=LINE-.01;
+          if(e.cl&&!e.boss){e.clOn=1;e.clT=EVT.clingEvery;e.kb=0;}
         }
       }
       const rate=st.rate*(A.overdrive&&A.overdrive.left>0?A.overdrive.m:1);
@@ -158,7 +172,7 @@ function run(tier,maxW=1e9){
         // SHATTER: a slowed/frozen kill hurts and slows enemies close by (1-D sim: same height band, about half of them sideways)
         if(st.shatter&&(d.slow>0||d.frz>0)&&!d.boss){let hit=0;const K=ECO.shatterMax||1e9;for(const o of E)if(hit<K&&o.hp>0&&Math.abs(o.y-d.y)<.08&&Math.random()<.5){o.hp-=d.max*st.shatter*(o.boss?.25:1);o.slow=ECO.slowTime;hit++;}}
       }
-      if(hp<=0||t>5400){if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,t:t/st.speed};}
+      if(hp<=0||t>5400){if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,t:t/st.speed,dmg:tdAll/st.maxHp+1};}
     }
     if(TRACE)console.log('wave '+String(w).padStart(3)+' (eff '+String(ew).padStart(3)+')  hp '+String(Math.round(hp/st.maxHp*100)).padStart(3)+'%  kills '+String(tkills).padStart(4)+'  contacts '+String(tcontacts).padStart(4)+'  dmg taken '+(tdmg/st.maxHp*100).toFixed(1)+'% of maxHp  (atk/contact '+(tcontacts?(tdmg/tcontacts/st.maxHp*100).toFixed(2):'0')+'% of maxHp)');
     tkills=0;tdmg=0;tcontacts=0;
@@ -183,6 +197,21 @@ function depth(maxTier=40){
 if(process.argv[2]==='trace'){
   const b=process.argv[3],B=+process.argv[4],T=+process.argv[5]||1;save.perm={};shop(b,B,{gameSpeed:1});equip(b,+process.argv[6]||5);
   process.env.SIM_TRACE='1';const r=run(T,80);console.log('result: wave '+r.w+', '+(r.t/60).toFixed(1)+' min, '+fmtN(r.coins)+' coins');process.exit(0);
+}
+// evtest: how far each build gets in a FIXED tier (mean wave over N runs) with the current event settings.
+//   SIM_FORCEEV=cling node tools/sim.js evtest   (events on every wave)   ·   SIM_NOEVENTS=1 for the baseline
+//   prints "mean wave" per build and budget, then the mean over all of them
+if(process.argv[2]==='evtest'){
+  const names=(process.argv[3]||'offense,thornsTank,control,swarm,farm').split(','),BUD=(process.env.SIM_BUDGETS||'1e6,1e8,1e10').split(',').map(Number),N=+process.env.SIM_N||60;
+  let tot=0,n=0,out=[];
+  for(const b of names){let line=b.padEnd(11);
+    BUD.forEach((B,i)=>{save.perm={};shop(b,B,{gameSpeed:1});equip(b,5);let sw=0,sc=0,sd=0;
+      // the tier is picked WITHOUT events (highest tier where 6 runs average the unlock wave), so every event setting is measured in the same place
+      const ne=NOEV;NOEV=true;let T=1;for(;T<40;T++){let m=0;for(let k=0;k<6;k++)m+=run(T+1,TIERS.unlockWave+10).w;if(m/6<TIERS.unlockWave)break;}NOEV=ne;
+      for(let k=0;k<N;k++){const r=run(T);sw+=r.w;sc+=r.coins;sd+=r.dmg;}
+      const m=sw/N;line+=m.toFixed(1).padStart(8);tot+=m;n++;});
+    out.push(line);}
+  console.log(out.join(String.fromCharCode(10)));console.log('MEAN '+(tot/n).toFixed(2));process.exit(0);
 }
 if(process.argv[2]==='debug'){
   const b=process.argv[3],B=+process.argv[4];save.perm={};shop(b,B,{gameSpeed:1});equip(b,+process.argv[5]||5);

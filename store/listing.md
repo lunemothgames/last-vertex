@@ -46,7 +46,7 @@ Choose your target priority, speed up the game, time your abilities — or walk 
 ▸ RETRO TERMINAL LOOK
 Scanlines, phosphor glow and 12 color themes, from ice blue to amber, green P1 and hot pink. Runs smoothly on older phones with three graphics levels, and works offline.
 
-Play in English, Türkçe, Español or Português. No account, no sign-in. Your progress stays on your device and can be exported with a save code.
+Play in English, Türkçe, Español or Português. No account needed. Your progress stays on your device; turn on optional cloud save to back it up and continue on another device.
 ```
 
 ---
@@ -87,7 +87,7 @@ Hedef önceliğini seç, oyunu hızlandır, yeteneklerini zamanla — ya da bır
 ▸ RETRO TERMİNAL GÖRÜNÜMÜ
 Tarama çizgileri, fosfor parıltısı ve buz mavisinden kehribara, yeşil P1'den neon pembeye 12 renk teması. Üç grafik seviyesiyle eski telefonlarda da akıcı çalışır, internetsiz oynanır.
 
-Türkçe, English, Español ve Português dillerinde. Hesap yok, giriş yok. İlerlemen cihazında kalır ve bir kayıt koduyla dışa aktarılabilir.
+Türkçe, English, Español ve Português dillerinde. Hesap gerekmez. İlerlemen cihazında kalır; istersen isteğe bağlı bulut kaydını açıp yedekleyebilir ve başka cihazda devam edebilirsin.
 ```
 
 ---
@@ -128,7 +128,7 @@ Elige la prioridad de objetivo, acelera el juego, usa tus habilidades en el mome
 ▸ ESTILO DE TERMINAL RETRO
 Scanlines, brillo de fósforo y 12 temas de color, del azul hielo al ámbar, el verde P1 y el rosa neón. Funciona fluido en móviles antiguos con tres niveles gráficos y se juega sin conexión.
 
-Disponible en Español, English, Türkçe y Português. Sin cuenta, sin registro. Tu progreso se queda en tu dispositivo y se puede exportar con un código de guardado.
+Disponible en Español, English, Türkçe y Português. No necesitas cuenta. Tu progreso se queda en tu dispositivo; activa el guardado en la nube (opcional) para tener una copia y continuar en otro dispositivo.
 ```
 
 ---
@@ -169,7 +169,7 @@ Escolha a prioridade de alvo, acelere o jogo, use suas habilidades na hora certa
 ▸ VISUAL DE TERMINAL RETRÔ
 Scanlines, brilho de fósforo e 12 temas de cor, do azul gelo ao âmbar, verde P1 e rosa neon. Roda liso em celulares antigos com três níveis gráficos e funciona offline.
 
-Disponível em Português, English, Türkçe e Español. Sem conta, sem login. Seu progresso fica no seu aparelho e pode ser exportado com um código de save.
+Disponível em Português, English, Türkçe e Español. Não precisa de conta. Seu progresso fica no seu aparelho; ative o save na nuvem (opcional) para ter um backup e continuar em outro aparelho.
 ```
 
 ---

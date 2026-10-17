@@ -33,14 +33,27 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
      ve kendi `screenshots/<dil>/` görsellerini yükle (es-ES için `es`, pt-PT için `pt` klasörü).
    - **Video**: `video/promo-en.mp4`'yi YouTube'a yükle (herkese açık ya da liste dışı, reklamlar kapalı), linki
      "YouTube URL" alanına yapıştır. Diğer dillerin videoları için de aynısı. Aynı videolar Shorts/TikTok için de uygun.
-3. **Policy → App content** formları:
-   - Privacy policy: yukarıdaki privacy.html adresi
-   - Ads: **Yes** (ödüllü reklam var)
-   - App access: tüm özellikler girişsiz kullanılabiliyor
-   - Content rating anketi: şiddet = soyut şekiller yok oluyor, kan yok; kumar yok (gacha gerçek parayla değil)
-   - Target audience: 13+ önerilir (gacha mekaniği yüzünden çocuklara yönelik işaretleme)
-   - Data safety: uygulama veri **toplamıyor** ve **paylaşmıyor** (kayıt sadece cihazda; geri bildirim formu tarayıcıda, isteğe bağlı açılıyor)
-4. **Testing → Closed testing**: test grubu oluştur, e-postaları ekle, `.aab` dosyasını yükle, yayınla. 14 gün sayacı başlar.
+3. **Store settings / iletişim:** destek e-postası `lunemothgames@gmail.com`, web sitesi olarak oyunun adresi
+   `https://lunemothgames.github.io/last-vertex/`, kategori Game → Strategy (ayrıntı `listing.md`).
+4. **Policy → App content** formları (hazır cevaplar, 2026-10-17 durumuna göre; Play soruları değiştirirse ona uy):
+   - **Privacy policy:** `https://lunemothgames.github.io/last-vertex/privacy.html`
+   - **Ads:** Evet (ödüllü reklam var)
+   - **App access:** Tüm özellikler giriş yapmadan kullanılabiliyor, özel hesap gerekmiyor
+   - **Content rating anketi** (e-posta: `lunemothgames@gmail.com`, kategori: Game): Şiddet yalnızca soyut şekillerin yok edilmesi, kan ve gerçekçi şiddet yok. Cinsellik, küfür, uyuşturucu, korku yok. Gerçek paralı kumar yok. Gacha (tattoo çekilişi) oyun içi elmasla, gerçek parayla değil. Kullanıcıların birbirine yazdığı içerik yok. Konum paylaşımı yok. Anket gacha ya da "simüle kumar" sorarsa dürüst cevap ver (elmasla çekiliş var).
+   - **Target audience:** 13 yaş ve üstü seçeneklerini işaretle, 12 yaş ve altını işaretleme (çocuk programına girmemek için). Çocuklara çekici mi sorusuna Hayır.
+   - **Advertising ID:** Evet kullanıyor (AdMob ve analiz). Amaç: reklam ve analiz.
+   - **Data safety.** Genel sorular: veri topluyor musun → Evet. Aktarım şifreli mi → Evet (internet bağlantıları şifreli). Kullanıcı veriyi sildirebilir mi → Evet, silme adresi: `https://lunemothgames.github.io/last-vertex/delete-account.html` (uygulamada da Settings → Cloud Save → MANAGE DATA → DELETE CLOUD DATA). Toplanan veriler:
+     1. **Kişisel bilgi → E-posta adresi:** isteğe bağlı (yalnızca bulut kaydı için e-posta ekleyen oyuncu), amaç: hesap yönetimi ve uygulama işlevi, paylaşılmıyor.
+     2. **Kimlikler → Kullanıcı kimliği (rastgele oyuncu numarası) ve Cihaz/diğer kimlikler (reklam kimliği, uygulama örnek kimliği):** amaç: uygulama işlevi, analiz, reklam. Reklam kimliği AdMob ile reklam amacıyla paylaşılıyor.
+     3. **Uygulama etkinliği → Uygulama içi etkileşimler** (koşu başladı, bitti, reklam izlendi vb.): amaç: analiz, ayarlanabilir (Ayarlar → USAGE STATS kapatılınca toplanmaz, "isteğe bağlı" de).
+     4. **Uygulama etkinliği → Diğer (oyun ilerlemesi):** yalnızca bulut kaydı açık olan oyuncuda sunucuya gider, isteğe bağlı, amaç: uygulama işlevi. Tam kategori adı Play'de değişebilir, en yakın "Uygulama etkinliği" seçeneğini seç.
+     5. **Uygulama bilgisi ve performans → Çökme kayıtları, Tanılama:** amaç: analiz ve uygulama işlevi.
+     6. **Konum → Yaklaşık konum:** IP adresinden Google tarafından çıkarılıyor (reklam ve analiz). Oyun konum izni istemiyor ama Play bunu veri olarak soruyor, işaretle.
+     Satış yok. "Paylaşılıyor" kutusu: yalnızca reklam kimliği, yaklaşık konum ve uygulama etkileşimleri için AdMob rehberinin dediğini yap (AdMob'un kendi Data safety rehberi var, orada hangisini işaretleyeceğin yazar).
+   - **Hesap silme (Data deletion):** Uygulama hesap oluşturuyor (isteğe bağlı) → Evet, yukarıdaki silme adresini yaz.
+   - **Diğer formlar:** Haber uygulaması Hayır, COVID Hayır, devlet uygulaması Hayır, finansal özellik Hayır, sağlık Hayır.
+   - **Uygulama içi satın alma henüz yok.** Satın alma eklendiğinde: "içinde satın alma var" işaretle, bu formu ve gizlilik sayfasını güncelle. Çekiliş (gacha) ihtimalleri oyunda zaten gösteriliyor (Play kuralı için gerekli), ek iş yok.
+5. **Testing → Closed testing**: test grubu oluştur, e-postaları ekle, `.aab` dosyasını yükle, yayınla. 14 gün sayacı başlar.
 
 ## 4. Yayın
 Kapalı test 14 günü doldurunca Play Console → **Production** başvurusu. İnceleme genelde birkaç gün sürer.

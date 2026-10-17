@@ -206,7 +206,7 @@
  "Enemies move 60% faster · +50% coins": "Düşmanlar %60 daha hızlı · +%50 altın",
  "Equip a tattoo": "Bir dövme tak",
  "Equip or unequip it": "Tak ya da çıkar",
- "Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health.": "Her 10. dalga, sırayla dört türden biri: şard çağırır, kalkan taşır (BULWARK), koşucu çağırır (SWARMLORD) ya da iyileşir (REGENERATOR). Can yarının altında öfkelenir.",
+ "Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, dodge and AEGIS reduce them.": "Her 10. dalga, sırayla dört türden biri: şard çağırır, kalkan taşır (BULWARK), koşucu çağırır (SWARMLORD) ya da iyileşir (REGENERATOR). Can yarının altında öfkelenir. Şok dalgaları sana doğrudan zarar verir; zırh, kaçınma ve AEGIS bunları azaltır.",
  "Every time an enemy hits the perimeter (even when you dodge) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.": "Bir düşman sınıra her vurduğunda (kaçınsan bile) MAKSİMUM canının bu kadarını kaybeder. Bosslar dörtte birini alır. Mağazadan en fazla %50; THORNS dövmesiyle %100'e kadar, yani tek dokunuşta ölür.",
  "Extra bullet damage against enemies below 30% of their health, to finish off wounded enemies faster.": "Canı %30'un altındaki düşmanlara ek mermi hasarı; yaralıları daha hızlı bitirir.",
  "Extra copies level it up by themselves, up to LV7": "Ek kopyalar onu kendiliğinden yükseltir, LV7'ye kadar",

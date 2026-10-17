@@ -81,7 +81,7 @@ function run(tier,maxW=1e9){
       sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false});
     const E=[],dur=Math.min(45,18+w*.5),iv=Math.max(.5,2.2-w*.04)*(M.ival||1),per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++)E.push(mk(pick(),.1-i*.09));
-    if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,kind:bk,
+    if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
       sh:bk==='bulwark'?bh*(ECO.bossShield||0):0,heal:bk==='regen'?(ECO.bossRegen||0):0,ht:1,ar:0});}
     let left=dur,spawnT=0,cd=0;const cv=coinValueAt(ew)*st.mult;
     const midas=()=>A.midas&&A.midas.left>0?A.midas.m:1;
@@ -110,6 +110,8 @@ function run(tier,maxW=1e9){
         if(e.gh&&e.hp>0&&e.y>.1){e.gt-=dt;if(e.gt<=0){e.ph=!e.ph;e.gt=e.gh*(e.ph?.4:1);}}
         if(e.slow>0)e.slow-=dt;
         const sp=e.sp*(e.slow>0?1-st.slowAmt:1);e.y+=(sp+e.kb)*dt;
+        if(e.boss&&ECO.bossPulse&&e.y>.1){if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt)e.enr=true;e.pt-=dt;if(e.pt<=0){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
+          if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{const d=e.atk*ECO.bossPulse*st.dmgTaken;hp-=d;tdmg+=d;}}}
         if(e.boss){e.summon-=dt;if(e.summon<=0){
           if(e.kind==='swarmlord'){e.summon=ECO.bossSummonEvery*1.4;for(let k=0;k<3;k++)E.push({...mk(ENEMY_TYPES.runner,e.y),coin:0});}
           else{e.summon=ECO.bossSummonEvery;for(let k=0;k<2;k++)E.push({...mk(ENEMY_TYPES.mini,e.y),coin:0});}}}

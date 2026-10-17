@@ -1119,6 +1119,7 @@ const ECO={
   enemyAtk:.78,    enemyAtkGrowth:1.038,
   bossHpMul:6,    bossAtkMul:3,  bossEvery:10, bossCoins:8,
   bossShield:.35, bossRegen:.012,       // BULWARK boss: shield as a share of max health · REGENERATOR boss: heal per second (self and neighbours)
+  bossPulse:.35,  bossPulseEvery:6, bossPulseFirst:3.5, // boss shock wave: boss attack x this, first after 3.5 s, then every 6 s (3.9 s enraged); armor, dodge and AEGIS work on it like on a perimeter hit
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
@@ -1226,19 +1227,19 @@ const armorRed=a=>a/(a+100);
 const PERM_CATS=[['atk','ATTACK','bullet'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
 const PERM_UPGRADES=[
   // ── attack
-  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'bullet', base:8,   p:2.2,  max:1e6,  start:1,  step:.25,  ms:[200,1.1,5000], fx:v=>f2(v),
+  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'bullet', base:8,   p:2.1,  max:1e6,  start:1,  step:.25,  ms:[200,1.1,5000], fx:v=>f2(v),
    info:'Damage of every bullet your triangle fires. Every 200 levels (up to level 5000) the total is also multiplied by 1.1.'},
   {id:'fireRate',  cat:'atk', name:'FIRE RATE',  icon:'stream',  base:40,  g:1.12, max:100,  start:1,  step:.02,  fx:v=>v.toFixed(2)+'/s',
    info:'How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.'},
-  {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.11, max:160,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.09, max:160,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.'},
-  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.1,  max:150,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
+  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:150,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
    info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
-  {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.1,  max:120,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.17, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Max 60%.'},
-  {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:400, g:1.2,  max:50,   start:0,  step:.01,  fx:v=>pc(v),
+  {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:400, g:1.32, max:50,   start:0,  step:.01,  fx:v=>pc(v),
    info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50% from the shop, 75% with tattoos.'},
-  {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:200, g:1.12, max:120,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:200, g:1.19, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
   {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:167,  start:0,  step:.03,  fx:v=>'+'+pc(v),
    info:'Extra damage against bosses (every 10th wave), from bullets, lightning and blasts.'},
@@ -1470,7 +1471,7 @@ let triX,hp,runCoins,waveNum,enemies,bullets,pickups,
     runDmgDealt,runDmgTaken,runKills,runWave,runStart,runNewBest=false;
 let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,waveDuration=0,shockCooldown=0;
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
-let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[];
+let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[],beams=[];
 let actCD={};                           // active tattoo id → seconds until ready
 let shatterQ=[],runUnlockSnd=0;                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
 const SHATTER_R=.2;                     // burst radius, share of screen width
@@ -1496,7 +1497,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];actCD={};shatterQ=[];runUnlockSnd=0;
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];runUnlockSnd=0;
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1989,6 +1990,7 @@ function updatePlay(dt){
   if(screenFlash>0)screenFlash=Math.max(0,screenFlash-dt*3);
   arcs.forEach(a=>a.life-=dt*5);arcs=arcs.filter(a=>a.life>0);
   novas.forEach(n=>n.life-=dt*2.2);novas=novas.filter(n=>n.life>0);
+  beams.forEach(b=>b.life-=dt*2.5);beams=beams.filter(b=>b.life>0);
 
   // tattoo timers
   for(const id in actCD)actCD[id]=Math.max(0,actCD[id]-dt);
@@ -2151,6 +2153,14 @@ function updatePlay(dt){
       if(!e.enraged&&e.hp<e.maxHp*ECO.bossEnrageAt){
         e.enraged=true;e.spd=e.baseSpd*1.4;snd('enrage');screenFlash=.3;shake={x:0,y:0,t:.3};
         spawnText(e.x,e.y-e.sz*.8,T('ENRAGED'),C.hot);burst(e.x,e.y,C.hot,16,GH*.12);
+      }
+      // pulse: a shock wave that hurts the triangle itself. Armor, dodge and AEGIS work on it like on a perimeter hit
+      e.pulseT=(e.pulseT??ECO.bossPulseFirst)-dt;
+      if(e.pulseT<=0&&e.y>GH*HUD_TOP){
+        e.pulseT=ECO.bossPulseEvery*(e.enraged?.65:1);e.pulse=1;burst(e.x,e.y,C.hot,14,GH*.1);const bm={x1:e.x,y1:e.y,x2:triX,y2:TRI_Y,life:1,col:C.hot};beams.push(bm);
+        if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('DODGE'),C.a2);}
+        else if(st.aegisCD>0&&aegisT<=0){bm.col=C.a2;aegisT=st.aegisCD;snd('block');spawnText(triX,LINE_Y-GH*.05,T('BLOCK'),C.a2);}
+        else{const d=e.atk*ECO.bossPulse*st.dmgTaken;hp-=d;runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
@@ -2457,6 +2467,18 @@ function drawPlay(){
       for(let k=1;k<=4;k++){const t=k/4,j=k<4?(Math.random()-.5)*GW*.04:0;cx.lineTo(q.x+(p.x-q.x)*t+j,q.y+(p.y-q.y)*t+j);}
     });
     cx.stroke();cx.restore();
+  });
+  // boss shock wave: a thin warning line right before it fires, then a thick beam from the boss to the triangle
+  for(const e of enemies)if(e.boss&&e.pulseT>0&&e.pulseT<.7&&e.hp>0&&e.frozenT<=0&&e.y>GH*HUD_TOP){
+    cx.save();cx.globalAlpha=.25+.5*(1-e.pulseT/.7);cx.strokeStyle=C.hot;cx.shadowColor=C.hot;cx.shadowBlur=8;cx.lineWidth=1.5;cx.setLineDash([6,8]);
+    cx.beginPath();cx.moveTo(e.x,e.y);cx.lineTo(triX,TRI_Y);cx.stroke();cx.restore();
+  }
+  beams.forEach(b=>{
+    cx.save();cx.lineCap='round';cx.strokeStyle=b.col;cx.shadowColor=b.col;cx.shadowBlur=22;
+    cx.globalAlpha=Math.min(1,b.life*1.3);cx.lineWidth=GW*.03*b.life+2;
+    cx.beginPath();cx.moveTo(b.x1,b.y1);cx.lineTo(b.x2,b.y2);cx.stroke();
+    cx.globalAlpha=Math.min(1,b.life*1.6);cx.strokeStyle='#fff';cx.shadowBlur=0;cx.lineWidth=GW*.009*b.life+1;
+    cx.beginPath();cx.moveTo(b.x1,b.y1);cx.lineTo(b.x2,b.y2);cx.stroke();cx.restore();
   });
   novas.forEach(n=>{
     cx.save();cx.globalAlpha=n.life*.8;cx.strokeStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=16;cx.lineWidth=2+n.life*4;
@@ -3568,7 +3590,7 @@ const HELP_TOPICS=[
     enemyRow('mender',r[1],T('MENDER'),T('From tier 8. Heals the enemies around it, so take it out first.')),
     enemyRow('blinker',r[3],T('BLINKER'),T('From tier 11. Jumps forward every few seconds.')),
     enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),
-    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health.')),
+    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, dodge and AEGIS reduce them.')),
   ].join('')+`</div>`;}],
   ['damage','shield','TAKING DAMAGE',()=>`<p>${T('Each enemy that touches the perimeter deals its attack as damage, then bounces back and comes again.')}</p>
     <p>${T('MAX HP and REGEN keep you standing, ARMOR and DODGE soften or skip hits, THORNS hurts whoever hits you and LIFESTEAL heals you as you deal damage.')}</p>`],

@@ -35,7 +35,7 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
      "YouTube URL" alanına yapıştır. Diğer dillerin videoları için de aynısı. Aynı videolar Shorts/TikTok için de uygun.
 3. **Policy → App content** formları:
    - Privacy policy: yukarıdaki privacy.html adresi
-   - Ads: **No** (şu an gerçek reklam yok)
+   - Ads: **Yes** (ödüllü reklam var)
    - App access: tüm özellikler girişsiz kullanılabiliyor
    - Content rating anketi: şiddet = soyut şekiller yok oluyor, kan yok; kumar yok (gacha gerçek parayla değil)
    - Target audience: 13+ önerilir (gacha mekaniği yüzünden çocuklara yönelik işaretleme)

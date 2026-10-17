@@ -31,7 +31,7 @@ const THEME_FAN=['amber','green','pink'];   // left, centre, right on the themes
   const p=await b.newPage();
   const raw=n=>path.join(RAW,n+'.png');
   const shot=async n=>{await sleep(400);await p.evaluate(()=>{const t=$('toast');t.className='';clearTimeout(_toastTO);$('hint').classList.remove('show');});await p.screenshot({path:raw(n)});};
-  const load=async s=>{await p.goto(GAME);await sleep(200);await p.evaluate(s=>{saveLocked=true;localStorage.setItem('tt3',JSON.stringify(s));},s);await p.reload();await sleep(2600);
+  const load=async s=>{await p.goto(GAME);await sleep(200);await p.evaluate(s=>{saveLocked=true;localStorage.setItem('tt3',JSON.stringify(s));},s);await p.reload();await sleep(300);await p.evaluate(()=>{for(const id of ['splash','boot']){const e=document.getElementById(id);if(e)e.dispatchEvent(new Event('pointerdown'));}});await sleep(900);
     await p.evaluate(()=>{toast=()=>{};});};   // no achievement / quest toasts in the shots
   // seeded randomness so the shots look the same every time
   const seed=()=>p.evaluate(()=>{let r=12345;Math.random=()=>{r=(r*16807)%2147483647;return r/2147483647;};});

@@ -41,7 +41,8 @@ async function render(b,lang){
   const S={...SAVE,settings:{...SAVE.settings,lang,langV2:1}};
   await p.goto(GAME);await p.evaluate(s=>{saveLocked=true;localStorage.setItem('tt3',JSON.stringify(s));},S);
   await p.reload();await p.evaluate(()=>{__step(60);toast=()=>{};});
-  await new Promise(r=>setTimeout(r,1500));   // the boot screen is on real timers
+  await new Promise(r=>setTimeout(r,300));await p.evaluate(()=>{for(const id of ['splash','boot']){const e=document.getElementById(id);if(e)e.dispatchEvent(new Event('pointerdown'));}});   // skip the studio splash and the boot screen (real timers)
+  await new Promise(r=>setTimeout(r,900));
   await p.evaluate(()=>{let r=12345;Math.random=()=>{r=(r*16807)%2147483647;return r/2147483647;};});
   // caption band drawn over the game
   await p.evaluate(()=>{

@@ -24,7 +24,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1586140876162989~1876797177" />
+            android:value="ca-app-pub-6523320350324718~9335634739" />
 
         <!-- Firebase collects nothing until the game enables it (after the consent flow, if the player has not opted out) -->
         <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />

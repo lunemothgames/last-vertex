@@ -1583,7 +1583,7 @@ function fmtCD(s){const t=Math.ceil(s),h=Math.floor(t/3600),mm=Math.floor(t/60)%
 // In the app the reward is granted only once the player has really earned it; with no ad available nothing is granted and the cooldown is not used.
 // The IDs are public. Every build shows Google's test ads except one made with `node tools/build-app.js release live`
 // (testers must never click real ads).
-const ADS={unit:'ca-app-pub-1586140876162989/8250633837',testUnit:'ca-app-pub-3940256099942544/5224354917'};
+const ADS={unit:'ca-app-pub-6523320350324718/5267115956',testUnit:'ca-app-pub-3940256099942544/5224354917'};
 const ADS_TEST=true;
 const AD=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;
 const adOpts=()=>({adId:ADS_TEST?ADS.testUnit:ADS.unit,isTesting:ADS_TEST});
@@ -4022,7 +4022,7 @@ $('statsToggle').addEventListener('click',()=>{
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
 const GAME_VERSION='0.6';
-const FEEDBACK={form:'',infoEntry:''};
+const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');
   const chrome=(ua.match(/Chrome\/(\d+)/)||[])[1];

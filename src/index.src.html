@@ -600,6 +600,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="pill"><svg class="i"><use href="#i-coin"/></svg><b id="mCoins">0</b></div>
       <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="mGems">0</b></div>
       <button class="adbtn" id="mAd"><svg class="i"><use href="#i-adplay"/></svg><span id="mAdTxt">+5</span><svg class="i"><use href="#i-gem"/></svg></button>
+      <button class="adbtn" id="mGet" style="display:none"><svg class="i"><use href="#i-play"/></svg><span id="mGetTxt">GET THE APP</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
       <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
@@ -2863,11 +2864,16 @@ $('tNext').addEventListener('click',()=>{
   if(!tierUnlocked(save.tier+1)){snd('deny');toast(T('REACH WAVE {0} IN TIER {1}',TIERS.unlockWave,save.tier),true);return;}
   save.tier++;persist();snd('blip');renderTierSel();
 });
+const PLAY_URL='';   // https://play.google.com/store/apps/details?id=com.lunemoth.lastvertex  (fill in once the app is live)
 function renderMenuAd(){
   // the ad button only exists while an ad is available
   $('mAd').style.display=IS_APP&&adCooldown()<=0?'':'none';   // the browser has no ads, so no gem button either
   $('mAdTxt').textContent='+'+ECO.adGems;
+  // web demo only: a button to the Play Store page; it stays hidden until PLAY_URL is filled in after the app is published
+  $('mGet').style.display=!IS_APP&&PLAY_URL?'':'none';
+  $('mGetTxt').textContent=T('GET THE APP');
 }
+$('mGet').addEventListener('click',()=>{if(PLAY_URL){window.open(PLAY_URL,'_blank','noopener');snd('click');track('get_app_click');}});
 setInterval(()=>{if(state===ST.MENU)renderMenuAd();},1000);
 function menuAd(){
   if(adCooldown()>0){snd('deny');toast(adsLeftToday()<=0?I('gem')+' '+T('{0}/{0} TODAY · MORE TOMORROW',ECO.adDailyCap):I('gem')+' '+T('READY IN {0}',fmtCD(adCooldown())),true,true);return;}

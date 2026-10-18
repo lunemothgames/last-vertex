@@ -1,0 +1,38 @@
+<!-- Final design (dark, polished). Paste into Supabase → Authentication → Emails → Templates, in BOTH "Change Email Address" and "Magic Link".
+     Subject for both:  {{ .Token }} is your Last Vertex code -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#050b16" style="background:#050b16;margin:0;padding:0">
+<tr><td align="center" style="padding:40px 16px">
+  <table role="presentation" width="460" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b1626" style="width:100%;max-width:460px;background:#0b1626;border-radius:14px;border:1px solid #1d3550">
+    <tr><td height="4" bgcolor="#6cc4ff" style="height:4px;line-height:4px;font-size:1px;background:#6cc4ff;border-radius:14px 14px 0 0">&nbsp;</td></tr>
+    <tr><td align="center" style="padding:34px 24px 0">
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:44px;line-height:44px;color:#9fd8ff">&#9650;</div>
+    </td></tr>
+    <tr><td align="center" style="padding:12px 24px 0;font-family:Arial,Helvetica,sans-serif;font-size:22px;letter-spacing:6px;color:#ffffff;font-weight:bold">
+      LAST VERTEX
+    </td></tr>
+    <tr><td align="center" style="padding:6px 24px 30px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:5px;color:#6f9cbf">
+      IDLE DEFENSE
+    </td></tr>
+    <tr><td align="center" style="padding:0 28px 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#c9dff2">
+      Here is your sign-in code.
+    </td></tr>
+    <tr><td align="center" style="padding:0 28px 14px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#102238" style="background:#102238;border-radius:10px">
+        <tr><td align="center" style="padding:20px 10px;font-family:Consolas,'Courier New',monospace;font-size:38px;letter-spacing:10px;color:#9fd8ff;font-weight:bold">
+          {{ .Token }}
+        </td></tr>
+      </table>
+    </td></tr>
+    <tr><td align="center" style="padding:0 28px 30px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#7f9bb5">
+      Type it in the game. It stays valid for one hour.
+    </td></tr>
+    <tr><td style="padding:0 28px"><div style="border-top:1px solid #1d3550;line-height:1px;font-size:1px">&nbsp;</div></td></tr>
+    <tr><td align="center" style="padding:20px 28px 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#6f8aa3">
+      You did not ask for this? Just ignore this email.
+    </td></tr>
+    <tr><td align="center" style="padding:0 28px 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#6f8aa3">
+      Lunemoth Games &middot; lunemothgames@gmail.com
+    </td></tr>
+  </table>
+</td></tr>
+</table>

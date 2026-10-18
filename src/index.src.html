@@ -1606,7 +1606,7 @@ const todayKey=()=>{const d=new Date(gameNow());return d.getFullYear()+'-'+(d.ge
 function adsLeftToday(){if(save.adDay!==todayKey()){save.adDay=todayKey();save.adCount=0;}return ECO.adDailyCap-(save.adCount||0);}
 // seconds until the next ad: normal cooldown, or until midnight once the daily cap is used up
 function adCooldown(){
-  if(ADS_TEST)return 0;   // test builds (Google test ads): no cooldown and no daily cap; build-app.js turns ADS_TEST off for release builds
+  // the cooldown and the daily cap apply to every build, test ads included (Ahmet, 2026-10-18)
   if(adsLeftToday()<=0){const m=new Date(gameNow());m.setHours(24,0,0,0);return Math.max(1,(m-gameNow())/1000);}
   return Math.max(0,ECO.adCooldown-(gameNow()-(save.adLastUsed||0))/1000);
 }

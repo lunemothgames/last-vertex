@@ -181,7 +181,7 @@ Disponível em Português, English, Türkçe e Español. Não precisa de conta. 
 
 ## Contact details
 - Email: required by Play — use the game's support address (a dedicated one is better than your personal mail)
-- Website: `https://lunemothgames.github.io/last-vertex/`
+- Website: `https://lunemothgames.github.io/` (the studio home page; AdMob reads `app-ads.txt` from this address)
 - Privacy policy: `https://lunemothgames.github.io/last-vertex/privacy.html`
 
 ## Graphics (all in this folder)

@@ -33,8 +33,8 @@ Bu klasörde Play Store için gereken her şey var. Play'deki uygulama gerçek b
      ve kendi `screenshots/<dil>/` görsellerini yükle (es-ES için `es`, pt-PT için `pt` klasörü).
    - **Video**: `video/promo-en.mp4`'yi YouTube'a yükle (herkese açık ya da liste dışı, reklamlar kapalı), linki
      "YouTube URL" alanına yapıştır. Diğer dillerin videoları için de aynısı. Aynı videolar Shorts/TikTok için de uygun.
-3. **Store settings / iletişim:** destek e-postası `lunemothgames@gmail.com`, web sitesi olarak oyunun adresi
-   `https://lunemothgames.github.io/last-vertex/`, kategori Game → Strategy (ayrıntı `listing.md`).
+3. **Store settings / iletişim:** destek e-postası `lunemothgames@gmail.com`, web sitesi olarak stüdyo ana sayfası
+   `https://lunemothgames.github.io/` (AdMob `app-ads.txt` dosyasını bu adresten okur), kategori Game → Strategy (ayrıntı `listing.md`).
 4. **Policy → App content** formları (hazır cevaplar, 2026-10-17 durumuna göre; Play soruları değiştirirse ona uy):
    - **Privacy policy:** `https://lunemothgames.github.io/last-vertex/privacy.html`
    - **Ads:** Evet (ödüllü reklam var)

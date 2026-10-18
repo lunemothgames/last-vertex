@@ -5,20 +5,40 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy Policy · Last Vertex: Idle Defense</title>
 <style>
-:root{--fg:#9fd8ff;--hi:#f0f9ff;--mute:#6f9cbf;--bg:#02050b;--line:#28506e}
-html,body{background:var(--bg);color:var(--fg);margin:0}
-body{font:15px/1.65 ui-monospace,'IBM Plex Mono',Consolas,monospace;padding:28px 18px 48px}
-main{max-width:720px;margin:0 auto}
-h1{color:var(--hi);font-size:22px;letter-spacing:.06em;margin:0 0 4px}
-h2{color:var(--hi);font-size:16px;letter-spacing:.06em;margin:28px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
-p,li{margin:6px 0}
+:root{--bg:#0b1020;--panel:#111a30;--line:#26304d;--tx:#d4daea;--mute:#8a96b4;--cream:#ece6cf;--acc:#9fd8ff}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--tx);margin:0}
+body{font:16px/1.7 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;padding:0 18px 48px}
+main{max-width:760px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;padding:22px 0 18px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.top a{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit}
+.logo{width:46px;height:46px;flex:none;border-radius:11px}
+.top b{display:block;color:var(--cream);font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+.top span{display:block;color:var(--mute);font-size:13px;letter-spacing:.06em}
+h1{color:var(--cream);font-size:28px;line-height:1.25;margin:0 0 4px;font-weight:600}
+h2{color:var(--acc);font-size:14px;letter-spacing:.14em;text-transform:uppercase;margin:34px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line);font-weight:600}
+p,li{margin:8px 0}
+ul,ol{padding-left:22px}
 .m{color:var(--mute)}
-a{color:var(--hi)}
+a{color:var(--acc)}
+b{color:var(--cream);font-weight:600}
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--mute);font-size:13px;text-align:center;line-height:1.9}
+.foot a{color:var(--mute)}
+input,button{font:inherit;color:var(--cream);background:var(--panel);border:1px solid var(--line);padding:11px 13px;margin:6px 0;width:100%;border-radius:8px}
+button{cursor:pointer;background:var(--acc);color:#0b1020;font-weight:700;letter-spacing:.08em;border:0}
+button:disabled{opacity:.5;cursor:default}
+label{display:block;margin:10px 0}
+label input{width:auto;margin-right:8px}
+#msg{margin-top:10px;min-height:1.6em}
+#msg.err{color:#ff8aa8}#msg.ok{color:#7affd9}
+[hidden]{display:none!important}
 </style>
 </head>
 <body><main>
+<header class="top"><a href="https://lunemothgames.github.io/"><svg class="logo" role="img" aria-label="Lunemoth Games" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#0b1020"/><circle cx="256" cy="256" r="170" fill="#ece6cf"/><g transform="translate(354.6 351.2) rotate(30) scale(1.1456521739130436) translate(-100 -119)" fill="#0b1020" stroke="#0b1020" stroke-width="14" stroke-linejoin="round"><g><path d="M103 90 C118 52 156 50 166 68 C171 94 142 116 106 116 Z"/><path d="M106 112 C128 104 148 114 144 134 C141 150 150 170 164 184 C140 186 118 166 108 138 Z"/><g transform="translate(200 0) scale(-1 1)"><path d="M103 90 C118 52 156 50 166 68 C171 94 142 116 106 116 Z"/><path d="M106 112 C128 104 148 114 144 134 C141 150 150 170 164 184 C140 186 118 166 108 138 Z"/></g><ellipse cx="100" cy="106" rx="4.2" ry="24"/></g><g fill="none" stroke="#0b1020" stroke-linecap="round" stroke-width="16"><path d="M98 84 Q92 70 80 64"/><path d="M102 84 Q108 70 120 64"/></g></g><g transform="translate(354.6 351.2) rotate(30) scale(1.1456521739130436) translate(-100 -119)" fill="#ece6cf"><g><path d="M103 90 C118 52 156 50 166 68 C171 94 142 116 106 116 Z"/><path d="M106 112 C128 104 148 114 144 134 C141 150 150 170 164 184 C140 186 118 166 108 138 Z"/><g transform="translate(200 0) scale(-1 1)"><path d="M103 90 C118 52 156 50 166 68 C171 94 142 116 106 116 Z"/><path d="M106 112 C128 104 148 114 144 134 C141 150 150 170 164 184 C140 186 118 166 108 138 Z"/></g><ellipse cx="100" cy="106" rx="4.2" ry="24"/></g><g fill="none" stroke="#ece6cf" stroke-linecap="round" stroke-width="3"><path d="M98 84 Q92 70 80 64"/><path d="M102 84 Q108 70 120 64"/></g></g></svg><div><b>Last Vertex: Idle Defense</b><span>by Lunemoth Games</span></div></a></header>
+
 <h1>Privacy Policy</h1>
-<p class="m">Last Vertex: Idle Defense · effective 15 October 2026</p>
+<p class="m">Last Vertex: Idle Defense · last updated 18 October 2026</p>
 
 <p>Last Vertex: Idle Defense ("the game") is made by an independent developer. This page explains what data the game handles. In short: the game does not sell personal data. Your save is uploaded only if you turn on Cloud Save. The Android app also uses Google services for optional rewarded ads and for anonymous usage statistics and crash reports, all described below.</p>
 
@@ -66,5 +86,6 @@ a{color:var(--hi)}
 <li>IBM Plex Mono · Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"</li>
 <li>VT323 · Copyright 2011 The VT323 Project Authors (peter.hull@oikoi.com)</li>
 </ul>
+<div class="foot">&copy; 2026 <a href="https://lunemothgames.github.io/">Lunemoth Games</a> &middot; <a href="mailto:lunemothgames@gmail.com">lunemothgames@gmail.com</a><br><a href="privacy.html">Privacy policy</a> &middot; <a href="delete-account.html">Delete your account</a></div>
 </main></body>
 </html>

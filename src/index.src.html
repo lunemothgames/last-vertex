@@ -1013,11 +1013,21 @@ const fmtC=n=>fmtN(Math.floor(n));
 
 // ── AUDIO ────────────────────────────────────────────────────────────────────
 let AC=null,_sfxGain=null,_musGain=null;
-// latencyHint 0 asks for the smallest output buffer the phone allows: sounds line up with the picture
-// (the default buffer on many Android phones adds a delay you can notice when watching the screen)
-function getAC(){if(!AC){try{AC=new AudioContext({latencyHint:0});}catch(e){AC=new AudioContext();}_musGain=AC.createGain();_musGain.connect(AC.destination);}if(AC.state==='suspended')AC.resume();return AC;}
+// default output buffer: the smallest one (latencyHint 0) made the audio crackle on weak phones (Redmi 15C), even in the menu.
+// Everything goes through one limiter so overlapping effects cannot clip.
+let _master=null;
+function getAC(){
+  if(!AC){
+    AC=new AudioContext();
+    _master=AC.createDynamicsCompressor();
+    _master.threshold.value=-10;_master.knee.value=8;_master.ratio.value=6;_master.attack.value=.003;_master.release.value=.15;
+    _master.connect(AC.destination);
+    _musGain=AC.createGain();_musGain.connect(_master);
+  }
+  if(AC.state==='suspended')AC.resume();return AC;
+}
 function sfxGain(){
-  if(!_sfxGain){_sfxGain=getAC().createGain();_sfxGain.connect(getAC().destination);}
+  if(!_sfxGain){_sfxGain=getAC().createGain();_sfxGain.connect(_master);}
   _sfxGain.gain.value=(save.settings.sfxOn?save.settings.sfxVol:0)/100;return _sfxGain;
 }
 function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
@@ -1036,7 +1046,7 @@ function snd(type){
     const tone=(wave,f,v,d,f2,delay=0)=>{
       const o=a.createOscillator(),gn=a.createGain(),t0=t+delay;
       o.type=wave;o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
-      gn.gain.setValueAtTime(v,t0);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);
+      gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(v,t0+.004);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);   // 4 ms attack: no click at the start
       o.connect(gn);gn.connect(g);o.start(t0);o.stop(t0+d);
     };
     // noise burst (shared buffer): d = length, f = band-pass centre, q = width, v = volume, delay
@@ -1044,7 +1054,7 @@ function snd(type){
       if(!_noiseBuf){_noiseBuf=a.createBuffer(1,a.sampleRate*.6,a.sampleRate);const n=_noiseBuf.getChannelData(0);for(let i=0;i<n.length;i++)n[i]=Math.random()*2-1;}
       const src=a.createBufferSource(),bp=a.createBiquadFilter(),gn=a.createGain(),t0=t+delay;
       src.buffer=_noiseBuf;bp.type='bandpass';bp.frequency.value=f;bp.Q.value=q;
-      gn.gain.setValueAtTime(v,t0);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);
+      gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(v,t0+.004);gn.gain.exponentialRampToValueAtTime(1e-4,t0+d);
       src.connect(bp);bp.connect(gn);gn.connect(g);src.start(t0,Math.random()*.3,d+.02);
     };
     const arp=(wave,notes,step,v,d)=>notes.forEach((f,i)=>tone(wave,f,v,d,0,i*step));

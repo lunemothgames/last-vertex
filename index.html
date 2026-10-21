@@ -895,7 +895,7 @@ const CLOUD=(()=>{
   // makes sure an anonymous player exists (first sign-up needs the network)
   const ensure=()=>token(true).then(()=>true);
 
-  return{enabled,pull,push,sendCode,verifyCode,signOut,ensure,deleteAccount,
+  return{enabled,url:CFG.url,key:CFG.key,pull,push,sendCode,verifyCode,signOut,ensure,deleteAccount,
     get email(){return sess?sess.email:'';},get signedIn(){return !!sess;}};
 })();
 
@@ -969,7 +969,11 @@ function syncServerTime(){
   // inside the Android app the page is served from the phone itself, so ask the game's website for the time
   // (CapacitorHttp makes this a native request, so the Date header is readable)
   const url=IS_APP?'https://lunemothgames.github.io/last-vertex/?t='+t0:location.pathname+'?t='+t0;
-  return fetch(url,{method:'HEAD',cache:'no-store'}).then(r=>{
+  // in the app a second source (our Supabase server) answers when the website does not
+  const ask=u=>fetch(u,{method:'HEAD',cache:'no-store'});
+  const first=ask(url);
+  const src=IS_APP&&CLOUD.enabled?first.catch(()=>ask(CLOUD.url+'/auth/v1/health?t='+t0)):first;
+  return src.then(r=>{
     const d=Date.parse(r.headers.get('date')||'');if(!d)return false;
     const t1=Date.now(),off=d+(t1-t0)/2-t1;
     save.timeOffset=Math.abs(off)>30e3?off:0;          // ignore the header's 1s rounding

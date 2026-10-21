@@ -89,6 +89,6 @@ const CLOUD=(()=>{
   // makes sure an anonymous player exists (first sign-up needs the network)
   const ensure=()=>token(true).then(()=>true);
 
-  return{enabled,pull,push,sendCode,verifyCode,signOut,ensure,deleteAccount,
+  return{enabled,url:CFG.url,key:CFG.key,pull,push,sendCode,verifyCode,signOut,ensure,deleteAccount,
     get email(){return sess?sess.email:'';},get signedIn(){return !!sess;}};
 })();

@@ -20,13 +20,20 @@ const CLOUD=(()=>{
     return r.json();
   }
   // a valid access token: reuse, refresh, or create an anonymous player (no sign-up friction)
-  async function token(){
+  // a new anonymous player is only created when the player turns the cloud on (create=true); a background sync
+  // never re-creates an account that was deleted on the server
+  async function token(create){
     if(!enabled)throw new Error('cloud off');
     if(sess&&sess.exp>Date.now())return sess.access;
     if(sess&&sess.refresh){
       try{setSess(await auth('token?grant_type=refresh_token',{refresh_token:sess.refresh}));return sess.access;}
-      catch(e){if(!(e.status>=400&&e.status<500))throw e;sess=null;}   // network error: keep the session; 4xx: it's dead
+      catch(e){
+        if(!(e.status>=400&&e.status<500))throw e;   // network error: keep the session; 4xx: it's dead
+        sess=null;try{localStorage.removeItem(KEY);}catch(x){}
+        throw Object.assign(new Error('session gone'),{gone:true});
+      }
     }
+    if(!create)throw Object.assign(new Error('no session'),{gone:true});
     setSess(await auth('signup',{}));return sess.access;
   }
   async function rest(method,query,body,extra){
@@ -65,7 +72,7 @@ const CLOUD=(()=>{
   // link=false: sign in to an account that already exists (new device)
   // throws {code:'email_exists'} when linking an email that already has an account
   async function sendCode(email,link){
-    if(link){await token();await auth('user',{email},'PUT');}
+    if(link){await token(true);await auth('user',{email},'PUT');}
     else await auth('otp',{email,create_user:false});
   }
   async function verifyCode(email,code,link){
@@ -80,7 +87,7 @@ const CLOUD=(()=>{
   }
   function signOut(){sess=null;try{localStorage.removeItem(KEY);}catch(e){}}
   // makes sure an anonymous player exists (first sign-up needs the network)
-  const ensure=()=>token().then(()=>true);
+  const ensure=()=>token(true).then(()=>true);
 
   return{enabled,pull,push,sendCode,verifyCode,signOut,ensure,deleteAccount,
     get email(){return sess?sess.email:'';},get signedIn(){return !!sess;}};

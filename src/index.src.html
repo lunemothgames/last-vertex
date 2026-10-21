@@ -875,7 +875,9 @@ function syncServerTime(){
     const t1=Date.now(),off=d+(t1-t0)/2-t1;
     save.timeOffset=Math.abs(off)>30e3?off:0;          // ignore the header's 1s rounding
     // drop unverified readings taken before this check; time frozen by an earlier session stays frozen
-    save.timeHigh=Math.max(bootTimeHigh,Date.now()+save.timeOffset);
+    // a server-verified clock may undo an earlier session that ran more than a day ahead (device clock set forward)
+    const srv=Date.now()+save.timeOffset;
+    save.timeHigh=bootTimeHigh-srv>864e5?srv:Math.max(bootTimeHigh,srv);
     timeVerified=true;return true;
   }).catch(()=>false);
 }
@@ -979,8 +981,11 @@ let LANG='en';
 function T(s,...a){const d=LANG_DATA[LANG],r=(d&&d[s])||s;return a.length?r.replace(/\{(\d)\}/g,(m,i)=>a[i]):r;}
 // default language is English; the player can switch in Settings
 if(typeof save!=='undefined'&&save.settings){
-  // one-time reset: the first language build picked the phone's language by itself
-  if(!save.settings.langV2){save.settings.lang='en';save.settings.langV2=1;}
+  // first launch of a save: use the phone's language when the game has it (TR/ES/PT), otherwise English (Ahmet, 2026-10-21)
+  if(!save.settings.langV2){
+    const pl=((typeof navigator!=='undefined'&&navigator.language)||'en').slice(0,2).toLowerCase();
+    save.settings.lang=LANG_NAMES[pl]?pl:'en';save.settings.langV2=1;
+  }
   if(!LANG_NAMES[save.settings.lang])save.settings.lang='en';   // English unless the player picks another language in Settings
   LANG=save.settings.lang;if(typeof document!=='undefined')document.documentElement.lang=LANG;
 }
@@ -1611,7 +1616,7 @@ function adsLeftToday(){if(save.adDay!==todayKey()){save.adDay=todayKey();save.a
 function adCooldown(){
   // the cooldown and the daily cap apply to every build, test ads included (Ahmet, 2026-10-18)
   if(adsLeftToday()<=0){const m=new Date(gameNow());m.setHours(24,0,0,0);return Math.max(1,(m-gameNow())/1000);}
-  return Math.max(0,ECO.adCooldown-(gameNow()-(save.adLastUsed||0))/1000);
+  return Math.min(ECO.adCooldown,Math.max(0,ECO.adCooldown-(gameNow()-(save.adLastUsed||0))/1000));   // a stamp from a wrong clock never waits longer than one cooldown
 }
 function fmtCD(s){const t=Math.ceil(s),h=Math.floor(t/3600),mm=Math.floor(t/60)%60,ss=String(t%60).padStart(2,'0');return h?h+':'+String(mm).padStart(2,'0')+':'+ss:mm+':'+ss;}
 // ── REWARDED ADS (AdMob, Android app only) ───────────────────────────────────
@@ -3417,7 +3422,7 @@ $('cfYes').addEventListener('click',()=>{$('confirmUI').classList.remove('show')
 function openModal(){
   const ta=$('mdText');
   $('mdTitle').textContent=T('REDEEM GIFT CODE');
-  $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once.');
+  $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once per save.');
   ta.value='';ta.readOnly=false;$('mdAct').textContent=T('REDEEM');
   $('modal').classList.add('show');snd('click');
 }
@@ -3673,7 +3678,7 @@ const HELP_TOPICS=[
   ['tattoos','spark','TATTOOS',()=>`<p>${T('Summon tattoos with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
     <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 summons.')}</p>
     <div class="odds">${oddsGrid()}</div>`],
-  ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and a weekly quest every day; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
+  ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and 4 weekly quests every Monday; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
     <p>${T('Achievements reward milestones once each.')}</p>`],
   ['weekly','flag','WEEKLY OP',()=>`<p>${T('A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.')}</p>`],
   ['stars','star','MASTERY STARS',()=>`<p>${T('Reach waves 30, 50 and 75 in a tier to earn its three stars. Every star gives +1.5% damage, +1.5% max health and +1% coins forever. Tap the tier name on the main screen to see them.')}</p>`],
@@ -3799,7 +3804,10 @@ async function cloudSync(manual,retry){
     if(r.ok){lsSet(CL_KNOWN,r.updatedAt);lsSet(CL_TIME,String(Date.now()));cloudSig=sig;if(manual)toast(T('CLOUD SAVE UPDATED'));return true;}
     if(!retry){cloudBusy=false;return cloudSync(manual,true);}   // another device wrote in between: look again
     return false;
-  }catch(e){if(manual)toast(T('CLOUD SAVE FAILED'),true);return false;}
+  }catch(e){
+    if(e&&e.gone){[CL_ON,CL_KNOWN,CL_TIME].forEach(k=>lsSet(k,null));cloudSig='';toast(T('CLOUD ACCOUNT NO LONGER EXISTS. SAVE KEPT ON THIS DEVICE'),true,true);try{renderSettings();}catch(x){}return false;}
+    if(manual)toast(T('CLOUD SAVE FAILED'),true);return false;
+  }
   finally{cloudBusy=false;}
 }
 const cloudSummary=d=>T('TIER {0} · BEST WAVE {1} · {2} GEMS',d.tier||1,d.bestWave||0,fmtN(d.gems||0));
@@ -4092,7 +4100,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.6';
+const GAME_VERSION='0.6.2';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');
@@ -4171,7 +4179,8 @@ window.addEventListener('popstate',()=>{
   };
   // the studio splash plays first (2.6 s, a tap skips it), then the boot lines start
   const sp=$('splash');let spDone=false;
-  const spEnd=()=>{if(spDone)return;spDone=true;sp.classList.add('out');setTimeout(()=>sp.remove(),260);start();};
+  // the LAST VERTEX boot screen was dropped (Ahmet, 2026-10-21): after the studio splash the menu shows at once
+  const spEnd=()=>{if(spDone)return;spDone=true;sp.classList.add('out');setTimeout(()=>sp.remove(),260);done=true;el.remove();};
   setTimeout(spEnd,2600);
   sp.addEventListener('pointerdown',spEnd);
 })();

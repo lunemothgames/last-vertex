@@ -12,6 +12,8 @@ public class MainActivity extends BridgeActivity {
         // draw under the bars from the very first frame, so hiding or showing them (launch, ads, swipe) never resizes the game
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         super.onCreate(savedInstanceState);
+        // the game's text sizes are fitted to the screen, so the phone's font size setting must not scale them again
+        getBridge().getWebView().getSettings().setTextZoom(100);
         hideSystemBars();
         // a bar that comes back on its own (after an ad, a dialog, a swipe) is hidden again right away
         getWindow().getDecorView().setOnApplyWindowInsetsListener((v, insets) -> {

@@ -949,7 +949,10 @@ const fxMid=()=>save.settings.fx!=='high',fxLow=()=>save.settings.fx==='low';
 const FX_DESC={high:'Full glow, CRT scanlines, flicker and particles.',mid:'No glow or flicker, fewer particles.',
   low:'Looks like MID at 30 FPS with fewer particles. Easier on weak phones and battery.'};
 // when the game was last open (read before anything saves again) — used for idle income
-const bootLastSeen=save.lastSeen||0,bootTimeHigh=save.timeHigh||0;
+// leftAt: the moment the app went to the background; unlike lastSeen no late save (cloud sync finishing after the
+// return) can move it, so the time away stays right
+const bootLastSeen=save.leftAt||save.lastSeen||0,bootTimeHigh=save.timeHigh||0;
+save.leftAt=0;
 // saveLocked: set right before a reload that must keep what is in storage (import), so pagehide can't overwrite it
 let saveLocked=false;
 function persist(){if(saveLocked)return;save.lastSeen=gameNow();try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -1876,6 +1879,7 @@ function goBackground(){
   }
   stopMusic();
   if(AC&&AC.state==='running')AC.suspend().catch(()=>{});
+  save.leftAt=gameNow();
   persist();
   cloudSync(false);
   scheduleNotifs();
@@ -1888,7 +1892,7 @@ function goForeground(){
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){goBackground();return;}
   goForeground();
-  const since=save.lastSeen;
+  const since=save.leftAt||save.lastSeen;save.leftAt=0;
   if(save.awayPending>0)showAway();
   withTimeout(syncServerTime(),2500).then(()=>{checkAway(since);cloudSync(false);renderDailyDot();setTimeout(maybeDaily,900);});
 });
@@ -3890,7 +3894,7 @@ const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(e){}};
 const cloudOn=()=>CLOUD.enabled&&lsGet(CL_ON)==='1';
 let cloudBusy=false,cloudAsking=false,cloudSig='';
-const cloudSigOf=()=>JSON.stringify({...save,lastSeen:0,timeHigh:0,timeOffset:0});
+const cloudSigOf=()=>JSON.stringify({...save,lastSeen:0,leftAt:0,timeHigh:0,timeOffset:0});
 async function cloudSync(manual,retry){
   if(!cloudOn()||cloudBusy||cloudAsking||saveLocked)return false;
   cloudBusy=true;

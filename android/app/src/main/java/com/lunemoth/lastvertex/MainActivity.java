@@ -12,6 +12,8 @@ public class MainActivity extends BridgeActivity {
         // draw under the bars from the very first frame, so hiding or showing them (launch, ads, swipe) never resizes the game
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         super.onCreate(savedInstanceState);
+        // some phones (seen on a Mi 11T) put an app title bar over the game: never allow one
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
         // the game's text sizes are fitted to the screen, so the phone's font size setting must not scale them again
         getBridge().getWebView().getSettings().setTextZoom(100);
         hideSystemBars();

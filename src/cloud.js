@@ -36,9 +36,18 @@ const CLOUD=(()=>{
     if(!create)throw Object.assign(new Error('no session'),{gone:true});
     setSess(await auth('signup',{}));return sess.access;
   }
+  // one authorised request. The token's expiry is judged by the phone's clock, which can be wrong: when the server
+  // refuses the token (401) it is refreshed once and the request is tried again
+  async function call(url,method,body,extra){
+    for(let tries=0;;tries++){
+      const t=await token();
+      const r=await fetch(url,{method,headers:hdr(t,extra),body:body?JSON.stringify(body):undefined});
+      if(r.status===401&&tries===0&&sess&&sess.refresh){sess.exp=0;continue;}
+      return r;
+    }
+  }
   async function rest(method,query,body,extra){
-    const t=await token();
-    const r=await fetch(CFG.url+'/rest/v1/saves'+query,{method,headers:hdr(t,extra),body:body?JSON.stringify(body):undefined});
+    const r=await call(CFG.url+'/rest/v1/saves'+query,method,body,extra);
     if(!r.ok)throw new Error('rest '+r.status);
     return r.status===204?null:r.json();
   }
@@ -58,8 +67,8 @@ const CLOUD=(()=>{
       rows=await rest('PATCH','?updated_at=eq.'+encodeURIComponent(known),body,pref);
       if(!rows.length)return{ok:false,conflict:true};
     }else{
-      const t=await token();
-      const r=await fetch(CFG.url+'/rest/v1/saves',{method:'POST',headers:hdr(t,pref),body:JSON.stringify({...body,user_id:sess.uid})});
+      await token();
+      const r=await call(CFG.url+'/rest/v1/saves','POST',{...body,user_id:sess.uid},pref);
       if(r.status===409)return{ok:false,conflict:true};   // a row already exists for this player
       if(!r.ok)throw new Error('rest '+r.status);
       rows=await r.json();
@@ -80,8 +89,7 @@ const CLOUD=(()=>{
   }
   // deletes the player's account and cloud save on the server, then forgets the session
   async function deleteAccount(){
-    const t=await token();
-    const r=await fetch(CFG.url+'/rest/v1/rpc/delete_my_account',{method:'POST',headers:hdr(t),body:'{}'});
+    const r=await call(CFG.url+'/rest/v1/rpc/delete_my_account','POST',{});
     if(!r.ok)throw new Error('rest '+r.status);
     sess=null;try{localStorage.removeItem(KEY);}catch(e){}
   }

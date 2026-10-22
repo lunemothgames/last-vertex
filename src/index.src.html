@@ -878,7 +878,7 @@ function syncServerTime(){
   const first=ask(url);
   const src=IS_APP&&CLOUD.enabled?first.catch(()=>ask(CLOUD.url+'/auth/v1/health?t='+t0)):first;
   return src.then(r=>{
-    const d=Date.parse(r.headers.get('date')||'');if(!d)return false;
+    const d=Date.parse(r.headers.get('date')||'');if(!d){timeVerified=false;return false;}
     const t1=Date.now(),off=d+(t1-t0)/2-t1;
     save.timeOffset=Math.abs(off)>30e3?off:0;          // ignore the header's 1s rounding
     // drop unverified readings taken before this check; time frozen by an earlier session stays frozen
@@ -886,7 +886,7 @@ function syncServerTime(){
     const srv=Date.now()+save.timeOffset;
     save.timeHigh=bootTimeHigh-srv>864e5?srv:Math.max(bootTimeHigh,srv);
     timeVerified=true;return true;
-  }).catch(()=>false);
+  }).catch(()=>{timeVerified=false;return false;});   // a failed check no longer counts as verified because an earlier one worked
 }
 const withTimeout=(pr,ms)=>Promise.race([pr,new Promise(r=>setTimeout(()=>r(false),ms))]);
 
@@ -1769,6 +1769,7 @@ function triggerDeath(){
   snd('die');setTimeout(()=>snd('crtoff'),700);
   screenFlash=0;shake={x:0,y:0,t:0};hudHidden=false;
   delete save.midRun;
+  runMods=null;runEvent=null;   // weekly / event rules end with the run: the menu must show normal numbers
   save.lastRun={coins:runCoins,kills:runKills,wave:runWave,tier:runTier,weekly:runWeekly,
     dmgDealt:Math.round(runDmgDealt),dmgTaken:Math.round(runDmgTaken),
     time:Math.round(runPlayT)};
@@ -3166,8 +3167,8 @@ function doPull(count){
   save.gems-=cost;LIFE().pulls+=count;snd('summon');track('summon',{count});
   const results=[];
   for(let i=0;i<count;i++){
-    const t=rollType();if(!t)break;
-    save.pity=t.rar===3?0:(save.pity||0)+1;
+    const top=pityRar(),t=rollType();if(!t)break;   // the pity counter resets on the rarest tier still in the pool (epics may all be maxed late on)
+    save.pity=t.rar===top?0:(save.pity||0)+1;
     const r=addTatCopy(t.id);results.push({t,...r,lv:tatOf(t.id).lv});
   }
   persist();achCheck();
@@ -3268,7 +3269,7 @@ function renderTattoos(){
     }else if(i===save.tatSlots){
       const price=TAT_SLOT_PRICES[i-1];
       d.className='slot buy-slot'+(pendingSlot?' ask':'');
-      d.innerHTML=pendingSlot?'<span>BUY?</span>':`${I('lock')}<span>${I('gem')}${price}</span>`;
+      d.innerHTML=pendingSlot?`<span>${T('BUY?')}</span>`:`${I('lock')}<span>${I('gem')}${price}</span>`;
       d.addEventListener('click',()=>{
         if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
         if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
@@ -3422,7 +3423,7 @@ function renderQuests(){
       <div class="qt">${d?d.txt(q.target):q.k}</div>
       <div class="qb"><div class="bar2"><i style="width:${p}%"></i></div><em>${fmtN(q.prog)}/${fmtN(q.target)}</em>
       <button class="buy${done?' ok':' no'}" data-claim="${q.id}">${done?T('CLAIM'):Math.floor(p)+'%'}</button></div></div>`;
-  }).join(''):'<div class="empty">&gt; NO QUESTS. NEW ONES ARRIVE OVER TIME.</div>';
+  }).join(''):`<div class="empty">&gt; ${T('NO QUESTS. NEW ONES ARRIVE OVER TIME.')}</div>`;
 }
 function openQuests(){snd('click');refreshQuests();renderQuests();$('questPanel').classList.add('open');$('questPanel').querySelector('.scroll').scrollTop=0;}
 function closeQuests(){snd('click');$('questPanel').classList.remove('open');renderMenu();}
@@ -3744,8 +3745,8 @@ function fitText(){
     if(!el.offsetParent)continue;
     el.style.fontSize='';
     if(el.scrollWidth<=el.clientWidth+1)continue;
-    const base=parseFloat(getComputedStyle(el).fontSize);let f=base;
-    while(el.scrollWidth>el.clientWidth+1&&f>base*.7){f-=1;el.style.fontSize=f+'px';}
+    const base=parseFloat(getComputedStyle(el).fontSize),floor=el.classList.contains('n')?.5:.7;let f=base;   // tattoo tile names: one long word (REGENERACIÓN) may shrink further
+    while(el.scrollWidth>el.clientWidth+1&&f>base*floor){f-=.5;el.style.fontSize=f+'px';}
   }
 }
 let _fitQ=0;

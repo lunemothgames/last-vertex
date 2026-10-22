@@ -277,6 +277,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .plink{display:block;color:var(--mute);text-decoration:underline;margin-top:18px!important}
 .plinks{display:flex;justify-content:center;gap:22px;margin:18px 14px 0;font-size:10px;letter-spacing:.2em}
 .plinks .plink{display:inline;margin-top:0!important}
+#mVer{position:absolute;left:8px;bottom:3px;font-size:10px;color:var(--mute);opacity:.4;letter-spacing:.1em;text-shadow:none;pointer-events:none}
 .ver{margin:22px 14px 0;font-size:10px;color:var(--mute);text-align:center;letter-spacing:.2em;text-shadow:none}
 
 /* ── tattoo portal: the triangle idly looks around ── */
@@ -625,6 +626,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button id="mQuest"><svg class="i"><use href="#i-list"/></svg><span>QUESTS</span><i class="dot" id="mQuestDot"></i></button>
       <button id="mTat"><svg class="i"><use href="#i-spark"/></svg><span>TATTOOS</span></button>
     </nav>
+    <div id="mVer"></div>
   </div>
 
   <!-- IN-RUN CONTROLS -->
@@ -4162,6 +4164,7 @@ $('fbOpen').addEventListener('click',()=>{
   const url=FEEDBACK.form+(FEEDBACK.infoEntry?`${sep}usp=pp_url&${FEEDBACK.infoEntry}=${encodeURIComponent(gameInfo())}`:'');
   window.open(url,'_blank','noopener');snd('click');
 });
+$('mVer').textContent='v'+GAME_VERSION;
 $('verTxt').textContent=`LAST VERTEX v${GAME_VERSION} // SYS OK`;
 
 // ── ANDROID BACK BUTTON ──────────────────────────────────────────────────────

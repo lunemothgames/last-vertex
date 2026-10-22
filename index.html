@@ -1006,7 +1006,13 @@ const THEMES=[
   {id:'paper',    name:'PAPER WHITE', note:'white phosphor',       price:150,c:['#e9e4d4','#ffffff','#5d594d','#080807','#1a1915','#ff6a4a','#0a0a08'],r:['#7d786a','#bfe3ff','#ffd26a','#ff6a8a']},
 ];
 const C={};
-function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`;}
+// cached: the draw loop asks for the same few colour/alpha pairs for every enemy, every frame
+const _hexA=new Map();
+function hexA(h,a){
+  const k=h+a;let v=_hexA.get(k);
+  if(v===undefined){const n=parseInt(h.slice(1),16);v=`rgba(${n>>16},${n>>8&255},${n&255},${a})`;if(_hexA.size>500)_hexA.clear();_hexA.set(k,v);}
+  return v;
+}
 const _rgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16,n>>8&255,n&255];};
 const _lum=h=>_rgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
 const contrast=(f,b)=>{const x=_lum(f),y=_lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
@@ -2206,7 +2212,13 @@ function updatePlay(dt){
 
   // the triangle slides under its current target (or the closest enemy)
   let triTarget=GW/2+Math.sin(Date.now()*.0005)*GW*.1;
-  const tg=targetOrder(inRangeEnemies(st))[0]||(enemies.length?enemies.reduce((a,b)=>b.y>a.y?b:a):null);
+  // only the first target is needed: one pass instead of filtering and sorting the whole crowd every frame
+  const tm=save.settings.target||0;let tg=null;
+  for(const e of enemies){
+    if(e.y<st.rangeY||e.hp<=0||e.phased)continue;
+    if(!tg||(tm===1?(e.hp>tg.hp||(e.hp===tg.hp&&e.y>tg.y)):tm===2?(e.hp<tg.hp||(e.hp===tg.hp&&e.y>tg.y)):e.y>tg.y))tg=e;
+  }
+  if(!tg&&enemies.length)tg=enemies.reduce((a,b)=>b.y>a.y?b:a);
   if(tg)triTarget=tg.x;
   triX+=(triTarget-triX)*Math.min(1,dt*1.8);
   triX=Math.max(GW*.06,Math.min(GW*.94,triX));
@@ -2275,7 +2287,10 @@ function updatePlay(dt){
     // walk along this step's path: always take the nearest enemy the path crosses; pierce keeps going
     for(let guard=0;guard<12;guard++){
       let e=null,tBest=2;
+      const bx0=Math.min(b.px,b.x),bx1=Math.max(b.px,b.x),by0=Math.min(b.py,b.y),by1=Math.max(b.py,b.y);
       for(const o of enemies){
+        const r=o.sz*.55;
+        if(o.x+r<bx0||o.x-r>bx1||o.y+r<by0||o.y-r>by1)continue;   // cheap box test first: most enemies are nowhere near this bullet
         if(o.hp<=0||o.phased||(b.hits&&b.hits.has(o)))continue;
         const t=segBoxHit(b.px,b.py,b.x,b.y,o.x,o.y,o.sz*.55);
         if(t>=0&&t<tBest){tBest=t;e=o;}
@@ -4141,11 +4156,16 @@ function notifTime(ts){
   if(h>=23)d.setDate(d.getDate()+1);
   d.setHours(10,0,0,0);return d;
 }
+// Each schedule/clear bumps this; a schedule that finds it changed meanwhile (app came back to the front, e.g. after an ad
+// or the notification shade) must not land, or the reminder pops up while the player is in the game.
+let notifGen=0;
 async function scheduleNotifs(){
   const ln=LN();if(!ln||!notifOn()||saveLocked)return;
+  const gen=++notifGen;
   try{
-    if(!await notifPerm(false))return;
+    if(!await notifPerm(false)||gen!==notifGen)return;
     await ln.cancel({notifications:[{id:1},{id:2}]});
+    if(gen!==notifGen)return;
     const now=Date.now(),list=[];
     // idle income is full once the rest of today's budget is used up
     const full=ECO.offlineDayH*3600,left=save.idleDay!==new Date(gameNow()).toDateString()?full:Math.max(0,full-(save.idleUsed||0));
@@ -4157,10 +4177,12 @@ async function scheduleNotifs(){
     else{at=new Date(now);at.setDate(at.getDate()+1);at.setHours(10,0,0,0);}
     list.push({id:2,title:T('DAILY REWARD READY'),body:T('Come and claim it.'),schedule:{at,allowWhileIdle:true}});
     await ln.schedule({notifications:list});
+    if(gen!==notifGen)clearNotifs();
   }catch(e){}
 }
 function clearNotifs(){
   const ln=LN();if(!ln)return;
+  notifGen++;
   try{ln.cancel({notifications:[{id:1},{id:2}]}).catch(()=>{});ln.removeAllDeliveredNotifications().catch(()=>{});}catch(e){}
 }
 // asked once, at a moment that makes sense (after the first idle collect or daily reward), never on first launch

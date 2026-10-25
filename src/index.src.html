@@ -1018,9 +1018,9 @@ function fmtN(n){
   }
   return(neg?'-':'')+s;
 }
-const fmtC=n=>fmtN(Math.floor(n));
-// shop prices drop the trailing zeros: 2.50K → 2.5K, 3.00K → 3K
+// shop prices and coin totals drop the trailing zeros: 2.50K → 2.5K, 3.00K → 3K
 const fmtP=n=>fmtN(n).replace(/\.(\d*?)0+(?=\D*$)/,(m,d)=>d?'.'+d:'');
+const fmtC=n=>fmtP(Math.floor(n));
 
 // ── AUDIO ────────────────────────────────────────────────────────────────────
 let AC=null,_sfxGain=null,_musGain=null;

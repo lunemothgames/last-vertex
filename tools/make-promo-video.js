@@ -151,7 +151,9 @@ async function render(b,lang){
 
 (async()=>{
   fs.mkdirSync(outDir,{recursive:true});
-  const b=await puppeteer.launch({executablePath:BROWSER,headless:true});
+  // a Windows compatibility setting inherited from some terminals (VS Code: __COMPAT_LAYER) makes Edge restart itself, which puppeteer reads as a failed launch
+  const env={...process.env};delete env.__COMPAT_LAYER;
+  const b=await puppeteer.launch({executablePath:BROWSER,headless:true,env});
   for(const lang of LANGS){if(TEXT[lang])await render(b,lang);else console.log('no captions for '+lang+' in tools/store-text.js, skipped');}
   await b.close();
 })();

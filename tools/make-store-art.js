@@ -27,7 +27,9 @@ const GACHA=[['ricochet',{isNew:1,lv:1}],['attack_speed',{lv:3}],['nova',{levele
 const THEME_FAN=['amber','green','pink'];   // left, centre, right on the themes shot
 
 (async()=>{
-  const b=await puppeteer.launch({executablePath:BROWSER,headless:true});
+  // a Windows compatibility setting inherited from some terminals (VS Code: __COMPAT_LAYER) makes Edge restart itself, which puppeteer reads as a failed launch
+  const env={...process.env};delete env.__COMPAT_LAYER;
+  const b=await puppeteer.launch({executablePath:BROWSER,headless:true,env});
   const p=await b.newPage();
   const raw=n=>path.join(RAW,n+'.png');
   const shot=async n=>{await sleep(400);await p.evaluate(()=>{const t=$('toast');t.className='';clearTimeout(_toastTO);$('hint').classList.remove('show');});await p.screenshot({path:raw(n)});};

@@ -105,6 +105,13 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .best::before{content:'> '}
 .best b{color:var(--a);font-weight:400}
 .playw{display:flex;justify-content:center;margin-top:12px}
+/* next-run boosts under PLAY: lit = AUTO on, filled = already bought for the next run */
+.bstrip{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:8px}
+.bstrip>span{font-family:'VT323',monospace;font-size:16px;letter-spacing:.06em;color:var(--mute);margin-right:3px}
+.bstrip button{width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--dim);color:var(--mute);position:relative}
+.bstrip button svg.i{width:16px;height:16px}
+.bstrip button.on{border-color:var(--a);color:var(--a);box-shadow:0 0 8px var(--glow)}
+.bstrip button.armed{background:var(--a);color:var(--ink);border-color:var(--a)}
 .play{width:224px;height:62px;display:flex;align-items:center;justify-content:center;gap:10px;
   font-family:'VT323',monospace;font-size:36px;letter-spacing:.2em;background:var(--a);color:var(--ink);text-shadow:none;
   box-shadow:0 0 22px var(--glow),inset 0 0 0 3px var(--ink),0 0 0 2px var(--a)}
@@ -343,6 +350,13 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   font:13px 'IBM Plex Mono',monospace;padding:0 10px;margin-bottom:10px;user-select:text;-webkit-user-select:text}
 .mbox input.show{display:block}
 .icon-btn .dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
+.inbox{max-height:58vh;overflow-y:auto;margin:6px 0 12px}
+.ibm{border:1px solid var(--dim);padding:8px 10px;margin-bottom:8px}
+.ibm.new{border-color:var(--a)}
+.ibm b{display:block;font-family:'VT323',monospace;font-weight:400;font-size:21px;letter-spacing:.06em;color:var(--a)}
+.ibm i{display:block;font-style:normal;font-size:10px;color:var(--mute);margin-bottom:4px}
+.ibm ul{margin:0;padding-left:14px}
+.ibm li{font-size:11px;line-height:1.55;color:var(--mute);text-shadow:none;margin:3px 0}
 .dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 12px}
 .dcell{border:1px solid var(--dim);padding:6px 2px;text-align:center;font-family:'VT323',monospace;font-size:17px;line-height:1.15;color:var(--mute);text-shadow:none}
 .dcell b{display:block;font-weight:400;font-size:14px;letter-spacing:.08em;color:var(--mute)}
@@ -553,6 +567,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-3 4 3 4H5"/></symbol>
 <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6M12 2v3"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13"/><path d="M3 7l9 7 9-7"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12"/><path d="M3 13h18M12 9v12"/><path d="M12 9C9 9 7.5 7.5 8 6s3-1.5 4 3zM12 9c3 0 4.5-1.5 4-3s-3-1.5-4 3z"/></symbol>
 <symbol id="i-nova" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
 <symbol id="i-od" viewBox="0 0 24 24"><path d="M4 18l5-6-5-6M11 18l5-6-5-6"/><path d="M19 6v12"/></symbol>
@@ -609,6 +624,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
       <button class="icon-btn sidebtn" id="mBug" aria-label="Bug report / talk to dev" style="top:94px"><svg class="i"><use href="#i-bug"/></svg></button>
       <button class="icon-btn sidebtn" id="mDaily" aria-label="Daily reward" style="top:134px"><svg class="i"><use href="#i-gift"/></svg><i class="dot" id="mDailyDot"></i></button>
+      <button class="icon-btn sidebtn" id="mInbox" aria-label="Inbox" style="top:174px"><svg class="i"><use href="#i-mail"/></svg><i class="dot" id="mInboxDot"></i></button>
     </div>
     <div class="logo"><span class="l1">LAST</span><span class="l2">VERTEX</span><span class="rule">════════════════</span></div>
     <div class="hero">
@@ -620,6 +636,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     </div>
     <div class="tiersel"><button id="tPrev" aria-label="Previous tier"><svg class="i"><use href="#i-back"/></svg></button><div class="tinfo"><b id="tName">TIER 1</b><span id="tSub">BEST 0 · COINS x1.0</span><i class="dot" id="tierDot" style="display:none"></i></div><button id="tNext" aria-label="Next tier"><svg class="i"><use href="#i-next"/></svg></button></div>
     <div class="playw"><button class="play" id="mPlay"><svg class="i"><use href="#i-play"/></svg>PLAY</button></div>
+    <div class="bstrip" id="mBoosts"></div>
     <button class="wkbtn" id="mWeek"><svg class="i"><use href="#i-flag"/></svg><span id="mWeekTxt">WEEKLY OP</span><i class="dot" id="mWeekDot"></i></button>
     <nav class="bnav">
       <button id="mShop"><svg class="i"><use href="#i-bag"/></svg><span>SHOP</span></button>
@@ -692,7 +709,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       </div>
       <div class="pulls">
         <button class="pull" id="gachaSingle"><span class="l">SUMMON x1</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull1Cost">10</b></span></button>
-        <button class="pull ten" id="gachaMulti"><span class="l">SUMMON x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">200</b></span></button>
+        <button class="pull ten" id="gachaMulti"><span class="l">SUMMON x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">180</b></span></button>
       </div>
       <div class="odds" id="oddsBox"></div>
       <div class="note pity" id="pityNote"></div>
@@ -784,6 +801,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="row2"><button class="btn" id="fbClose">CLOSE</button><button class="btn pri" id="fbOpen">OPEN FORM</button></div></div></div>
   <div class="ovl" id="dailyUI"><div class="mbox"><h4>DAILY REWARD</h4><p id="dyMeta"></p><div class="dgrid" id="dyGrid"></div>
     <div class="row2"><button class="btn" id="dyClose">CLOSE</button><button class="btn pri" id="dyGet">CLAIM</button></div></div></div>
+  <div class="ovl" id="inboxUI"><div class="mbox"><h4>INBOX</h4><div class="inbox" id="ibList"></div>
+    <div class="row2"><button class="btn" id="ibClose">CLOSE</button></div></div></div>
   <div class="ovl" id="cloudUI"><div class="mbox"><h4>CLOUD SAVE</h4>
     <p id="clMeta"></p>
     <input id="clEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120">
@@ -1176,11 +1195,13 @@ const ECO={
   gemDropPerSec:.006, coinDropPerSec:.008,
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
   adGems:5,       adCooldown:900,  adDailyCap:10,
-  pullCost:20,    pull10Cost:200,
-  tempCostGrowth:1.05,                  // next-run boosts scale with best effective wave
+  pullCost:20,    pull10Cost:180,
+  tempCostGrowth:1.05,  tempIncomeSecs:3, autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
+  // next-run boost price: base x 1.05^best wave, but at least base x this many seconds of your average income
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
   kbPush:2.6,     slowTime:4,  multiExtra:2,  executeAt:.3,
-  maxReduce:.9,   bossThorns:.25,       // damage reduction cap · bosses take a quarter of thorns
+  reduceKnee:.7,  reduceAbove:.25,      // damage reduction above 70% counts a quarter (77.5% at most), so thorns tanks can't become untouchable
+  bossThorns:.25,                       // bosses take a quarter of thorns
   thornHealCap:.5,                      // lifesteal from thorns refunds at most this share of the hit just taken
   offlineDayH:8,   offlineMinSec:300,   // idle income: at most 8h of time away counted per day, only after 5+ minutes away
   offlineUnverifiedH:2,                 // …and at most 2h at a time when the server clock couldn't be checked (offline)
@@ -1293,6 +1314,10 @@ const msMul=(u,l)=>u.ms?Math.pow(u.ms[1],Math.floor(Math.min(l,u.ms[2]||Infinity
 const uVal=(u,l)=>(u.start+u.step*l)*msMul(u,l);
 // armor points → share of perimeter damage removed (diminishing: 100 points = 50%)
 const armorRed=a=>a/(a+100);
+// all damage reduction together → what really counts (soft cap above reduceKnee)
+const cutRed=r=>Math.min(r,ECO.reduceKnee)+Math.max(0,r-ECO.reduceKnee)*ECO.reduceAbove;
+// next-run boost price: grows with the best wave, and never drops below a few seconds of the player's average income
+const boostPrice=(base,eff,cps)=>Math.ceil(Math.max(base*Math.pow(ECO.tempCostGrowth,eff),base*ECO.tempIncomeSecs*(cps||0)));
 const PERM_CATS=[['atk','ATTACK','bullet'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
 const PERM_UPGRADES=[
   // ── attack
@@ -1321,8 +1346,8 @@ const PERM_UPGRADES=[
    info:'Your triangle\'s health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
    info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
-  {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(armorRed(v)),
-   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 300 block 75%, 600 block 86%. Works the same at every wave; all damage reduction together is capped at 90%.'},
+  {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most).'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:250,  start:0,  step:.002, fx:v=>pc(v),
    info:'Every time an enemy hits the perimeter (even when you dodge) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.'},
   {id:'dodge',     cat:'def', name:'DODGE',      icon:'wind',  base:60,  g:1.13, max:120,  start:0,  step:.0025,fx:v=>pc2(v),
@@ -1365,7 +1390,7 @@ const TAT_TYPES=[
   {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.04,.2]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
   {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.16,.96]},            desc:x=>T('+{0} max health',pc(x.hp))},
   {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.0065,.04]},       desc:x=>T('heals {0} of your max health every second',pc2(x.pct))},
-  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR, 90% max)',pc(x.red))},
+  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts)',pc(x.red))},
   {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.08,.4]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
@@ -1373,7 +1398,7 @@ const TAT_TYPES=[
   {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
   {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.3]},           desc:x=>T('+x{0} crit power: critical hits deal that much more',x.m.toFixed(2))},
   {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>T('+{0} chance to take no damage from a perimeter hit (50% max)',pc(x.d))},
-  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.18,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
+  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.32,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.08,.3],a:[.08,.3],vuln:[.25,.8]},
    desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
   {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.06,.2]},            desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner',(x.r*100).toFixed(1))},
@@ -1496,7 +1521,7 @@ function stats(){
     rate:      v('fireRate')*(T.rapid?1.25:1)*(T.berserk?1.2:1)*(1+tb('attack_speed').rate)*(runFx.odT>0?runFx.odM:1),
     maxHp,
     regen:     (v('regen')+maxHp*tb('regen').pct)*M.regen,
-    dmgTaken:  (1-Math.min(ECO.maxReduce,reduce))*M.taken,
+    dmgTaken:  (1-cutRed(reduce))*M.taken,
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
     coinChance:Math.min(1,ECO.coinChance+v('lootChance')),
     jackpot:   lk.jack,
@@ -1931,7 +1956,7 @@ function hurt(e,dmg){e.hp-=dmg;runDmgDealt+=dmg;e.hitFlash=.18;dmgText(e,dmg,fal
 const TARGET_MODES=['FRONT','STRONG','WEAK'];
 function targetOrder(list){
   const m=save.settings.target||0;
-  return list.sort(m===1?(a,b)=>b.hp-a.hp||b.y-a.y:m===2?(a,b)=>a.hp-b.hp||b.y-a.y:(a,b)=>b.y-a.y);
+  return list.sort(m===1?(a,b)=>b.atk-a.atk||b.y-a.y:m===2?(a,b)=>a.atk-b.atk||b.y-a.y:(a,b)=>b.y-a.y);
 }
 // segment (x0,y0)→(x1,y1) against the square of half-size r around (cx,cy):
 // returns how far along the segment it first touches (0…1), or -1 if it misses
@@ -2126,7 +2151,7 @@ function updatePlay(dt){
   const tm=save.settings.target||0;let tg=null;
   for(const e of enemies){
     if(e.y<st.rangeY||e.hp<=0||e.phased)continue;
-    if(!tg||(tm===1?(e.hp>tg.hp||(e.hp===tg.hp&&e.y>tg.y)):tm===2?(e.hp<tg.hp||(e.hp===tg.hp&&e.y>tg.y)):e.y>tg.y))tg=e;
+    if(!tg||(tm===1?(e.atk>tg.atk||(e.atk===tg.atk&&e.y>tg.y)):tm===2?(e.atk<tg.atk||(e.atk===tg.atk&&e.y>tg.y)):e.y>tg.y))tg=e;
   }
   if(!tg&&enemies.length)tg=enemies.reduce((a,b)=>b.y>a.y?b:a);
   if(tg)triTarget=tg.x;
@@ -2889,7 +2914,7 @@ function renderMenu(){
   setTimeout(offerLowFx,600);
   $('mCoins').textContent=fmtC(save.coins);
   $('mGems').textContent=fmtN(save.gems);
-  renderTierSel();achCheck();renderMenuAd();renderDailyDot();menuHints();
+  renderTierSel();achCheck();renderMenuAd();renderDailyDot();renderInboxDot();renderBoostStrip();menuHints();
 }
 function renderTierSel(){
   const t=save.tier,maxT=maxUnlockedTier();
@@ -3008,17 +3033,29 @@ const TEMP_UPGRADES=[
   {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:25,info:'Adds 8% critical hit chance for one run.'},
   {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:60,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
-const tempCost=u=>{const eff=bestEffWave();return Math.ceil(u.base*Math.pow(ECO.tempCostGrowth,eff));};
+const tempCost=u=>boostPrice(u.base,bestEffWave(),save.idleCps);
 // boosts marked AUTO are bought right before a run, if affordable
 function autoBuyBoosts(){
-  const got=[];
+  const got=[];let budget=Math.floor(save.coins*ECO.autoBoostShare);   // never more than a fifth of the coins: savings for the shop stay safe
   for(const u of TEMP_UPGRADES){
     if(!save.autoBoost[u.id]||save.temp[u.id])continue;
-    const c=tempCost(u);if(save.coins<c)continue;
+    const c=tempCost(u);if(c>budget)continue;budget-=c;
     save.coins-=c;save.temp[u.id]=1;got.push(u.name);LIFE().boosts=(LIFE().boosts||0)+1;
   }
   if(got.length){persist();toast(T(got.length>1?'AUTO: {0} BOOSTS':'AUTO: {0} BOOST',got.length));}
 }
+
+// the boost row under PLAY: a tap switches AUTO for that boost (same switch as in the shop)
+function renderBoostStrip(){
+  $('mBoosts').innerHTML='<span>'+T('AUTO')+'</span>'+TEMP_UPGRADES.map(u=>`<button class="${save.temp[u.id]?'armed':save.autoBoost[u.id]?'on':''}" data-mb="${u.id}" aria-label="${T(u.name)}">${I(u.icon)}</button>`).join('');
+}
+$('mBoosts').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mb]');if(!b)return;
+  const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.mb);
+  if(save.temp[u.id]){snd('blip');toast(T('{0}: READY FOR THE NEXT RUN',T(u.name)));return;}
+  save.autoBoost[u.id]=!save.autoBoost[u.id];persist();snd('blip');renderBoostStrip();
+  toast(save.autoBoost[u.id]?T('{0}: AUTO ON · {1} COINS · {2}',T(u.name),fmtP(tempCost(u)),T(u.desc)):T('{0}: AUTO OFF',T(u.name)));
+});
 
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
 function openShop(tab){if(tab)shopTab=tab;pendingTheme=null;snd('click');renderShop();$('shopPanel').classList.add('open');$('shopPanel').querySelector('.scroll').scrollTop=0;}
@@ -3063,7 +3100,7 @@ function renderShop(){
     const n=PERM_UPGRADES.filter(u=>u.cat===c&&(save.perm[u.id]||0)<u.max&&upCost(u,save.perm[u.id]||0)<=save.coins).length;
     return `<button data-c="${c}" class="${c===cur?'on':''}">${I(icon)}${T(label)}${n?`<b>${n}</b>`:''}</button>`;
   }).join('');
-  $('shopNote').textContent='> '+T(shopTab==='perm'?'TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'LASTS ONE RUN · AUTO REBUYS IT EACH RUN':'NEW COLORS FOR THE GAME · BUY WITH GEMS');
+  $('shopNote').textContent='> '+T(shopTab==='perm'?'TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'LASTS ONE RUN · AUTO BUYS IT BEFORE EACH RUN WITH UP TO 20% OF YOUR COINS':'NEW COLORS FOR THE GAME · BUY WITH GEMS');
 
   let html='';
   if(shopTab==='perm'){
@@ -3701,7 +3738,7 @@ const HELP_TOPICS=[
   ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
   ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
-    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = most health, WEAK = least health. Bullets follow their target.',I('target'))}</p>`],
+    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
@@ -4057,6 +4094,33 @@ $('mDaily').addEventListener('click',openDaily);
 $('dyGet').addEventListener('click',claimDaily);
 $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.remove('show');});
 
+// ── INBOX ────────────────────────────────────────────────────────────────────
+// Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
+// until the player opens the inbox. Every line is one bullet point (translated on its own).
+const INBOX=[
+  {id:'0.6.6',date:'2026-10-25',name:'UPDATE 0.6.6',
+   lines:[
+    {text:'Tank builds no longer run away late in the game: above 70% damage reduction, armor and the DEFENSE tattoo count only a quarter (77.5% at most).'},
+    {text:'Next-run boosts now cost at least a few seconds of your average income, so late in the game they are a real choice instead of free.'},
+    {text:'New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.'},
+    {text:'THORNS tattoo is stronger at low levels: Lv1 32% (was 18%).'},
+    {text:'SUMMON x10 costs 180 gems instead of 200.'},
+    {text:'Target STRONG / WEAK now picks the enemy that hits hardest / softest; when they hit the same, the closest one first.'},
+    {text:'New: this inbox, for update notes and news.'},
+  ]},
+];
+// a fresh player starts with everything read: old notes are not news to them
+if(!Array.isArray(save.inboxSeen))save.inboxSeen=(save.life&&save.life.runs)?[]:INBOX.map(m=>m.id);
+const inboxUnread=()=>INBOX.filter(m=>!save.inboxSeen.includes(m.id)).length;
+function renderInboxDot(){$('mInboxDot').style.display=inboxUnread()?'':'none';}
+function openInbox(){
+  $('ibList').innerHTML=INBOX.map(m=>`<div class="ibm${save.inboxSeen.includes(m.id)?'':' new'}"><b>${T(m.name)}</b><i>${m.date}</i><ul>${m.lines.map(l=>'<li>'+T(l.text)+'</li>').join('')}</ul></div>`).join('');
+  $('inboxUI').classList.add('show');$('ibList').scrollTop=0;snd('click');
+  save.inboxSeen=INBOX.map(m=>m.id);persist();renderInboxDot();track('inbox_open');
+}
+$('mInbox').addEventListener('click',openInbox);
+$('ibClose').addEventListener('click',()=>{snd('click');$('inboxUI').classList.remove('show');});
+
 // ── REMINDERS (Android app only) ─────────────────────────────────────────────
 // Local notifications: scheduled on the phone when the app goes to the background, cleared when it comes back.
 // Nothing leaves the device. Plugins are called through Capacitor.Plugins (there is no bundler).
@@ -4160,7 +4224,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.6.5';
+const GAME_VERSION='0.6.6';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');
@@ -4198,6 +4262,7 @@ function handleBack(){
   if(on('confirmUI')){if(!cloudAsking)$('cfNo').click();return true;}   // the cloud choice needs an explicit answer
   if(on('cloudUI')){$('cloudUI').classList.remove('show');return true;}
   if(on('dailyUI')){$('dyClose').click();return true;}
+  if(on('inboxUI')){$('ibClose').click();return true;}
   if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}

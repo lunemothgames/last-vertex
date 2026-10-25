@@ -12,7 +12,9 @@ const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','i
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor};"].join('\n'))(save,1,1);
+  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+// next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
+const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
 // what-ifs for the content added in October 2026:
 //   SIM_ENEMY='{"armored":{"w":0}}'  change/remove an enemy type · SIM_BOSSKIND=classic  every boss is the classic one
@@ -281,13 +283,18 @@ if(TLV)equip(BUILD,TLV);
 const LOG=[1,2,5,10,20,42,84,168,336,600,1000,1500,2000,3000].filter(h=>h<=HOURS);
 let bank=0,clock=0,li=0,runs=0,tier=1;const tierBest={1:0};save.tierBest=tierBest;   // mastery stars count
 // SIM_PACE=1: print the hours it takes to first reach these effective waves (to compare builds' real speed)
-const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300],hit={},atH={},AT=[42,84,168,336,600];
+const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300,400],hit={},atH={},AT=[42,84,168,336,600];
 const effNow=()=>Object.entries(tierBest).reduce((m,[t,w])=>w?Math.max(m,(t-1)*TIERS.offset+w):m,0);
+const BOOST=(process.env.SIM_BOOST==='all'?'lucky,power,berserk,rapid,shield,invincible,focus':process.env.SIM_BOOST||'').split(',').filter(Boolean);
+let idleCps=0;   // the game's average income per second (save.idleCps): boost prices follow it
+const buyBoosts=()=>{save.temp={};const e=effNow();for(const id of BOOST){const u=TEMP.find(x=>x.id===id);if(!u)continue;
+  const c=G.boostPrice?G.boostPrice(u.base,e,idleCps):Math.ceil(u.base*Math.pow(ECO.tempCostGrowth,e));if(bank>=c){bank-=c;save.temp[id]=1;}}};
+const ranRun=r=>{if(r.t>=120)idleCps=idleCps?idleCps*.7+r.coins/r.t*.3:r.coins/r.t;save.temp={};};
 while(clock<HOURS*3600){
   // every 10th run goes back to farm mastery stars in the highest tier (3+ below) that still misses one
   const farm=runs%10===9?[...Array(Math.max(0,tier-3)).keys()].map(i=>tier-3-i).find(t=>(tierBest[t]||0)<G.MASTERY[2]):0;
-  if(farm){const r=run(farm);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);bank=shop(BUILD,bank);continue;}
-  const r=run(tier);runs++;clock+=r.t+3;bank+=r.coins;
+  if(farm){buyBoosts();const r=run(farm);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);bank=shop(BUILD,bank);continue;}
+  buyBoosts();const r=run(tier);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;
   tierBest[tier]=Math.max(tierBest[tier]||0,r.w);
   if(tierBest[tier]>=TIERS.unlockWave&&tier<TIERS.max){tier++;tierBest[tier]=tierBest[tier]||0;}
   else if(r.w<6&&tier>1)tier--;

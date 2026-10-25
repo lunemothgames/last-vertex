@@ -17,11 +17,11 @@ function next(){
 }
 function finish(){
   const AT=[42,84,168,336];
-  console.log('== '+label+': effective wave after N hours (tattoos Lv'+(process.env.SIM_TLV||5)+') | hours to w100 / w200');
-  console.log('build'.padEnd(10)+AT.map(h=>(h+'h').padStart(6)).join('')+'   w100h   w200h');
+  console.log('== '+label+': effective wave after N hours (tattoos Lv'+(process.env.SIM_TLV||5)+') | hours to w100 / w200 / w300');
+  console.log('build'.padEnd(10)+AT.map(h=>(h+'h').padStart(6)).join('')+'   w100h   w200h   w300h');
   const vals=[];
   for(const b of builds){const r=res[b];if(!r)continue;
-    console.log(b.padEnd(10)+AT.map(h=>String(r.at[h]!==undefined?r.at[h]:'-').padStart(6)).join('')+String(r.hit[100]!==undefined?r.hit[100]:'-').padStart(8)+String(r.hit[200]!==undefined?r.hit[200]:'-').padStart(8));
+    console.log(b.padEnd(10)+AT.map(h=>String(r.at[h]!==undefined?r.at[h]:'-').padStart(6)).join('')+String(r.hit[100]!==undefined?r.hit[100]:'-').padStart(8)+String(r.hit[200]!==undefined?r.hit[200]:'-').padStart(8)+String(r.hit[300]!==undefined?r.hit[300]:'-').padStart(8));
     vals.push(r.at[168]||0);}
   const mx=Math.max(...vals),mn=Math.min(...vals),md=vals.slice().sort((a,b)=>a-b)[Math.floor(vals.length/2)];
   console.log('eff@168h: min '+mn+' median '+md+' max '+mx+'  (max/min x'+(mx/mn).toFixed(2)+')');

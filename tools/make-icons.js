@@ -55,7 +55,9 @@ function splashHtml(){
 const IPHONES=[[440,956,3],[402,874,3],[430,932,3],[393,852,3],[428,926,3],[390,844,3],[375,812,3],[414,896,3],[414,896,2],[414,736,3],[375,667,2]];
 
 (async()=>{
-  const b=await puppeteer.launch({executablePath:BROWSER,headless:true});
+  // a Windows compatibility setting inherited from some terminals (VS Code: __COMPAT_LAYER) makes Edge restart itself, which puppeteer reads as a failed launch
+  const env={...process.env};delete env.__COMPAT_LAYER;
+  const b=await puppeteer.launch({executablePath:BROWSER,headless:true,env});
   const p=await b.newPage();
   const shot=async(html,w,h,dpr,file)=>{
     await p.setViewport({width:w,height:h,deviceScaleFactor:dpr});

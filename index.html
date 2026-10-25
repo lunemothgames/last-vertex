@@ -78,7 +78,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 
 /* ── main menu ── */
 .topbar{display:flex;gap:8px;align-items:center;padding:14px 14px 0}
-.sidebtn{position:absolute;right:14px}   /* under the settings gear: help, then bug report */
+.sidebtn{position:absolute;right:14px;z-index:3}   /* under the settings gear: help, then bug report */
 /* ── help panel: one topic open at a time ── */
 .hrow{border:1px dashed var(--dim)}
 .hrow.open{border-style:solid;border-color:var(--a)}
@@ -1053,7 +1053,7 @@ applyTheme(save.theme);
 // ── LAYOUT ───────────────────────────────────────────────────────────────────
 const wrap=document.getElementById('wrap'),ui=document.getElementById('ui');
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
-let GW=0,GH=0;
+let GW=0,GH=0,wrapTop=0,bodyBgKey='';   // bodyBgKey: last background painted around the field (drawBg)
 // declared before resize() because buildStars() runs inside it
 let stars=[];
 let frameDt=.016;
@@ -1081,6 +1081,7 @@ function resize(){
   else if(GW/GH<9/21)GH=Math.round(GW*21/9);
   cv.width=GW;cv.height=GH;cv.style.width=GW+'px';cv.style.height=GH+'px';
   wrap.style.width=GW+'px';wrap.style.height=GH+'px';wrap.style.top=(sat+vh/2)+'px';
+  wrapTop=sat+vh/2-GH/2;bodyBgKey='';
   // UI is authored at 320px wide and zoomed to fit
   const z=GW/320;
   ui.style.width='320px';ui.style.height=(GH/z)+'px';
@@ -2496,6 +2497,13 @@ function drawBg(cxp,cyp){
   const g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,GH*.8);
   g.addColorStop(0,C.bg2);g.addColorStop(1,C.bg1);
   cx.fillStyle=g;cx.fillRect(-6,-6,GW+12,GH+12);
+  // the strip around the field (camera notch band, side boxes) continues the same glow and scanlines, so it never reads as a separate black bar
+  if(cx.globalAlpha<1)return;
+  const x=Math.round((innerWidth-GW)/2+cxp),y=Math.round(wrapTop+cyp),key=x+','+y+','+GH+C.bg1+C.bg2;
+  if(key===bodyBgKey)return;
+  bodyBgKey=key;
+  document.body.style.backgroundImage='repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),'+
+    `radial-gradient(circle ${Math.round(GH*.8)}px at ${x}px ${y}px,${C.bg2},${C.bg1})`;
 }
 function triPath(x,y,r){cx.beginPath();cx.moveTo(x,y-r);cx.lineTo(x+r*.9,y+r*.6);cx.lineTo(x-r*.9,y+r*.6);cx.closePath();}
 function drawShip(x,y,r){

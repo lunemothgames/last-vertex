@@ -1013,11 +1013,14 @@ function fmtN(n){
   else{
     const i=Math.floor(Math.log10(n)/3);
     if(i>=SUFFIX.length)s=n.toExponential(2).replace('+','');
-    else{const v=n/Math.pow(1000,i);s=(v<10?(Math.floor(v*100)/100).toFixed(2):v<100?(Math.floor(v*10)/10).toFixed(1):Math.floor(v))+SUFFIX[i];}
+    // the tiny nudge keeps binary rounding from dropping a digit (2050 must read 2.05K, not 2.04K)
+    else{const v=n/Math.pow(1000,i);s=(v<10?(Math.floor(v*100+1e-9)/100).toFixed(2):v<100?(Math.floor(v*10+1e-9)/10).toFixed(1):Math.floor(v+1e-9))+SUFFIX[i];}
   }
   return(neg?'-':'')+s;
 }
 const fmtC=n=>fmtN(Math.floor(n));
+// shop prices drop the trailing zeros: 2.50K → 2.5K, 3.00K → 3K
+const fmtP=n=>fmtN(n).replace(/\.(\d*?)0+(?=\D*$)/,(m,d)=>d?'.'+d:'');
 
 // ── AUDIO ────────────────────────────────────────────────────────────────────
 let AC=null,_sfxGain=null,_musGain=null;
@@ -1734,6 +1737,8 @@ function startRun(weekly=false){
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
   track('run_start',{tier:runTier,weekly:runWeekly?1:0,run_no:LIFE().runs+1});
   getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
+  // a first-steps note from the menu (PLAY's, when the run starts from WEEKLY) must not stay over the field
+  coachClear(false);
   if(activeIds().length)hint('active');
 }
 function resumeRun(mr){
@@ -2156,7 +2161,11 @@ function updatePlay(dt){
     waveTimer-=dt;
     if(waveTimer<=0){
       wavePhase='between';waveTimer=2+Math.random()*.5;qReach('wave',waveNum);
-      if(st.waveHeal>0)hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
+      if(st.waveHeal>0){
+        // shown, so the heal can be seen even when it only tops the bar up to full
+        const h=Math.min(st.maxHp-hp,st.maxHp*st.waveHeal);hp+=h;
+        if(h>=.05)spawnText(triX,TRI_Y-GH*.08,'+'+fmtN(h)+' HP',C.r[2]);
+      }
 
       saveProgress();
     }
@@ -3064,7 +3073,7 @@ function renderShop(){
         const np=Math.min(u.max,20),on=Math.floor(lv/u.max*np);
         pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} / ${u.max}</em>`;
       }
-      const btn=maxed?T('MAX'):n>0?`<span>${I('coin')}${fmtN(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtN(upCost(u,lv))}</span>`;
+      const btn=maxed?T('MAX'):n>0?`<span>${I('coin')}${fmtP(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtP(upCost(u,lv))}</span>`;
       const cls=maxed?' max':n>0?'':' no';
       return `<div class="urow${maxed?' maxed':''}"><button class="ic" data-info="${u.id}">${I(u.icon)}</button>
         <div class="info"><div class="nm mqw"><span>${T(u.name)}</span></div>
@@ -3077,7 +3086,7 @@ function renderShop(){
       const owned=!!save.temp[u.id],c=tempCost(u),can=!owned&&save.coins>=c,auto=!!save.autoBoost[u.id];
       return `<div class="urow${owned?' maxed':''}"><button class="ic" data-tinfo="${u.id}">${I(u.icon)}</button>
         <div class="info"><div class="nm"><span class="mqw nmw"><span>${T(u.name)}</span></span><button class="autot${auto?' on':''}" data-auto="${u.id}">AUTO</button></div><div class="fx mqw"><span>${T(u.desc)}</span></div></div>
-        <button class="buy${owned?' max':can?'':' no'}" data-temp="${u.id}">${owned?T('ARMED'):`<span>${I('coin')}${fmtN(c)}</span>`}</button></div>`;
+        <button class="buy${owned?' max':can?'':' no'}" data-temp="${u.id}">${owned?T('ARMED'):`<span>${I('coin')}${fmtP(c)}</span>`}</button></div>`;
     }).join('');
   }else{
     html=THEMES.map(t=>{
@@ -4143,7 +4152,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.6.4';
+const GAME_VERSION='0.6.5';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

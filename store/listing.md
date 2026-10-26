@@ -19,7 +19,7 @@ Last Vertex: Idle Defense
 
 ### Short description (max 80)
 ```
-Idle tower defense on a retro CRT screen. Upgrade, summon tattoos, survive.
+Idle tower defense on a retro CRT screen. Upgrade, ink tattoos, survive.
 ```
 
 ### Full description (max 4000)
@@ -32,7 +32,7 @@ Your triangle aims and fires on its own; you decide how it grows. Play actively 
 Pour coins into permanent upgrades: damage, fire rate, crits, multishot, ricochet, pierce, armor, thorns, regen, dodge, slow, knockback and more. A wall of thorns and armor, a crit cannon, a swarm of bouncing bullets — every build is viable.
 
 ▸ TATTOOS
-Summon 28 tattoos across four rarities and fuse duplicates up to level 7. Passive tattoos shape your build; active ones add a button to the battle: freeze the field, blast every enemy, overdrive your fire rate or turn kills into gold; others shatter frozen enemies into chain reactions. The odds are shown on screen and an epic is guaranteed within 50 summons.
+Ink 28 tattoos across four rarities and fuse duplicates up to level 7. Passive tattoos shape your build; active ones add a button to the battle: freeze the field, blast every enemy, overdrive your fire rate or turn kills into gold; others shatter frozen enemies into chain reactions. The odds are shown on screen and an epic is guaranteed within 50 summons.
 
 ▸ ENDLESS WAVES, 30 TIERS
 Fight through 30 tiers of rising danger: runners, tanks, splitters, shielded wardens, healing menders, teleporting blinkers and enraged bosses that call in reinforcements. Earn mastery stars in every tier for permanent bonuses.

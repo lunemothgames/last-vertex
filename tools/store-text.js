@@ -4,7 +4,7 @@ module.exports={
   en:{
     run:   ['IDLE TOWER DEFENSE','One triangle. Endless waves. 30 tiers.'],
     boss:  ['ENRAGED BOSSES','Time your abilities: freeze, blast, overdrive'],
-    gacha: ['SUMMON 28 TATTOOS','Fuse duplicates up to level 7'],
+    gacha: ['INK 28 TATTOOS','Fuse duplicates up to level 7'],
     tattoo:['BUILD IT YOUR WAY','Crits, ricochet, lightning, thorns: every build works'],
     shop:  ['UPGRADE EVERYTHING','Damage, fire rate, armor, dodge and more'],
     weekly:['NEW CHALLENGE EVERY WEEK','Rule-changing mutators and gem rewards'],

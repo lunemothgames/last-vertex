@@ -709,8 +709,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         </svg>
       </div>
       <div class="pulls">
-        <button class="pull" id="gachaSingle"><span class="l">SUMMON x1</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull1Cost">10</b></span></button>
-        <button class="pull ten" id="gachaMulti"><span class="l">SUMMON x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">180</b></span></button>
+        <button class="pull" id="gachaSingle"><span class="l">INK x1</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull1Cost">10</b></span></button>
+        <button class="pull ten" id="gachaMulti"><span class="l">INK x10</span><span class="c"><svg class="i"><use href="#i-gem"/></svg><b id="pull10Cost">180</b></span></button>
       </div>
       <div class="odds" id="oddsBox"></div>
       <div class="note pity" id="pityNote"></div>
@@ -723,8 +723,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>TAP</b><span>See what a tattoo does, level by level</span>
         <b>HOLD</b><span>Equip or unequip it</span>
         <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
-        <b>LV7</b><span>Maxed tattoos leave the summon pool</span>
-        <b>EPIC</b><span>One is guaranteed within 50 summons</span>
+        <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
+        <b>EPIC</b><span>One is guaranteed within 50 inks</span>
         <b>◆</b><span>Active tattoo: adds a button in runs</span>
         <b>SLOTS</b><span>Unlock more slots with gems</span>
       </div>
@@ -786,7 +786,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 
   <!-- GACHA RESULTS -->
   <div class="gacha-overlay" id="gachaOverlay">
-    <div class="g-title" id="gachaResultTitle">&gt;&gt; SUMMON RESULTS</div>
+    <div class="g-title" id="gachaResultTitle">&gt;&gt; INK RESULTS</div>
     <div class="gcards" id="gachaCards"></div>
     <button class="btn pri" id="gachaCollect">COLLECT</button>
   </div>
@@ -3237,7 +3237,7 @@ function doPull(count){
 function showGachaResults(results){
   const cards=$('gachaCards'),title=$('gachaResultTitle');
   const hot=results.some(r=>r.isNew||r.t.rar>=2);
-  title.textContent=results.some(r=>r.isNew)?T('!! NEW TATTOO !!'):'>> '+T('SUMMON RESULTS');
+  title.textContent=results.some(r=>r.isNew)?T('!! NEW TATTOO !!'):'>> '+T('INK RESULTS');
   title.className='g-title'+(hot?' rare':'');
   cards.className='gcards'+(results.length===1?' one':'');
   cards.innerHTML=results.map((r,i)=>`<div class="gc r${r.t.rar}" style="--rc:var(--r${r.t.rar});--rc-rgb:var(--r${r.t.rar}-rgb);animation-delay:${(i*.09).toFixed(2)}s">
@@ -3291,9 +3291,9 @@ function tatChart(t,lv){
 }
 function tatInfo(t){
   const c=tatOf(t.id),esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('SUMMON CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
-  if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Summon to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
-  const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE SUMMON POOL');
+  const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('INK CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
+  if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Ink to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
+  const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE INK POOL');
   const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+odds+tatChart(t,c.lv);
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):''} · ${status}`,true);
 }
@@ -3311,7 +3311,7 @@ function renderTattoos(){
   const left=PITY-(save.pity||0),done=!tatPool().length;
   $('oddsBox').innerHTML=oddsGrid();
   const pr=T(RAR_NAMES[pityRar()]);
-  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT SUMMON: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} SUMMONS',pr,`<b>${left}</b>`));
+  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT INK: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} INKS',pr,`<b>${left}</b>`));
   $('gachaSingle').classList.toggle('no',save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
   $('eqCount').textContent=`${save.equipped.length}/${save.tatSlots}`;
@@ -3596,7 +3596,7 @@ ach('boss1','BOSS DOWN','Destroy your first boss',5,()=>LIFE().bosses,1);
 [[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('runs'+n,['{0} RUNS',n],['Finish {0} runs',n],g,()=>LIFE().runs,n));
 [[100,3],[1000,8],[10000,20]].forEach(([n,g])=>ach('lv'+n,['UPGRADER {0}',fmtN(n)],['Buy {0} shop levels',fmtN(n)],g,()=>LIFE().levels,n));
 [[10,3],[100,8],[500,20]].forEach(([n,g])=>ach('q'+n,['QUESTER {0}',n],['Claim {0} quests',n],g,()=>LIFE().quests,n));
-[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('pull'+n,['SUMMONER {0}',n],['Summon {0} tattoos',n],g,()=>LIFE().pulls,n));
+[[10,2],[100,5],[1000,15]].forEach(([n,g])=>ach('pull'+n,['INKER {0}',n],['Ink {0} tattoos',n],g,()=>LIFE().pulls,n));
 [[5,3],[10,8],[20,25],[TAT_TYPES.length,40]].forEach(([n,g])=>ach('tf'+n,['COLLECTOR {0}',n],['Discover {0} different tattoos',n],g,tatFound,n));
 [[10,10],[30,25],[60,50],[90,100]].forEach(([n,g])=>ach('stars'+n,['STARGAZER {0}',n],['Earn {0} tier mastery stars',n],g,totalStars,n));
 [[3,5],[5,15],[7,40]].forEach(([n,g])=>ach('tl'+n,['INKED LV{0}',n],['Raise any tattoo to LV{0}',n],g,tatTopLv,n));
@@ -3650,7 +3650,7 @@ const COACH=[
   {id:'tattoo',where:'menu',sel:'#mTat',  when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,
    text:'You have enough gems for a TATTOO. Tattoos change how you play.'},
   {id:'summon',where:'tat', sel:'#gachaSingle', when:()=>save.gems>=ECO.pullCost&&LIFE().pulls===0,up:true,
-   text:'Summon one tattoo.'},
+   text:'Ink one tattoo.'},
   {id:'equip', where:'tat', sel:'#invGrid .ctile:not(.locked)', when:()=>LIFE().pulls>0&&!save.equipped.length&&TAT_TYPES.some(t=>tatOf(t.id).lv),
    text:'HOLD a tattoo to put it in your slot. Tap it to see what it does.'},
   {id:'quests',where:'menu',sel:'#mQuest',when:()=>save.quests.some(questDone),
@@ -3729,7 +3729,7 @@ function enemyRow(key,col,name,text){
 // odds shown to the player come from the live pool, so they stay true once tattoos max out and leave it
 function oddsGrid(){
   const pool=tatPool(),tot=pool.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];pool.forEach(t=>by[t.rar]+=t.w);
-  return `<span>${T('CHANCE PER SUMMON')}</span><div>${RAR_NAMES.map((n,i)=>
+  return `<span>${T('CHANCE PER INK')}</span><div>${RAR_NAMES.map((n,i)=>
     `<i class="${by[i]?'':'out'}" style="--rc:var(--r${i})"><small>${T(n)}</small><b>${by[i]?(by[i]/tot*100).toFixed(1)+'%':'—'}</b></i>`).join('')}</div>`;
 }
 function tatChance(t){
@@ -3769,8 +3769,8 @@ const HELP_TOPICS=[
     <p>${T('Coins and gems sometimes float on the field during a run: tap them to collect.')}</p>`],
   ['shop','bag','SHOP',()=>`<p>${T('PERMANENT upgrades last forever, sorted into ATTACK, DEFENSE and UTILITY. Tap an icon to see exactly what it does; x1 / x5 / x10 / MAX choose how many levels you buy at once.')}</p>
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
-  ['tattoos','spark','TATTOOS',()=>`<p>${T('Summon tattoos with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
-    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 summons.')}</p>
+  ['tattoos','spark','TATTOOS',()=>`<p>${T('Get tattoos inked with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
+    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 inks.')}</p>
     <div class="odds">${oddsGrid()}</div>`],
   ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and 4 weekly quests every Monday; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
     <p>${T('Achievements reward milestones once each.')}</p>`],
@@ -4108,7 +4108,7 @@ const INBOX=[
     {text:'Next-run boosts now cost at least a few seconds of your average income, so late in the game they are a real choice instead of free.'},
     {text:'New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.'},
     {text:'THORNS tattoo is stronger at low levels: Lv1 32% (was 18%).'},
-    {text:'SUMMON x10 costs 180 gems instead of 200.'},
+    {text:'INK x10 costs 180 gems instead of 200.'},
     {text:'Target STRONG / WEAK now picks the enemy that hits hardest / softest; when they hit the same, the closest one first.'},
     {text:'New: this inbox, for update notes and news.'},
   ]},

@@ -116,10 +116,10 @@ small{color:var(--mute)}
 <div>Enemy attack (wave 1)<b>${ECO.enemyAtk}</b></div><div>Enemy attack growth / wave<b>×${ECO.enemyAtkGrowth}</b></div>
 <div>Boss every<b>${ECO.bossEvery} waves</b></div><div>Boss HP / attack<b>×${ECO.bossHpMul} / ×${ECO.bossAtkMul}</b></div>
 <div>Coin drop chance per kill<b>${ECO.coinChance*100}%</b></div><div>Coin value growth / wave<b>×${ECO.coinGrowth}</b></div>
-<div>Boss coins<b>×${ECO.bossCoins} kill value</b></div><div>Epic pity<b>${PITY} summons</b></div><div>Boss gem<b>none</b></div>
+<div>Boss coins<b>×${ECO.bossCoins} kill value</b></div><div>Epic pity<b>${PITY} inks</b></div><div>Boss gem<b>none</b></div>
 <div>Coin drop on field<b>${ECO.coinDropSecs}s of run income (min ${ECO.coinDropMinKills} kills)</b></div><div>Gem drop on field<b>+1</b></div>
 <div>Drop cooldown after pickup<b>${ECO.pickupCooldown/60} min</b></div><div>Ad reward / cooldown<b>${ECO.adGems} gems / ${ECO.adCooldown/60} min</b></div>
-<div>Summon x1 / x10<b>${ECO.pullCost} / ${ECO.pull10Cost} gems</b></div><div>Range line start<b>${(ECO.rangeBase*100)}% from top</b></div>
+<div>Ink x1 / x10<b>${ECO.pullCost} / ${ECO.pull10Cost} gems</b></div><div>Range line start<b>${(ECO.rangeBase*100)}% from top</b></div>
 </div>
 
 <h2 id="tiers">TIERS</h2>

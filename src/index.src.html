@@ -864,6 +864,7 @@ try{
 // idle income now uses an average rate; seed it from the old best rate
 if(!save.idleCps&&save.bestCps)save.idleCps=save.bestCps*.6;
 delete save.bestCps;
+if(!save.peakCps&&save.idleCps)save.peakCps=save.idleCps;
 // FX QUALITY: high (everything) · mid (no glow / flicker, fewer particles) · low (potato phones)
 // older saves had a LOW FX on/off switch: on → mid, off → high
 if('lowFx' in save.settings){save.settings.fx=save.settings.lowFx?'mid':'high';delete save.settings.lowFx;}
@@ -1791,6 +1792,8 @@ function saveProgress(){
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
     if(runPlayT>=120){const r=runEarned/runPlayT;save.idleCps=save.idleCps?save.idleCps*.7+r*.3:r;}
+    // boost prices follow the highest average ever reached, so playing badly on purpose cannot make them cheaper
+    save.peakCps=Math.max(save.peakCps||0,save.idleCps||0);
   }
   persist();
 }
@@ -3034,7 +3037,7 @@ const TEMP_UPGRADES=[
   {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:25,info:'Adds 8% critical hit chance for one run.'},
   {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:60,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
-const tempCost=u=>boostPrice(u.base,bestEffWave(),save.idleCps);
+const tempCost=u=>boostPrice(u.base,bestEffWave(),Math.max(save.peakCps||0,save.idleCps||0));
 // boosts marked AUTO are bought right before a run, if affordable
 function autoBuyBoosts(){
   const got=[];let budget=Math.floor(save.coins*ECO.autoBoostShare);   // never more than a fifth of the coins: savings for the shop stay safe

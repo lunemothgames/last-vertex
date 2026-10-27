@@ -3,6 +3,8 @@
 //
 //   node tools/sim.js [hours=600] [build=offense]   long-term progression of one build
 //   node tools/sim.js compare [lv=5] [build,build…] same coin budget for every build → how deep each one gets
+//   node tools/sim.js modes [builds] [budgets]      RAPID vs BURST attack mode, same shop and tattoos
+//   SIM_MODE=burst npm run pace                      the pace check with every build in BURST
 //
 // Builds = a shop shopping list (weights) + 5 equipped tattoos (see BUILDS below).
 // What-ifs without editing the game: SIM_ECO='{"bossHpMul":6}' SIM_PU='{"damage":{"ms":[100,1.15]}}'
@@ -12,7 +14,7 @@ const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','i
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
 // next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
 const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
@@ -25,6 +27,11 @@ const EVT=Object.assign(G.EV_TUNE||{},JSON.parse(process.env.SIM_TUNE||'{}'));  
 const FORCE=process.env.SIM_FORCEEV;   // SIM_FORCEEV=cling: that event on EVERY wave from wave 4 (not boss waves), to measure what one event does
 let NOEV=process.env.SIM_NOEVENTS==='1';   // SIM_NOEVENTS=1: switch wave events off to see their share
 Object.assign(ECO,JSON.parse(process.env.SIM_ECO||'{}'));
+// attack mode: SIM_MODE=burst plays every run in BURST (opens at Tier 2 in the game; the sim allows it from the start)
+// SIM_BURST='{"rate":0.4}' changes the BURST numbers · BURST_LAT = how often a pellet that misses its target meets another enemy (tuned against the real game)
+if(G.BURST)Object.assign(G.BURST,JSON.parse(process.env.SIM_BURST||'{}'));
+save.mode=process.env.SIM_MODE==='burst'?'burst':'rapid';
+const PEL={n:0,h:0,f:0};const BURST_LAT=+process.env.BURST_LAT||1.4,GWH=9/16;   // screen width in screen heights
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_PU||'{}')))Object.assign(PU[id],o);
 // tattoo value what-ifs: SIM_TT='{"reaper":{"k":[0.15,0.4]}}' (each effect is [Lv1, Lv7])
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_TT||'{}')))Object.assign(TT[id].v,o);
@@ -69,7 +76,7 @@ function shop(b,bank,skip){
 // ── one run; positions are fractions of screen height, time in game seconds ──
 function run(tier,maxW=1e9){
   setTier(tier);const st=stats();
-  const LINE=.83,avgCrit=1+st.crit*(st.critM-1);
+  const LINE=.83,avgCrit=1+st.crit*(st.critM-1),BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
   let hp=st.maxHp,coins=0,t=0,w=0,aegis=0,shock=0,shots=0;let tdAll=0;const dt=.1,evSeed=Math.floor(Math.random()*1e6);
   const TRACE=process.env.SIM_TRACE==='1';let tkills=0,tdmg=0,tcontacts=0,tspawn=0;
@@ -81,11 +88,11 @@ function run(tier,maxW=1e9){
     const hpB=ECO.enemyHp*Math.pow(ECO.enemyHpGrowth,ew-1),atkB=ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1),spB=.032*(1+Math.min(ew,150)*.005);
     const pool=Object.values(ENEMY_TYPES).filter(x=>x.w>0&&ew>=x.from),tw=pool.reduce((s,x)=>s+x.w,0);
     const pick=()=>{let r=Math.random()*tw;for(const x of pool){r-=x.w;if(r<0)return x;}return pool[0];};
-    const mk=(T,y)=>({y,hp:hpB*T.hp*(M.ehp||1),max:hpB*T.hp*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),kb:0,slow:0,frz:0,boss:false,
+    const mk=(T,y)=>({y,w:T.sz*1.1*GWH,hp:hpB*T.hp*(M.ehp||1),max:hpB*T.hp*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),kb:0,slow:0,frz:0,boss:false,
       sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0});
     const E=[],dur=Math.min(45,18+w*.5),iv=Math.max(.5,2.2-w*.04)*(M.ival||1),per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++)E.push(mk(pick(),.1-i*.09));
-    if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
+    if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,w:.13*1.1*GWH,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
       sh:bk==='bulwark'?bh*(ECO.bossShield||0):0,heal:bk==='regen'?(ECO.bossRegen||0):0,ht:1,ar:0});}
     let left=dur,spawnT=0,cd=0;const cv=coinValueAt(ew)*st.mult;
     const midas=()=>A.midas&&A.midas.left>0?A.midas.m:1;
@@ -102,6 +109,37 @@ function run(tier,maxW=1e9){
       tcontacts++;
       const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;
       if(taken>0)hp=Math.min(st.maxHp,hp+Math.min(th*st.ls,taken*ECO.thornHealCap));
+    };
+    // one bullet / pellet hit on e (crit as an average, armor, shield, reaper, knockback, slow)
+    const bulletHit=(e,m)=>{
+      const dn=st.dmg*m*(e.boss?st.bossDmg:1)*(e.hp<e.max*ECO.executeAt?st.execute:1)*(e.slow>0||e.frz>0?st.frostVuln:1);
+      const arm=x=>x*Math.min(1,x/(e.max*e.ar));
+      const d=e.ar?(1-st.crit)*arm(dn)+st.crit*arm(dn*st.critM):dn*avgCrit,before=e.sh>0?Infinity:e.hp;
+      if(e.sh>0){e.sh-=d*.5;hp=Math.min(st.maxHp,hp+d*st.ls);}else hit(e,d);
+      if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
+      if(!e.boss&&Math.random()<st.kbChance)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);
+      if(st.slowAmt>0&&Math.random()<st.slowChance)e.slow=ECO.slowTime;
+      return e.hp<=0&&d>before?1-before/d:0;   // share of the damage left over after a kill (a BURST pellet flies on with it)
+    };
+    // BURST salvo: every pellet flies straight. It meets the front enemy with the share of the cone that enemy covers
+    // (closer = bigger share); a pellet that misses, or whose target is already dead, can still meet an enemy beside / behind it.
+    const TRI=.9,tanS=BU?Math.tan(BU.spread/2):0;
+    const meets=(o,front)=>{const cw=2*Math.max(.03,TRI-o.y)*tanS,cov=Math.min(1,o.w/cw);return front?cov:cov*Math.min(1,(cw+o.w)/GWH)*BURST_LAT;};
+    const burstSalvo=vis=>{
+      const n=st.pellets+(Math.random()<st.multiChance?ECO.multiExtra:0),front=vis[0];
+      for(let k=0;k<n;k++){
+        let j=0,bounces=0,m=st.pellet;PEL.n++;
+        for(;j<vis.length;j++){const o=vis[j];if(o.hp>0&&Math.random()<meets(o,o===front))break;}
+        if(j<vis.length){PEL.h++;if(vis[j]===front)PEL.f++;}
+        const on=()=>{j++;while(j<vis.length&&!(vis[j].hp>0&&Math.random()<meets(vis[j],false)))j++;};
+        while(j<vis.length){
+          const e=vis[j],carry=bulletHit(e,m);
+          if(carry>0){m*=carry;on();continue;}
+          if(Math.random()<st.pierce){on();continue;}
+          if(bounces<st.chain&&Math.random()<st.bounce){bounces++;j=vis.findIndex((x,i)=>i!==j&&x.hp>0);if(j<0)break;continue;}
+          break;
+        }
+      }
     };
     while(left>0||E.length){
       t+=dt;left-=dt;aegis=Math.max(0,aegis-dt);shock=Math.max(0,shock-dt);
@@ -146,8 +184,9 @@ function run(tier,maxW=1e9){
       while(cd<=0){
         const vis=E.filter(e=>e.y>st.rangeY&&e.hp>0&&!e.ph).sort((a,b)=>b.y-a.y);if(!vis.length){cd=0;break;}
         // main bullet, multishot extras and twin go to the next enemies in line
-        const B=[[0,1]];
-        if(Math.random()<st.multiChance)for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);
+        const B=BU?[]:[[0,1]];
+        if(BU)burstSalvo(vis);
+        else if(Math.random()<st.multiChance)for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);
         if(st.twin)B.push([vis[1]?1:0,st.twin]);
         for(const [i0,m] of B){
           let i=i0,bounces=0;
@@ -214,6 +253,20 @@ if(process.argv[2]==='evtest'){
       const m=sw/N;line+=m.toFixed(1).padStart(8);tot+=m;n++;});
     out.push(line);}
   console.log(out.join(String.fromCharCode(10)));console.log('MEAN '+(tot/n).toFixed(2));process.exit(0);
+}
+// modes: RAPID vs BURST with the same shop and tattoos, in the first tier where RAPID falls short of the unlock wave
+//   node tools/sim.js modes [builds] [budgets=1e7,1e9]   (SIM_N runs per mode, default 12) → mean wave per mode
+if(process.argv[2]==='modes'){
+  const names=(process.argv[3]||'offense,swarm,thornsTank,bruiser,control,active').split(','),BUD=(process.argv[4]||'1e7,1e9').split(',').map(Number),N=+process.env.SIM_N||12;
+  let ratio=0,n=0;
+  for(const b of names)for(const B of BUD){
+    save.perm={};shop(b,B,{gameSpeed:1});equip(b,5);save.mode='rapid';
+    let T=1;for(;T<30;T++)if(run(T+1,TIERS.unlockWave).w<TIERS.unlockWave)break;T=Math.max(2,T+1);   // +1: the frontier tier, where RAPID falls short of the unlock wave
+    const m={};for(const mode of ['rapid','burst']){save.mode=mode;let s=0;for(let i=0;i<N;i++)s+=run(T,45).w;m[mode]=s/N;}
+    ratio+=m.burst-m.rapid;n++;const ph=(PEL.h/PEL.n*100).toFixed(0)+"% hit, "+(PEL.f/PEL.n*100).toFixed(0)+"% front";PEL.n=PEL.h=PEL.f=0;
+    console.log(`${b.padEnd(10)} ${B.toExponential(0)} T${T}: rapid ${m.rapid.toFixed(1)}  burst ${m.burst.toFixed(1)}  (${(m.burst-m.rapid>=0?'+':'')+(m.burst-m.rapid).toFixed(1)})  pellets ${ph}`);
+  }
+  console.log('mean burst - rapid: '+(ratio/n).toFixed(2)+' waves');process.exit(0);
 }
 if(process.argv[2]==='debug'){
   const b=process.argv[3],B=+process.argv[4];save.perm={};shop(b,B,{gameSpeed:1});equip(b,+process.argv[5]||5);

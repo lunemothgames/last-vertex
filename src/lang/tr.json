@@ -628,5 +628,19 @@
  "New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.": "OYNA'nın altında yeni takviye satırı: bir takviyeye dokunarak OTO'sunu açıp kapat. OTO artık altınının en fazla %20'sini harcar, mağaza için biriktirdiğin altın güvende.",
  "{0}: AUTO OFF": "{0}: OTO KAPALI",
  "{0}: AUTO ON · {1} COINS · {2}": "{0}: OTO AÇIK · {1} ALTIN · {2}",
- "{0}: READY FOR THE NEXT RUN": "{0}: SONRAKİ TUR İÇİN HAZIR"
+ "{0}: READY FOR THE NEXT RUN": "{0}: SONRAKİ TUR İÇİN HAZIR",
+ "A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.": "Yavaş atışla 5 saçmalık bir patlama, kısa menzil, en sert yakından vurur. Düşmanların yaklaşmasına izin veren dizilimlere uygun: diken, zırh.",
+ "ATTACK MODE": "SALDIRI MODU",
+ "BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "BURST, düşmanların yaklaşmasına izin veren dizilimlere uygun (diken, zırh). Mağazadaki her geliştirme ve her dövme iki modda da çalışır. Rekorlar ve tier'lar ortaktır, bekleme geliri daha çok kazandıran modu kullanır.",
+ "Coin and gem drops no longer appear under the buttons at the top, and they are drawn over enemies, so you can always see and tap them.": "Altın ve elmas düşüşleri artık üstteki butonların altında çıkmıyor ve düşmanların üstünde çiziliyor, böylece onları her zaman görüp dokunabilirsin.",
+ "Fast single shots with long range. Suits damage and multi-hit builds.": "Hızlı tekli atışlar, uzun menzil. Hasar ve çoklu vuruş dizilimlerine uygun.",
+ "MODE: {0}": "MOD: {0}",
+ "New: attack modes. Tap MODE under the triangle on the home screen. RAPID is the classic triangle; BURST (opens at Tier 2) fires slow blasts of 5 pellets that hit hardest up close.": "Yeni: saldırı modları. Ana ekranda üçgenin altındaki MOD yazısına dokun. RAPID bildiğin üçgen; BURST (Tier 2'de açılır) yavaş atışla 5 saçma fırlatır, en sert yakından vurur.",
+ "Next-run boost prices now follow the highest average income you have reached.": "Sonraki tur takviyelerinin fiyatı artık ulaştığın en yüksek ortalama gelire göre belirleniyor.",
+ "Opens when you reach Tier {0}.": "Tier {0}'ye ulaşınca açılır.",
+ "RAPID": "RAPID",
+ "SELECTED": "SEÇİLİ",
+ "Summon is now called INK.": "ÇAĞIR'ın adı artık YAPTIR.",
+ "UPDATE 0.6.7": "GÜNCELLEME 0.6.7",
+ "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.": "SALDIRI MODU: ana ekranda üçgenin altındaki MOD yazısına dokun. RAPID hızlı tekli atışlar yapar. BURST (Tier 2'de açılır) kısa menzilli bir koni içinde yavaş atışla 5 saçma fırlatır; saçmalar düz gider, düşman öldüren saçma kalan hasarıyla yoluna devam eder. ÇOKLU ATIŞ bir atışa 2 saçma ekler, ARC bir atışı tek atış sayar."
 }

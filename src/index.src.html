@@ -305,6 +305,19 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tiersel{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:2px}
 .tiersel button{width:34px;height:40px;display:grid;place-items:center;border:1px solid var(--dim)}
 .tiersel button.off{opacity:.3}
+/* attack mode: a small line under the triangle, tap = the two mode cards */
+.modeln{display:flex;align-items:center;justify-content:center;gap:3px;margin:-4px auto 2px;height:22px;padding:0 8px;
+  font-family:'VT323',monospace;font-size:16px;letter-spacing:.12em;color:var(--mute);text-shadow:none}
+.modeln svg.i{width:11px;height:11px}
+.mcards{display:grid;gap:8px;margin:8px 0 12px}
+.mcard{display:block;width:100%;text-align:left;border:1px solid var(--dim);padding:9px 11px;color:var(--mute);text-shadow:none}
+.mcard b{display:flex;align-items:center;gap:8px;font-family:'VT323',monospace;font-weight:400;font-size:24px;letter-spacing:.1em;color:var(--a)}
+.mcard b svg.i{width:18px;height:18px}
+.mcard b em{margin-left:auto;font-style:normal;font-size:15px;letter-spacing:.06em;color:var(--a2)}
+.mcard span{display:block;font-size:11px;line-height:1.55;margin-top:2px}
+.mcard.on{border-color:var(--a);box-shadow:0 0 12px var(--glow),inset 0 0 14px rgba(var(--a-rgb),0.12)}
+.mcard.lock{opacity:.5}
+.mcard.lock b{color:var(--mute)}
 .tinfo{width:178px;text-align:center;line-height:1.1;position:relative}
 .tinfo b{display:block;font-family:'VT323',monospace;font-weight:400;font-size:28px;letter-spacing:.12em}
 .tinfo span{display:block;font-size:10px;line-height:1.5;color:var(--mute);letter-spacing:.06em;text-shadow:none;white-space:pre-line}
@@ -593,6 +606,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-shatter" viewBox="0 0 24 24"><path d="M12 3l5 7-5 4-5-4z"/><path d="M7 10l-3 1M17 10l3 1M12 14v3"/><path d="M5 16l-2 3M19 16l2 3M9 19l-1 3M15 19l1 3"/></symbol>
 <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.9 2.9 0 1 1 4.2 2.6c-.9.5-1.4 1.1-1.4 2.1v.6"/><path d="M12 17.4v.2"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8.5 8.5 0 1 1 9 4a7 7 0 0 0 11 11z"/></symbol>
+<symbol id="i-spread" viewBox="0 0 24 24"><path d="M8.5 22l3.5-5 3.5 5z"/><path d="M11 13l-6-8M11.6 12.5L9 3M12 12.5V2.5M12.4 12.5L15 3M13 13l6-8" stroke-dasharray="2.5 2"/></symbol>
 <symbol id="i-aegis" viewBox="0 0 24 24"><path d="M12 6l5 2v4c0 3-2 5-5 6-3-1-5-3-5-6V8z"/><circle cx="12" cy="12" r="10.5" stroke-dasharray="3 2.5"/></symbol>
 </defs>
 </svg>
@@ -635,6 +649,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <g class="bob"><polygon points="0,-42 38,26 -38,26" fill="none" class="st" stroke-width="4" style="filter:drop-shadow(0 0 8px var(--a))"/><polygon points="0,-14 13,10 -13,10" class="fl"/></g>
       </svg>
     </div>
+    <button class="modeln" id="mMode" aria-label="Attack mode"><span id="mModeTxt">RAPID</span><svg class="i"><use href="#i-next"/></svg></button>
     <div class="tiersel"><button id="tPrev" aria-label="Previous tier"><svg class="i"><use href="#i-back"/></svg></button><div class="tinfo"><b id="tName">TIER 1</b><span id="tSub">BEST 0 · COINS x1.0</span><i class="dot" id="tierDot" style="display:none"></i></div><button id="tNext" aria-label="Next tier"><svg class="i"><use href="#i-next"/></svg></button></div>
     <div class="playw"><button class="play" id="mPlay"><svg class="i"><use href="#i-play"/></svg>PLAY</button></div>
     <div class="bstrip" id="mBoosts"></div>
@@ -802,6 +817,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="row2"><button class="btn" id="fbClose">CLOSE</button><button class="btn pri" id="fbOpen">OPEN FORM</button></div></div></div>
   <div class="ovl" id="dailyUI"><div class="mbox"><h4>DAILY REWARD</h4><p id="dyMeta"></p><div class="dgrid" id="dyGrid"></div>
     <div class="row2"><button class="btn" id="dyClose">CLOSE</button><button class="btn pri" id="dyGet">CLAIM</button></div></div></div>
+  <div class="ovl" id="modeUI"><div class="mbox"><h4>ATTACK MODE</h4><div class="mcards" id="mdCards"></div>
+    <div class="row2"><button class="btn" id="mdmClose">CLOSE</button></div></div></div>
   <div class="ovl" id="inboxUI"><div class="mbox"><h4>INBOX</h4><div class="inbox" id="ibList"></div>
     <div class="row2"><button class="btn" id="ibClose">CLOSE</button></div></div></div>
   <div class="ovl" id="cloudUI"><div class="mbox"><h4>CLOUD SAVE</h4>
@@ -832,7 +849,7 @@ function defaultSave(){return{
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
-  lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],
+  lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],mode:'rapid',
   tier:1,tierBest:{1:0},quests:[],qNextDaily:0,qNextWeekly:0,
   daily:{n:0,last:''},
 }}
@@ -1066,7 +1083,7 @@ function sfxGain(){
 function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
 // minimum ms between two plays of the same effect: dozens of oscillators a second clog weak phones'
 // audio thread, and then sounds arrive late and in bunches
-const SFX_GAP={shoot:70,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
+const SFX_GAP={shoot:70,blast:120,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
 const _sfxLast={};
 let _noiseBuf=null;
 function snd(type){
@@ -1094,6 +1111,7 @@ function snd(type){
     switch(type){
       // ── combat (rate-limited, kept light)
       case 'shoot':  tone('square',760,.035,.035,320);break;
+      case 'blast':  noise(.13,1100,.6,.13);tone('square',240,.06,.1,70);break;
       case 'hit':    tone('triangle',220,.06,.05,120);noise(.03,2400,1.2,.05);break;
       case 'crit':   tone('square',1300,.05,.05,2600);tone('sine',2600,.04,.07,0,.02);break;
       case 'kill':   noise(.09,900,.8,.12);tone('square',340,.05,.08,90);break;
@@ -1215,6 +1233,14 @@ const tierCoinMult=t=>1+TIERS.coinBonus*Math.pow(t-1,1.5);
 const tierUnlocked=t=>t===1||(save.tierBest[t-1]||0)>=TIERS.unlockWave;
 const maxUnlockedTier=()=>{let t=1;while(t<TIERS.max&&tierUnlocked(t+1))t++;return t;};
 const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max(m,w+(t-1)*TIERS.offset):m,0);
+// Attack modes, picked on the home screen. RAPID = the classic triangle. BURST (opens at Tier 2): a slow salvo of pellets in a
+// wide cone with short range, so it hits hardest up close. A salvo counts as one shot (ARC), MULTISHOT adds pellets to it,
+// every other upgrade and tattoo works as in RAPID. rate / dmg multiply fire rate / bullet damage per pellet;
+// range = range line (share of screen height) before RANGE upgrades, which count rangeUp as much; reach = how far a pellet flies past the line.
+// Tuned 2026-10-27 with the real game and `node tools/sim.js modes` / `SIM_MODE=burst npm run pace`: up close every pellet hits, so builds that
+// let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
+const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2};
+const isBurst=()=>save.mode==='burst';
 // Tier mastery: reaching these waves inside a tier earns its stars; every star is a small permanent bonus
 const MASTERY=[30,50,75];
 const STAR={dmg:.015,hp:.015,coin:.01};
@@ -1486,6 +1512,7 @@ delete save.perm.slow;
 if(!save.tierBest||typeof save.tierBest!=='object')save.tierBest={};
 if(!save.tierBest[1]&&save.bestWave)save.tierBest[1]=save.bestWave;
 if(!save.tier||!tierUnlocked(save.tier))save.tier=1;
+if(save.mode!=='burst'||maxUnlockedTier()<BURST.tier)save.mode='rapid';
 save.coins=Math.floor(save.coins||0);
 
 // ── STATS ────────────────────────────────────────────────────────────────────
@@ -1517,10 +1544,12 @@ function stats(){
   // crit chance above the 80% cap is converted: every 1% → +0.03x crit power
   const critRaw=v('critChance')+tb('crit_chance').c+(T.focus?.08:0);
   const reduce=1-(1-armorRed(v('defense')))*(1-tb('defense').red);
-  const lk=tb('luck'),rk=tb('ricochet'),sw=tb('shockwave'),arc=tb('arc');
+  const lk=tb('luck'),rk=tb('ricochet'),sw=tb('shockwave'),arc=tb('arc'),B=isBurst();
   return{
     dmg:       v('damage')*(T.power?1.5:1)*(T.berserk?1.25:1)*(1+tb('attack_power').dmg)*(1+stars*STAR.dmg)*M.dmg,
-    rate:      v('fireRate')*(T.rapid?1.25:1)*(T.berserk?1.2:1)*(1+tb('attack_speed').rate)*(runFx.odT>0?runFx.odM:1),
+    rate:      v('fireRate')*(T.rapid?1.25:1)*(T.berserk?1.2:1)*(1+tb('attack_speed').rate)*(runFx.odT>0?runFx.odM:1)*(B?BURST.rate:1),
+    // BURST: pellets per salvo and the damage of one pellet as a share of bullet damage (RAPID: one bullet, x1)
+    pellets:   B?BURST.pellets:1, pellet:B?BURST.dmg:1,
     maxHp,
     regen:     (v('regen')+maxHp*tb('regen').pct)*M.regen,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
@@ -1544,7 +1573,7 @@ function stats(){
     slowAmt:   Math.min(.5,v('slowAmt')+tb('frost').a),
     // slowed / frozen enemies take extra bullet damage: the slow power itself, plus the FROST tattoo
     frostVuln: 1+Math.min(.5,v('slowAmt')+tb('frost').a)+tb('frost').vuln,
-    rangeY:    GH*Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r),
+    rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
     pierce:    Math.min(.75,v('pierce')+tb('piercer').p),
     waveHeal:  v('waveHeal')+(T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
@@ -1657,7 +1686,9 @@ function coinDropValue(){
   const floor=ECO.coinDropMinKills*coinValueAt(effWave())*stats().mult;
   return Math.max(1,Math.round(Math.max(rate*ECO.coinDropSecs,floor)));
 }
-function spawnPickup(kind){pickups.push({kind,x:GW*.1+Math.random()*GW*.8,y:GH*(HUD_TOP+.04)+Math.random()*GH*.4,r:GW*.03,spawnTime:Date.now()});}
+// drops appear below the target / speed buttons and the stat overlay (top ~16%), where a tap can always reach them
+const PICKUP_TOP=.2;
+function spawnPickup(kind){pickups.push({kind,x:GW*.1+Math.random()*GW*.8,y:GH*PICKUP_TOP+Math.random()*GH*.38,r:GW*.03,spawnTime:Date.now()});}
 
 // ── AD / RUN ─────────────────────────────────────────────────────────────────
 // just wide enough for [play icon] +5 [gem]
@@ -1763,7 +1794,7 @@ function startRun(weekly=false){
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;runEvSeed=Math.floor(Math.random()*1e6);
   runTier=runWeekly?weeklyTier():save.tier;
   runUnlockedTier=0;runPrevBest=save.tierBest[runTier]||0;runPrevMaxTier=maxUnlockedTier();hint('start');
-  track('run_start',{tier:runTier,weekly:runWeekly?1:0,run_no:LIFE().runs+1});
+  track('run_start',{tier:runTier,weekly:runWeekly?1:0,run_no:LIFE().runs+1,mode:save.mode});
   getAC();startMusic(false);initRun();state=ST.PLAY;renderPlayUI();keepAwake(true);
   // a first-steps note from the menu (PLAY's, when the run starts from WEEKLY) must not stay over the field
   coachClear(false);
@@ -1791,7 +1822,12 @@ function saveProgress(){
     if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()));track('tier_unlock',{tier:maxUnlockedTier()});}
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
-    if(runPlayT>=120){const r=runEarned/runPlayT;save.idleCps=save.idleCps?save.idleCps*.7+r*.3:r;}
+    // each attack mode keeps its own average; idle income (save.idleCps) uses the mode that earns more
+    if(runPlayT>=120){
+      const r=runEarned/runPlayT,k=isBurst()?'cpsB':'cpsR';
+      if(save.cpsR===undefined)save.cpsR=save.idleCps||0;
+      save[k]=save[k]?save[k]*.7+r*.3:r;save.idleCps=Math.max(save.cpsR||0,save.cpsB||0);
+    }
     // boost prices follow the highest average ever reached, so playing badly on purpose cannot make them cheaper
     save.peakCps=Math.max(save.peakCps||0,save.idleCps||0);
   }
@@ -1981,22 +2017,30 @@ function cycleTarget(){
 function fireBullets(st){
   const TRI_Y=GH*TRI_FRAC,order=targetOrder(inRangeEnemies(st));
   if(!order.length)return;
-  const target=order[0],shots=[{e:target,m:1}];
-  // multishot: the extra bullets go to the next enemies in line, or fly off to the sides
-  if(Math.random()<st.multiChance){
-    qEvent('multishot');
-    for(let k=1;k<=ECO.multiExtra;k++)shots.push(order[k]?{e:order[k],m:1}:{ang:(k%2?-1:1)*.32,m:1});
-  }
-  if(st.twin>0)shots.push({e:order[1]||target,m:st.twin,twin:true});
+  const target=order[0],shots=[],multi=Math.random()<st.multiChance;
   const bx=triX,by=TRI_Y-GH*.03,spd=GH*.95,base=Math.atan2(target.y-by,target.x-bx);
   const bSize=2.5+Math.min(4,Math.log10(1+st.dmg)*1.5);
+  if(multi)qEvent('multishot');
+  if(st.pellets>1){
+    // BURST: pellets spread evenly over the cone (multishot packs 2 more into it), flying straight and only as far as the range line allows
+    const n=st.pellets+(multi?ECO.multiExtra:0),S=BURST.spread,left=(by-st.rangeY)*BURST.reach;
+    for(let k=0;k<n;k++){
+      const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
+      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*st.pellet,sz:bSize*.8,bounces:0,tgt:null,left});
+    }
+  }else{
+    shots.push({e:target,m:1});
+    // multishot: the extra bullets go to the next enemies in line, or fly off to the sides
+    if(multi)for(let k=1;k<=ECO.multiExtra;k++)shots.push(order[k]?{e:order[k],m:1}:{ang:(k%2?-1:1)*.32,m:1});
+  }
+  if(st.twin>0)shots.push({e:order[1]||target,m:st.twin,twin:true});
   for(const s of shots){
     const x0=bx+(s.twin?GW*.025:0),a=s.e?Math.atan2(s.e.y-by,s.e.x-x0):base+s.ang;
     bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
-  muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});
-  snd('shoot');
+  if(st.pellets>1){muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1,big:1});shake={x:0,y:0,t:Math.max(shake.t,.06)};snd('blast');}
+  else{muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1});snd('shoot');}
 }
 // ARC tattoo: lightning jumps from the target to the nearest enemies
 function arcStrike(first,st){
@@ -2223,6 +2267,7 @@ function updatePlay(dt){
       else{const sp=Math.hypot(b.vx,b.vy),dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;}
     }
     b.x+=b.vx*dt;b.y+=b.vy*dt;
+    if(b.left!==undefined)b.left-=Math.hypot(b.vx,b.vy)*dt;   // BURST pellet: flies a limited way
   });
 
   for(let bi=bullets.length-1;bi>=0;bi--){
@@ -2244,6 +2289,7 @@ function updatePlay(dt){
       let dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
       // ARMOR: a bullet weaker than armorThr x its max health is cut in proportion (thorns / blasts skip it)
       if(e.armorThr)dmg*=Math.min(1,dmg/(e.maxHp*e.armorThr));
+      const hpBefore=e.shield>0?Infinity:e.hp;
       // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
       if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
       else e.hp-=dmg;
@@ -2256,6 +2302,8 @@ function updatePlay(dt){
       if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
       if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
+      // BURST: a pellet that kills flies on with the damage it had left
+      if(b.left!==undefined&&e.hp<=0&&dmg>hpBefore){b.dmg*=1-hpBefore/dmg;(b.hits||(b.hits=new Set())).add(e);continue;}
       if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);if(b.tgt===e)b.tgt=null;qEvent('pierce');continue;}
       // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
       if(b.bounces<st.chain&&Math.random()<st.bounce){
@@ -2263,14 +2311,14 @@ function updatePlay(dt){
         let nx=null,nd=Infinity;
         for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
         if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
-          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;break;}
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;delete b.left;break;}
       }
       hit=true;break;
     }
     if(hit)bullets.splice(bi,1);
   }
   // off-screen bullets are dropped only after their last path was checked for hits
-  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60);
+  bullets=bullets.filter(b=>b.y>-GH*.05&&b.y<GH&&b.x>-60&&b.x<GW+60&&!(b.left<=0));
 
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];
@@ -2531,7 +2579,12 @@ function drawPlay(){
     cx.textAlign='right';cx.fillStyle=hexA(C.a,.6);cx.fillText(T('RANGE')+' //',GW*.97,RY-GH*.007);
   }
 
-  // drops
+  // enemies
+  // enemies fade in as they cross the bottom edge of the HUD band
+  const TOP=GH*HUD_TOP;
+  enemies.forEach(e=>drawEnemy(e,TOP));
+
+  // drops: drawn over the enemies so a crowd can never hide one
   pickups.forEach(g=>{
     const col=g.kind==='gem'?C.a2:C.a;
     const age=(Date.now()-g.spawnTime)/1000;
@@ -2552,57 +2605,95 @@ function drawPlay(){
     cx.restore();
   });
 
-  // enemies
-  // enemies fade in as they cross the bottom edge of the HUD band
-  const TOP=GH*HUD_TOP;
-  enemies.forEach(e=>{
-    const fa=Math.max(0,Math.min(1,(e.y-(TOP-e.sz))/(e.sz*.8)));
-    if(fa<=0)return;
-    const frozen=e.frozenT>0;
-    const col=e.hitFlash>0?'#ffffff':frozen?C.a2:enemyCol(e);
-    const ga=e.phased?fa*.25:fa;
-    cx.save();cx.globalAlpha=ga;cx.translate(e.x,e.y);cx.scale(e.scale,e.scale);
-    if(e.boss){
-      // outer warning ring, spinning the other way; pulses red when enraged
-      const pr=e.sz*.78+(e.enraged?Math.sin(lastTime*.02)*e.sz*.05:0);
-      cx.save();cx.rotate(-e.spinAngle*.4);cx.strokeStyle=hexA(e.enraged?C.boss:col,.55);cx.lineWidth=2;cx.setLineDash([e.sz*.12,e.sz*.08]);
-      cx.beginPath();cx.arc(0,0,pr,0,Math.PI*2);cx.stroke();cx.restore();
-    }
-    cx.rotate(e.boss?e.spinAngle*.15:Math.sin(e.spinAngle)*.12);
-    if(e.wobble>0)cx.scale(1+e.wobble*.12*Math.sin(lastTime*.04),1-e.wobble*.08);
-    const s=e.sz/2;
-    enemyPath(e.type,s);
-    cx.fillStyle=hexA(col,e.hitFlash>0?.85:.16);cx.fill();
-    cx.shadowColor=col;cx.shadowBlur=GW*(e.boss?.045:e.elite?.038:.022);
-    cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;if(e.phased)cx.setLineDash([3,3]);cx.stroke();cx.setLineDash([]);
-    if(e.armorThr&&e.type!=='armored'){cx.save();cx.setLineDash([]);cx.lineWidth=1;cx.globalAlpha*=.8;enemyPath(e.type,s*1.22);cx.stroke();cx.restore();}
-    if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
-    cx.shadowBlur=0;cx.globalAlpha=.6*ga;cx.lineWidth=1;
-    enemyInner(e.type,s);
+  drawShots(st);
+
+  drawParticles();
+
+  muzzle.forEach(m=>{
+    cx.save();cx.globalAlpha=m.life*.65;cx.shadowColor=C.a2;cx.shadowBlur=18;
+    cx.fillStyle=C.a2;cx.beginPath();cx.arc(m.x,m.y,GW*(m.big?.04:.02)*m.life,0,Math.PI*2);cx.fill();
     cx.restore();
-    // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
-    if(e.shield>0){cx.save();cx.globalAlpha=fa*(.35+.55*e.shield/e.maxShield);cx.strokeStyle=C.a2;cx.lineWidth=2;cx.shadowColor=C.a2;cx.shadowBlur=8;
-      cx.beginPath();cx.arc(e.x,e.y,e.sz*.85,Math.PI*1.05,Math.PI*1.95);cx.stroke();cx.restore();}
-    if(e.pulse>0){cx.save();cx.globalAlpha=fa*e.pulse*.5;cx.strokeStyle=enemyCol(e);cx.lineWidth=1.5;cx.setLineDash([3,4]);
-      cx.beginPath();cx.arc(e.x,e.y,GW*.25*(1-e.pulse*.6),0,Math.PI*2);cx.stroke();cx.restore();}
-    if(e.slowT>0||frozen){cx.save();cx.globalAlpha=fa;cx.strokeStyle=hexA(C.a2,frozen?.9:.55);cx.setLineDash(frozen?[]:[2,3]);cx.beginPath();cx.arc(e.x,e.y,e.sz*.8,0,Math.PI*2);cx.stroke();cx.restore();}
-    if(e.boss||runEvent==='blackout')return;   // bosses use the big bar at the top; BLACKOUT hides the bars
-    const bw=e.sz*1.3,bh=3,bx2=e.x-bw/2,by2=e.y-e.sz/2-8,hpf=Math.max(0,e.hp/e.maxHp);
-    cx.globalAlpha=fa;
-    cx.fillStyle=hexA(C.dim,.6);cx.fillRect(bx2,by2,bw,bh);
-    cx.fillStyle=hpf>.3?enemyCol(e):C.hot;cx.fillRect(bx2,by2,bw*hpf,bh);
-    cx.globalAlpha=1;
   });
 
-  // bullets
+  cx.fillStyle=C.a;
+  thruster.forEach(p=>{cx.globalAlpha=p.life*.35;cx.fillRect(p.x-p.r/2,p.y-p.r/2,p.r,p.r);});
+  cx.globalAlpha=1;
+
+  if(hp>0){
+    drawShip(triX,TRI_Y,GW*.06);
+    // AEGIS barrier ready: a dashed ring around the triangle
+    if(st.aegisCD>0&&aegisT<=0){
+      cx.save();cx.strokeStyle=hexA(C.a2,.7);cx.shadowColor=C.a2;cx.shadowBlur=8;cx.lineWidth=1.5;cx.setLineDash([4,4]);
+      cx.lineDashOffset=-lastTime*.02;cx.beginPath();cx.arc(triX,TRI_Y,GW*.085,0,Math.PI*2);cx.stroke();cx.restore();
+    }
+  }
+
+  // double-tap hides everything but the ad button
+  if(!hudHidden){
+    // HUD band: keeps the top readable over enemies and numbers
+    const hb=cx.createLinearGradient(0,0,0,TOP);
+    hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
+    cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
+  }
+  drawAdButton();
+  if(!hudHidden){drawHUD(st);if(!paused)drawWaveBanner();}
+
+  if(screenFlash>0){cx.fillStyle=hexA(C.hot,screenFlash*.16);cx.fillRect(-6,-6,GW+12,GH+12);}
+  cx.restore();
+}
+
+function drawEnemy(e,TOP){
+  const fa=Math.max(0,Math.min(1,(e.y-(TOP-e.sz))/(e.sz*.8)));
+  if(fa<=0)return;
+  const frozen=e.frozenT>0;
+  const col=e.hitFlash>0?'#ffffff':frozen?C.a2:enemyCol(e);
+  const ga=e.phased?fa*.25:fa;
+  cx.save();cx.globalAlpha=ga;cx.translate(e.x,e.y);cx.scale(e.scale,e.scale);
+  if(e.boss){
+    // outer warning ring, spinning the other way; pulses red when enraged
+    const pr=e.sz*.78+(e.enraged?Math.sin(lastTime*.02)*e.sz*.05:0);
+    cx.save();cx.rotate(-e.spinAngle*.4);cx.strokeStyle=hexA(e.enraged?C.boss:col,.55);cx.lineWidth=2;cx.setLineDash([e.sz*.12,e.sz*.08]);
+    cx.beginPath();cx.arc(0,0,pr,0,Math.PI*2);cx.stroke();cx.restore();
+  }
+  cx.rotate(e.boss?e.spinAngle*.15:Math.sin(e.spinAngle)*.12);
+  if(e.wobble>0)cx.scale(1+e.wobble*.12*Math.sin(lastTime*.04),1-e.wobble*.08);
+  const s=e.sz/2;
+  enemyPath(e.type,s);
+  cx.fillStyle=hexA(col,e.hitFlash>0?.85:.16);cx.fill();
+  cx.shadowColor=col;cx.shadowBlur=GW*(e.boss?.045:e.elite?.038:.022);
+  cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;if(e.phased)cx.setLineDash([3,3]);cx.stroke();cx.setLineDash([]);
+  if(e.armorThr&&e.type!=='armored'){cx.save();cx.setLineDash([]);cx.lineWidth=1;cx.globalAlpha*=.8;enemyPath(e.type,s*1.22);cx.stroke();cx.restore();}
+  if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
+  cx.shadowBlur=0;cx.globalAlpha=.6*ga;cx.lineWidth=1;
+  enemyInner(e.type,s);
+  cx.restore();
+  // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
+  if(e.shield>0){cx.save();cx.globalAlpha=fa*(.35+.55*e.shield/e.maxShield);cx.strokeStyle=C.a2;cx.lineWidth=2;cx.shadowColor=C.a2;cx.shadowBlur=8;
+    cx.beginPath();cx.arc(e.x,e.y,e.sz*.85,Math.PI*1.05,Math.PI*1.95);cx.stroke();cx.restore();}
+  if(e.pulse>0){cx.save();cx.globalAlpha=fa*e.pulse*.5;cx.strokeStyle=enemyCol(e);cx.lineWidth=1.5;cx.setLineDash([3,4]);
+    cx.beginPath();cx.arc(e.x,e.y,GW*.25*(1-e.pulse*.6),0,Math.PI*2);cx.stroke();cx.restore();}
+  if(e.slowT>0||frozen){cx.save();cx.globalAlpha=fa;cx.strokeStyle=hexA(C.a2,frozen?.9:.55);cx.setLineDash(frozen?[]:[2,3]);cx.beginPath();cx.arc(e.x,e.y,e.sz*.8,0,Math.PI*2);cx.stroke();cx.restore();}
+  if(e.boss||runEvent==='blackout')return;   // bosses use the big bar at the top; BLACKOUT hides the bars
+  const bw=e.sz*1.3,bh=3,bx2=e.x-bw/2,by2=e.y-e.sz/2-8,hpf=Math.max(0,e.hp/e.maxHp);
+  cx.globalAlpha=fa;
+  cx.fillStyle=hexA(C.dim,.6);cx.fillRect(bx2,by2,bw,bh);
+  cx.fillStyle=hpf>.3?enemyCol(e):C.hot;cx.fillRect(bx2,by2,bw*hpf,bh);
+  cx.globalAlpha=1;
+}
+
+// bullets, lightning, beams and blast rings
+function drawShots(st){
+  const TRI_Y=GH*TRI_FRAC;
   const trailN=fxLow()?3:8;
   bullets.forEach(b=>{
+    // a BURST pellet fades out over the last part of its way
+    const fa=b.left!==undefined?Math.max(0,Math.min(1,b.left/(GH*.06))):1;
     cx.fillStyle=C.a;
     b.trail.forEach((pt,i)=>{if(i>=trailN)return;
-      cx.globalAlpha=(1-(i/b.trail.length))*.4;
+      cx.globalAlpha=(1-(i/b.trail.length))*.4*fa;
       const r=Math.max(.6,b.sz-.3-i*.28);cx.fillRect(pt.x-r/2,pt.y-r/2,r,r);
     });cx.globalAlpha=1;
-    cx.save();cx.shadowColor=C.a;cx.shadowBlur=b.sz*2.4;
+    cx.save();cx.globalAlpha=fa;cx.shadowColor=C.a;cx.shadowBlur=b.sz*2.4;
     cx.fillStyle=C.a2;cx.beginPath();cx.arc(b.x,b.y,b.sz*.85,0,Math.PI*2);cx.fill();
     cx.restore();
   });
@@ -2634,40 +2725,6 @@ function drawPlay(){
     cx.save();cx.globalAlpha=n.life*.8;cx.strokeStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=16;cx.lineWidth=2+n.life*4;
     cx.beginPath();cx.arc(n.x,n.y,n.r?n.r*(1.15-n.life*.6):GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();cx.restore();
   });
-
-  drawParticles();
-
-  muzzle.forEach(m=>{
-    cx.save();cx.globalAlpha=m.life*.65;cx.shadowColor=C.a2;cx.shadowBlur=18;
-    cx.fillStyle=C.a2;cx.beginPath();cx.arc(m.x,m.y,GW*.02*m.life,0,Math.PI*2);cx.fill();
-    cx.restore();
-  });
-
-  cx.fillStyle=C.a;
-  thruster.forEach(p=>{cx.globalAlpha=p.life*.35;cx.fillRect(p.x-p.r/2,p.y-p.r/2,p.r,p.r);});
-  cx.globalAlpha=1;
-
-  if(hp>0){
-    drawShip(triX,TRI_Y,GW*.06);
-    // AEGIS barrier ready: a dashed ring around the triangle
-    if(st.aegisCD>0&&aegisT<=0){
-      cx.save();cx.strokeStyle=hexA(C.a2,.7);cx.shadowColor=C.a2;cx.shadowBlur=8;cx.lineWidth=1.5;cx.setLineDash([4,4]);
-      cx.lineDashOffset=-lastTime*.02;cx.beginPath();cx.arc(triX,TRI_Y,GW*.085,0,Math.PI*2);cx.stroke();cx.restore();
-    }
-  }
-
-  // double-tap hides everything but the ad button
-  if(!hudHidden){
-    // HUD band: keeps the top readable over enemies and numbers
-    const hb=cx.createLinearGradient(0,0,0,TOP);
-    hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
-    cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
-  }
-  drawAdButton();
-  if(!hudHidden){drawHUD(st);if(!paused)drawWaveBanner();}
-
-  if(screenFlash>0){cx.fillStyle=hexA(C.hot,screenFlash*.16);cx.fillRect(-6,-6,GW+12,GH+12);}
-  cx.restore();
 }
 
 // ad button: just above the perimeter, right side
@@ -2748,7 +2805,7 @@ function drawHUD(st){
   const sy=GH*.985,sf=fs*.85;
   // exact values (2 decimals) below 1000; suffixes (1.23K…) only above that
   const exact=v=>v<1000?String(+v.toFixed(2)):fmtN(v);
-  cx.textAlign='left';glowText(`${T('ATK')} ${exact(st.dmg)}`,GW*.04,sy,C.mute,sf,0);
+  cx.textAlign='left';glowText(`${T('ATK')} ${exact(st.dmg*st.pellet)}${st.pellets>1?' x'+st.pellets:''}`,GW*.04,sy,C.mute,sf,0);
   cx.textAlign='center';glowText(`${T('SPD')} ${st.rate.toFixed(2)}/s`,GW*.5,sy,C.mute,sf,0);
   cx.textAlign='right';glowText(`${T('CRT')} ${+(st.crit*100).toFixed(1)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
 
@@ -2918,8 +2975,31 @@ function renderMenu(){
   setTimeout(offerLowFx,600);
   $('mCoins').textContent=fmtC(save.coins);
   $('mGems').textContent=fmtN(save.gems);
-  renderTierSel();achCheck();renderMenuAd();renderDailyDot();renderInboxDot();renderBoostStrip();menuHints();
+  renderTierSel();renderModeLine();achCheck();renderMenuAd();renderDailyDot();renderInboxDot();renderBoostStrip();menuHints();
 }
+// attack mode: the line under the triangle names the mode, the cards switch it (BURST opens at Tier 2)
+const MODES=[
+  {id:'rapid',name:'RAPID',icon:'stream',desc:'Fast single shots with long range. Suits damage and multi-hit builds.'},
+  {id:'burst',name:'BURST',icon:'spread',desc:'A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.'},
+];
+function renderModeLine(){$('mModeTxt').textContent=T('MODE: {0}',isBurst()?'BURST':'RAPID');}
+function renderModeCards(){
+  const open=maxUnlockedTier()>=BURST.tier;
+  $('mdCards').innerHTML=MODES.map(m=>{
+    const lock=m.id==='burst'&&!open,on=save.mode===m.id;
+    return `<button class="mcard${on?' on':''}${lock?' lock':''}" data-mode="${m.id}"><b>${I(lock?'lock':m.icon)}${m.name}${on?`<em>${T('SELECTED')}</em>`:''}</b>`+
+      `<span>${T(m.desc)}</span>${lock?`<span>${T('Opens when you reach Tier {0}.',BURST.tier)}</span>`:''}</button>`;
+  }).join('');
+}
+$('mMode').addEventListener('click',()=>{renderModeCards();$('modeUI').classList.add('show');snd('click');});
+$('mdCards').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]');if(!b)return;
+  const id=b.dataset.mode;
+  if(id==='burst'&&maxUnlockedTier()<BURST.tier){snd('deny');toast(T('REACH WAVE {0} IN TIER {1}',TIERS.unlockWave,BURST.tier-1),true);return;}
+  if(save.mode!==id){save.mode=id;persist();track('mode_pick',{mode:id});}
+  snd('blip');renderModeCards();renderModeLine();
+});
+$('mdmClose').addEventListener('click',()=>{snd('click');$('modeUI').classList.remove('show');});
 function renderTierSel(){
   const t=save.tier,maxT=maxUnlockedTier();
   $('tName').textContent=T('TIER {0}',t);
@@ -3742,7 +3822,8 @@ const HELP_TOPICS=[
   ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
   ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
-    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>`],
+    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>
+    <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
@@ -4102,6 +4183,14 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.6.7',date:'2026-10-27',name:'UPDATE 0.6.7',
+   lines:[
+    {text:'New: attack modes. Tap MODE under the triangle on the home screen. RAPID is the classic triangle; BURST (opens at Tier 2) fires slow blasts of 5 pellets that hit hardest up close.'},
+    {text:'BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.'},
+    {text:'Coin and gem drops no longer appear under the buttons at the top, and they are drawn over enemies, so you can always see and tap them.'},
+    {text:'Summon is now called INK.'},
+    {text:'Next-run boost prices now follow the highest average income you have reached.'},
+  ]},
   {id:'0.6.6',date:'2026-10-25',name:'UPDATE 0.6.6',
    lines:[
     {text:'Tank builds no longer run away late in the game: above 70% damage reduction, armor and the DEFENSE tattoo count only a quarter (77.5% at most).'},
@@ -4228,7 +4317,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.6.6';
+const GAME_VERSION='0.6.7';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');
@@ -4267,6 +4356,7 @@ function handleBack(){
   if(on('cloudUI')){$('cloudUI').classList.remove('show');return true;}
   if(on('dailyUI')){$('dyClose').click();return true;}
   if(on('inboxUI')){$('ibClose').click();return true;}
+  if(on('modeUI')){$('mdmClose').click();return true;}
   if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}

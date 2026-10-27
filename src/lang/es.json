@@ -628,5 +628,19 @@
  "New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.": "Nueva fila de mejoras bajo JUGAR: toca una mejora para activar o desactivar su AUTO. AUTO ahora gasta como máximo el 20% de tus monedas, así tus ahorros para la tienda están a salvo.",
  "{0}: AUTO OFF": "{0}: AUTO DESACTIVADO",
  "{0}: AUTO ON · {1} COINS · {2}": "{0}: AUTO ACTIVADO · {1} MONEDAS · {2}",
- "{0}: READY FOR THE NEXT RUN": "{0}: LISTA PARA LA PRÓXIMA PARTIDA"
+ "{0}: READY FOR THE NEXT RUN": "{0}: LISTA PARA LA PRÓXIMA PARTIDA",
+ "A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.": "Una ráfaga lenta de 5 perdigones, poco alcance, golpea más fuerte de cerca. Ideal para builds que dejan acercarse a los enemigos: espinas, blindaje.",
+ "ATTACK MODE": "MODO DE ATAQUE",
+ "BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "BURST va bien con builds que dejan acercarse a los enemigos (espinas, blindaje). Todas las mejoras de la tienda y todos los tatuajes funcionan en ambos modos. Los récords y los tiers son compartidos, y los ingresos inactivos usan el modo que más gana.",
+ "Coin and gem drops no longer appear under the buttons at the top, and they are drawn over enemies, so you can always see and tap them.": "Las monedas y gemas que caen ya no aparecen bajo los botones de arriba y se dibujan sobre los enemigos, así siempre puedes verlas y tocarlas.",
+ "Fast single shots with long range. Suits damage and multi-hit builds.": "Disparos rápidos de uno en uno con mucho alcance. Ideal para builds de daño y de golpes múltiples.",
+ "MODE: {0}": "MODO: {0}",
+ "New: attack modes. Tap MODE under the triangle on the home screen. RAPID is the classic triangle; BURST (opens at Tier 2) fires slow blasts of 5 pellets that hit hardest up close.": "Nuevo: modos de ataque. Toca MODO bajo el triángulo en la pantalla principal. RAPID es el triángulo de siempre; BURST (se abre en el Tier 2) dispara ráfagas lentas de 5 perdigones que golpean más fuerte de cerca.",
+ "Next-run boost prices now follow the highest average income you have reached.": "El precio de las mejoras para la próxima partida ahora sigue el ingreso medio más alto que hayas alcanzado.",
+ "Opens when you reach Tier {0}.": "Se abre al llegar al Tier {0}.",
+ "RAPID": "RAPID",
+ "SELECTED": "ELEGIDO",
+ "Summon is now called INK.": "INVOCAR ahora se llama TATUAR.",
+ "UPDATE 0.6.7": "ACTUALIZACIÓN 0.6.7",
+ "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.": "MODO DE ATAQUE: toca MODO bajo el triángulo en la pantalla principal. RAPID dispara rápido, de uno en uno. BURST (se abre en el Tier 2) dispara una ráfaga lenta de 5 perdigones en cono con poco alcance; los perdigones van en línea recta, y uno que mata sigue volando con el daño que le queda. DISPARO MÚLTIPLE añade 2 perdigones a una ráfaga, y ARC cuenta una ráfaga como un solo disparo."
 }

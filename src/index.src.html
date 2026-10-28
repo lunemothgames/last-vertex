@@ -2077,7 +2077,7 @@ function fireBullets(st){
   if(st.twin>0)shots.push({e:order[1]||target,m:st.twin,twin:true});
   for(const s of shots){
     const x0=bx+(s.twin?GW*.025:0),a=s.e?Math.atan2(s.e.y-by,s.e.x-x0):base+s.ang;
-    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
+    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*st.pellet*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
   if(st.pellets>1){muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1,big:1});shake={x:0,y:0,t:Math.max(shake.t,.06)};snd('blast');}
@@ -2280,7 +2280,7 @@ function updatePlay(dt){
   if(st.shockM>0&&hp/st.maxHp<.3&&shockCooldown<=0){
     for(const e of enemies){
       if(e.hp<=0||e.y<GH*.45)continue;
-      hurt(e,st.dmg*st.shockM*(e.boss?st.bossDmg:1));
+      hurt(e,st.dmg*st.pellet*st.shockM*(e.boss?st.bossDmg:1));
       if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*2);
     }
     novas.push({x:triX,y:LINE_Y,life:1,col:C.hot});screenFlash=.25;shake={x:0,y:0,t:.2};
@@ -3939,7 +3939,7 @@ const HELP_TOPICS=[
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
   ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
     <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>
-    <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, NOVA and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
+    <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
     <p>${T('AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],

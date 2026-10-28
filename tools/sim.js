@@ -163,7 +163,7 @@ function run(tier,maxW=1e9){
         else continue;
         a.cd=tb(id).cd;
       }
-      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.y>.45){hit(e,st.dmg*st.shockM*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*2);}shock=st.shockCD;}
+      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.y>.45){hit(e,st.dmg*st.pellet*st.shockM*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*2);}shock=st.shockCD;}
       for(const e of E){
         e.kb*=Math.pow(.03,dt);if(Math.abs(e.kb)<e.sp*.05)e.kb=0;
         if(e.frz>0){e.frz-=dt;continue;}
@@ -195,7 +195,7 @@ function run(tier,maxW=1e9){
         const B=BU?[]:[[0,1]];
         if(BU)burstSalvo(vis);
         else if(Math.random()<st.multiChance)for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);
-        if(st.twin)B.push([vis[1]?1:0,st.twin]);
+        if(st.twin)B.push([vis[1]?1:0,st.twin*st.pellet]);
         for(const [i0,m] of B){
           let i=i0,bounces=0;
           for(;;){

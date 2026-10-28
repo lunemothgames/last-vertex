@@ -2150,7 +2150,8 @@ function gooBurst(e,st){
     if(o===e||o.hp<=0||Math.hypot(o.x-e.x,o.y-e.y)>R+o.sz*.5)continue;
     hurt(o,e.gooD*bombVuln(o,st));
   }
-  novas.push({x:e.x,y:e.y,life:1,col:C.a,r:R,fill:true});burst(e.x,e.y,C.a,8,GH*.1);snd('bomb');
+  if(novas.length<10){novas.push({x:e.x,y:e.y,life:1,col:C.a,r:R,fill:true});burst(e.x,e.y,C.a,6,GH*.1);}   // a crowd of bursts at once draws only the first rings
+  snd('bomb');
 }
 function blastBomb(b){
   const kind=TT[b.id].gren,x=tb(b.id),st=stats(),R=GW*TT[b.id].r,isCrit=Math.random()<st.crit,base=st.dmg*st.pellet*(isCrit?st.critM:1);
@@ -2480,7 +2481,8 @@ function updatePlay(dt){
     e.y+=(spd+(frozen?0:e.kbVy))*dt;
     if(e.hitFlash>0)e.hitFlash-=dt;
     if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e,st);}
-    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){hurt(e,e.virD*e.virAcc);e.virAcc=0;}}
+    // VIRUS ticks are quiet (no flash, no number): a whole wave can be infected at once
+    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){const d=e.virD*e.virAcc;e.hp-=d;runDmgDealt+=d;e.virAcc=0;}}
 
     // every touch while moving down counts as a hit (and knocks it back again); CLINGERS stay and hit again every few seconds
     if(e.clung){

@@ -1475,6 +1475,10 @@ const TAT_TYPES=[
    desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[2.2,3.2],dur:[10,14],cd:[40,26]},
    desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
+  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[1,2],cd:[60,40]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
+  {id:'virus_bomb',  name:'VIRUS BOMB',icon:'virus',rar:2,w:3,act:1,gren:'virus',r:.2,v:{m:[.15,.35],cd:[55,36]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it',x.m.toFixed(2),GRENADE.virus.t)+cdTxt(x)},
   // ── epic: new mechanics
   {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.22],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
   {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[4,12],cd:[23,10]},
@@ -1482,12 +1486,8 @@ const TAT_TYPES=[
   {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
    desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
-  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[1,2],cd:[60,40]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
   {id:'goo_bomb',    name:'GOO BOMB',icon:'goo',rar:3,w:1.2,act:1,gren:'goo',r:.2,v:{m:[.6,1.2],m2:[1.2,2.4],cd:[60,40]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
-  {id:'virus_bomb',  name:'VIRUS BOMB',icon:'virus',rar:2,w:3,act:1,gren:'virus',r:.2,v:{m:[.15,.35],cd:[55,36]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it',x.m.toFixed(2),GRENADE.virus.t)+cdTxt(x)},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
 ];

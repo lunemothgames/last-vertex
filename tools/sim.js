@@ -127,7 +127,7 @@ function run(tier,maxW=1e9){
     const TRI=.9,tanS=BU?Math.tan(BU.spread/2):0;
     const meets=(o,front)=>{const cw=2*Math.max(.03,TRI-o.y)*tanS,cov=Math.min(1,o.w/cw);return front?cov:cov*Math.min(1,(cw+o.w)/GWH)*BURST_LAT;};
     const burstSalvo=vis=>{
-      const n=st.pellets+(Math.random()<st.multiChance?ECO.multiExtra:0),front=vis[0];
+      const n=st.pellets*(Math.random()<st.multiChance?2:1),front=vis[0];
       for(let k=0;k<n;k++){
         let j=0,bounces=0,m=st.pellet;PEL.n++;
         for(;j<vis.length;j++){const o=vis[j];if(o.hp>0&&Math.random()<meets(o,o===front))break;}
@@ -148,13 +148,13 @@ function run(tier,maxW=1e9){
       hp=Math.min(st.maxHp,hp+st.regen*dt);cd-=dt;
       // active tattoos, cast as soon as they are useful
       for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
-        if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,st.dmg*a.m*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}}
+        if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,st.dmg*st.pellet*a.m*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}}
         else if(id==='logic_bomb'&&!process.env.SIM_NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
           const R=TT.logic_bomb.r,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
           let best=null,bn=0;for(const c of live){const n=live.filter(o=>Math.abs(o.y-c.y)<rY).length;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
           const crit=Math.random()<st.crit?st.critM:1;
-          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,st.dmg*a.m*crit*(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}
+          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,st.dmg*st.pellet*a.m*crit*(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}
         }
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}
@@ -213,7 +213,7 @@ function run(tier,maxW=1e9){
             break;
           }
         }
-        if(st.arcEvery&&++shots%st.arcEvery===0)for(const e of vis.slice(0,st.arcN))hit(e,st.dmg*st.arcM*(e.boss?st.bossDmg:1));
+        if(st.arcEvery&&++shots%st.arcEvery===0)for(const e of vis.slice(0,st.arcN))hit(e,st.dmg*st.pellet*st.arcM*(e.boss?st.bossDmg:1));
         cd+=1/rate;
       }
       for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){

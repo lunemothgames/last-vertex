@@ -72,7 +72,6 @@
  "ATK SPD": "VEL ATQ",
  "ATTACK": "ATAQUE",
  "ATTACK MODE": "MODO DE ATAQUE",
- "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.": "MODO DE ATAQUE: toque em MODO sob o triângulo na tela inicial. RAPID dispara rápido, um tiro por vez. BURST (abre no Tier 2) dispara uma rajada lenta de 5 chumbos em cone com pouco alcance; os chumbos voam em linha reta, e um que mata segue voando com o dano que sobrou. TIRO MÚLTIPLO adiciona 2 chumbos a uma rajada, e ARC conta uma rajada como um só tiro.",
  "AUTO": "AUTO",
  "AUTO RETRY": "REPETIR AUTO",
  "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REPETIR AUTO (a partir do Tier {0}): ative na tela de resultado e o mesmo tier recomeça sozinho {1} segundos após a morte. Partidas iniciadas assim pagam {2} das moedas e encontram menos gemas; uma partida que você inicia paga tudo. A op semanal nunca recomeça sozinha.",
@@ -160,7 +159,6 @@
  "Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.": "Chance de uma bala ser crítica e causar PODER CRÍTICO vezes o dano. Máx. 80%; o que as tatuagens passarem disso vira poder crítico.",
  "Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can't be pushed. Max 80%.": "Chance de uma bala empurrar o inimigo de volta pelo campo e te dar tempo. Chefes não podem ser empurrados. Máx. 80%.",
  "Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.": "Chance de uma bala deixar o inimigo lento por 3 segundos. O quanto ele desacelera depende de POTÊNCIA DE LENTIDÃO. Máx. 80%.",
- "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Max 60%.": "Chance de um tiro disparar 2 balas extras nos próximos inimigos no alcance. Sem outros inimigos por perto, elas vão para os lados. Máx. 60%.",
  "Chance to take no damage from a perimeter hit. The enemy still bounces back and still takes thorns. Max 50%.": "Chance de não sofrer dano de um golpe no perímetro. O inimigo ainda quica e ainda sofre espinhos. Máx. 50%.",
  "Claim {0} quests": "Resgate {0} missões",
  "Claimed. Next reward in {0}.": "Resgatada. Próxima recompensa em {0}.",
@@ -651,5 +649,7 @@
  "{0}s cooldown": "{0} s de recarga",
  "© 2026 LUNEMOTH GAMES": "© 2026 LUNEMOTH GAMES",
  "★ NEW BEST WAVE ★": "★ NOVO RECORDE DE ONDA ★",
- "★ TIER {0} MASTERY {1}/{2}": "★ MAESTRIA TIER {0} {1}/{2}"
+ "★ TIER {0} MASTERY {1}/{2}": "★ MAESTRIA TIER {0} {1}/{2}",
+ "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.": "Chance de um tiro lançar 2 balas extras nos próximos inimigos no alcance. Sem outros inimigos elas voam para os lados. No BURST a rajada dobra para 10 projéteis. Máx. 60%.",
+ "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, NOVA and bombs hit 1.2x harder; ARC counts a blast as one shot.": "MODO DE ATAQUE: toque em MODO sob o triângulo na tela inicial. RAPID dispara rápido, um tiro por vez. BURST (abre no Tier 2) dispara uma rajada lenta de 5 chumbos em cone com pouco alcance; os chumbos voam em linha reta, e um que mata segue voando com o dano que sobrou. TIRO MÚLTIPLO duplica uma rajada para 10 chumbos; ARC, NOVA e bombas batem 1,2x mais forte; ARC conta uma rajada como um só tiro."
 }

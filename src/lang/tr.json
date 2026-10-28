@@ -72,7 +72,6 @@
  "ATK SPD": "ATK HIZI",
  "ATTACK": "SALDIRI",
  "ATTACK MODE": "SALDIRI MODU",
- "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.": "SALDIRI MODU: ana ekranda üçgenin altındaki MOD yazısına dokun. RAPID hızlı tekli atışlar yapar. BURST (Tier 2'de açılır) kısa menzilli bir koni içinde yavaş atışla 5 saçma fırlatır; saçmalar düz gider, düşman öldüren saçma kalan hasarıyla yoluna devam eder. ÇOKLU ATIŞ bir atışa 2 saçma ekler, ARC bir atışı tek atış sayar.",
  "AUTO": "OTO",
  "AUTO RETRY": "OTO TEKRAR",
  "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
@@ -160,7 +159,6 @@
  "Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.": "Merminin kritik vuruş olup hasarını KRİTİK GÜCÜ kadar katlama şansı. En fazla %80; dövmelerden gelen fazlası kritik gücüne dönüşür.",
  "Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can't be pushed. Max 80%.": "Merminin vurduğu düşmanı alanda geri itip sana zaman kazandırma şansı. Bosslar itilemez. En fazla %80.",
  "Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.": "Merminin vurduğu düşmanı 3 saniye yavaşlatma şansı. Ne kadar yavaşlayacağını YAVAŞLATMA GÜCÜ belirler. En fazla %80.",
- "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Max 60%.": "Bir atışın menzildeki sıradaki düşmanlara 2 ek mermi atma şansı. Etrafta başka düşman yoksa yanlara uçarlar. En fazla %60.",
  "Chance to take no damage from a perimeter hit. The enemy still bounces back and still takes thorns. Max 50%.": "Sınır vuruşundan hiç hasar almama şansı. Düşman yine geri seker ve dikenden hasar alır. En fazla %50.",
  "Claim {0} quests": "{0} görev ödülü al",
  "Claimed. Next reward in {0}.": "Alındı. Sonraki ödül {0} sonra.",
@@ -651,5 +649,7 @@
  "{0}s cooldown": "{0} sn bekleme",
  "© 2026 LUNEMOTH GAMES": "© 2026 LUNEMOTH GAMES",
  "★ NEW BEST WAVE ★": "★ YENİ EN İYİ DALGA ★",
- "★ TIER {0} MASTERY {1}/{2}": "★ TIER {0} USTALIK {1}/{2}"
+ "★ TIER {0} MASTERY {1}/{2}": "★ TIER {0} USTALIK {1}/{2}",
+ "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.": "Bir atışın, menzildeki sıradaki düşmanlara 2 fazladan mermi atma şansı. Başka düşman yoksa yanlara uçarlar. BURST'te patlama 10 saçmaya çıkar. En fazla %60.",
+ "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, NOVA and bombs hit 1.2x harder; ARC counts a blast as one shot.": "SALDIRI MODU: ana ekranda üçgenin altındaki MOD yazısına dokun. RAPID hızlı tekli atışlar yapar. BURST (Tier 2'de açılır) kısa menzilli bir koni içinde yavaş atışla 5 saçma fırlatır; saçmalar düz gider, düşman öldüren saçma kalan hasarıyla yoluna devam eder. ÇOKLU ATIŞ bir patlamayı 10 saçmaya çıkarır; ARC, NOVA ve bombalar 1,2 kat sert vurur; ARC bir patlamayı tek atış sayar."
 }

@@ -72,7 +72,6 @@
  "ATK SPD": "VEL ATQ",
  "ATTACK": "ATAQUE",
  "ATTACK MODE": "MODO DE ATAQUE",
- "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.": "MODO DE ATAQUE: toca MODO bajo el triángulo en la pantalla principal. RAPID dispara rápido, de uno en uno. BURST (se abre en el Tier 2) dispara una ráfaga lenta de 5 perdigones en cono con poco alcance; los perdigones van en línea recta, y uno que mata sigue volando con el daño que le queda. DISPARO MÚLTIPLE añade 2 perdigones a una ráfaga, y ARC cuenta una ráfaga como un solo disparo.",
  "AUTO": "AUTO",
  "AUTO RETRY": "REINTENTO AUTO",
  "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REINTENTO AUTO (desde el Tier {0}): actívalo en la pantalla de resultados y el mismo tier vuelve a empezar solo {1} segundos después de morir. Las partidas que empiezan así dan el {2} de las monedas y encuentran menos gemas; una partida que empiezas tú paga completa. La op semanal nunca se reinicia sola.",
@@ -160,7 +159,6 @@
  "Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.": "Probabilidad de que una bala sea crítica y haga PODER CRÍTICO veces su daño. Máx. 80%; lo que aporten los tatuajes por encima se convierte en poder crítico.",
  "Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can't be pushed. Max 80%.": "Probabilidad de que una bala empuje al enemigo hacia atrás y te dé tiempo. Los jefes no se pueden empujar. Máx. 80%.",
  "Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.": "Probabilidad de que una bala ralentice al enemigo durante 3 segundos. Cuánto lo ralentiza depende de POTENCIA DE RALENTIZACIÓN. Máx. 80%.",
- "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. Max 60%.": "Probabilidad de que un disparo lance 2 balas extra a los siguientes enemigos en alcance. Si no hay más enemigos, salen hacia los lados. Máx. 60%.",
  "Chance to take no damage from a perimeter hit. The enemy still bounces back and still takes thorns. Max 50%.": "Probabilidad de no recibir daño de un golpe en el perímetro. El enemigo rebota igual y recibe las espinas. Máx. 50%.",
  "Claim {0} quests": "Reclama {0} misiones",
  "Claimed. Next reward in {0}.": "Reclamada. Próxima recompensa en {0}.",
@@ -651,5 +649,7 @@
  "{0}s cooldown": "{0} s de recarga",
  "© 2026 LUNEMOTH GAMES": "© 2026 LUNEMOTH GAMES",
  "★ NEW BEST WAVE ★": "★ NUEVA MEJOR OLEADA ★",
- "★ TIER {0} MASTERY {1}/{2}": "★ MAESTRÍA TIER {0} {1}/{2}"
+ "★ TIER {0} MASTERY {1}/{2}": "★ MAESTRÍA TIER {0} {1}/{2}",
+ "Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.": "Probabilidad de que un disparo lance 2 balas extra a los siguientes enemigos en alcance. Sin otros enemigos salen hacia los lados. En BURST la ráfaga se duplica a 10 perdigones. Máx. 60%.",
+ "ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, NOVA and bombs hit 1.2x harder; ARC counts a blast as one shot.": "MODO DE ATAQUE: toca MODO bajo el triángulo en la pantalla principal. RAPID dispara rápido, de uno en uno. BURST (se abre en el Tier 2) dispara una ráfaga lenta de 5 perdigones en cono con poco alcance; los perdigones van en línea recta, y uno que mata sigue volando con el daño que le queda. DISPARO MÚLTIPLE duplica una ráfaga a 10 perdigones; ARC, NOVA y las bombas golpean 1,2x más fuerte; ARC cuenta una ráfaga como un solo disparo."
 }

@@ -32,7 +32,7 @@ Your triangle aims and fires on its own; you decide how it grows. Play actively 
 Pour coins into permanent upgrades: damage, fire rate, crits, multishot, ricochet, pierce, armor, thorns, regen, dodge, slow, knockback and more. A wall of thorns and armor, a crit cannon, a swarm of bouncing bullets — every build is viable.
 
 ▸ TATTOOS
-Ink 28 tattoos across four rarities and fuse duplicates up to level 7. Passive tattoos shape your build; active ones add a button to the battle: freeze the field, blast every enemy, overdrive your fire rate or turn kills into gold; others shatter frozen enemies into chain reactions. The odds are shown on screen and an epic is guaranteed within 50 summons.
+Ink 31 tattoos across four rarities and fuse duplicates up to level 7. Passive tattoos shape your build; active ones add a button to the battle: freeze the field, blast every enemy, overdrive your fire rate, turn kills into gold or throw bombs (logic, goo, virus) exactly where you tap; others shatter frozen enemies into chain reactions. The odds are shown on screen and an epic is guaranteed within 50 summons.
 
 ▸ ENDLESS WAVES, 30 TIERS
 Fight through 30 tiers of rising danger: runners, tanks, splitters, shielded wardens, healing menders, teleporting blinkers and enraged bosses that call in reinforcements. Earn mastery stars in every tier for permanent bonuses.
@@ -73,7 +73,7 @@ Retro bir CRT terminalinde idle kule savunma: sen son köşesin, ekranın altın
 Altınlarını kalıcı geliştirmelere yatır: hasar, atış hızı, kritik, çoklu atış, sekme, delme, zırh, diken, can yenileme, kaçınma, yavaşlatma, geri itme ve fazlası. Diken ve zırhtan bir duvar, bir kritik topu, seken mermi sürüsü — her build işe yarar.
 
 ▸ DÖVMELER
-Dört nadirlikte 28 dövme çağır, kopyaları birleştirip 7. seviyeye kadar yükselt. Pasif dövmeler build'ini şekillendirir; aktif olanlar savaşa bir buton ekler: sahayı dondur, tüm düşmanları patlat, atış hızını uçur ya da öldürmeleri altına çevir. Bazıları donmuş düşmanları zincirleme patlamalarla parçalar. Oranlar ekranda yazar ve 50 çağırma içinde bir epik garantidir.
+Dört nadirlikte 31 dövme çağır, kopyaları birleştirip 7. seviyeye kadar yükselt. Pasif dövmeler build'ini şekillendirir; aktif olanlar savaşa bir buton ekler: sahayı dondur, tüm düşmanları patlat, atış hızını uçur, öldürmeleri altına çevir ya da dokunduğun yere bomba at (mantık, çamur, virüs). Bazıları donmuş düşmanları zincirleme patlamalarla parçalar. Oranlar ekranda yazar ve 50 çağırma içinde bir epik garantidir.
 
 ▸ SONSUZ DALGALAR, 30 TIER
 Giderek zorlaşan 30 tier boyunca savaş: koşucular, tanklar, bölünenler, kalkanlı muhafızlar, iyileştiren şifacılar, ışınlanan düşmanlar ve takviye çağıran öfkeli bosslar. Her tier'da ustalık yıldızları kazan, kalıcı bonuslar aç.
@@ -114,7 +114,7 @@ Tu triángulo apunta y dispara solo; tú decides cómo crece. Juega de forma act
 Invierte monedas en mejoras permanentes: daño, cadencia, críticos, disparo múltiple, rebote, perforación, blindaje, espinas, regeneración, esquiva, ralentización, empuje y más. Un muro de espinas y blindaje, un cañón de críticos, un enjambre de balas que rebotan: todo build funciona.
 
 ▸ TATUAJES
-Invoca 28 tatuajes de cuatro rarezas y fusiona duplicados hasta el nivel 7. Los pasivos dan forma a tu build; los activos añaden un botón a la batalla: congela el campo, revienta a todos los enemigos, dispara a toda velocidad o convierte las bajas en oro. Otros hacen estallar a los enemigos congelados en reacciones en cadena. Las probabilidades se muestran en pantalla y hay un épico garantizado en 50 invocaciones.
+Invoca 31 tatuajes de cuatro rarezas y fusiona duplicados hasta el nivel 7. Los pasivos dan forma a tu build; los activos añaden un botón a la batalla: congela el campo, revienta a todos los enemigos, dispara a toda velocidad, convierte las bajas en oro o lanza bombas (lógica, viscosa, virus) justo donde toques. Otros hacen estallar a los enemigos congelados en reacciones en cadena. Las probabilidades se muestran en pantalla y hay un épico garantizado en 50 invocaciones.
 
 ▸ OLEADAS INFINITAS, 30 TIERS
 Lucha a través de 30 tiers cada vez más peligrosos: corredores, tanques, divisores, guardianes con escudo, sanadores, enemigos que se teletransportan y jefes furiosos que piden refuerzos. Gana estrellas de maestría en cada tier para obtener bonus permanentes.
@@ -155,7 +155,7 @@ Seu triângulo mira e atira sozinho; você decide como ele cresce. Jogue de form
 Invista moedas em melhorias permanentes: dano, cadência, críticos, tiro múltiplo, ricochete, perfuração, armadura, espinhos, regeneração, esquiva, lentidão, empurrão e mais. Um muro de espinhos e armadura, um canhão de críticos, um enxame de balas quicando: toda build funciona.
 
 ▸ TATUAGENS
-Invoque 28 tatuagens de quatro raridades e funda duplicatas até o nível 7. As passivas moldam sua build; as ativas colocam um botão na batalha: congele o campo, exploda todos os inimigos, acelere seus disparos ou transforme abates em ouro. Outras estilhaçam inimigos congelados em reações em cadeia. As chances aparecem na tela e uma épica é garantida em até 50 invocações.
+Invoque 31 tatuagens de quatro raridades e funda duplicatas até o nível 7. As passivas moldam sua build; as ativas colocam um botão na batalha: congele o campo, exploda todos os inimigos, acelere seus disparos, transforme abates em ouro ou lance bombas (lógica, viscosa, vírus) bem onde você tocar. Outras estilhaçam inimigos congelados em reações em cadeia. As chances aparecem na tela e uma épica é garantida em até 50 invocações.
 
 ▸ ONDAS INFINITAS, 30 TIERS
 Lute por 30 tiers cada vez mais perigosos: corredores, tanques, divisores, guardiões com escudo, curandeiros, inimigos que se teletransportam e chefes furiosos que chamam reforços. Ganhe estrelas de maestria em cada tier para bônus permanentes.

@@ -1233,7 +1233,7 @@ const ECO={
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
   adGems:5,       adCooldown:900,  adDailyCap:10,
   pullCost:20,    pull10Cost:180,
-  tempCostGrowth:1.05,  tempIncomeSecs:3, autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
+  tempCostGrowth:1.06,  tempIncomeSecs:3, autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
   // next-run boost price: base x 1.05^best wave, but at least base x this many seconds of your average income
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
   kbPush:2.6,     slowTime:4,  multiExtra:2,  executeAt:.3,
@@ -1363,8 +1363,8 @@ const uVal=(u,l)=>(u.start+u.step*l)*msMul(u,l);
 const armorRed=a=>a/(a+100);
 // all damage reduction together → what really counts (soft cap above reduceKnee)
 const cutRed=r=>Math.min(r,ECO.reduceKnee)+Math.max(0,r-ECO.reduceKnee)*ECO.reduceAbove;
-// next-run boost price: grows with the best wave, and never drops below a few seconds of the player's average income
-const boostPrice=(base,eff,cps)=>Math.ceil(Math.max(base*Math.pow(ECO.tempCostGrowth,eff),base*ECO.tempIncomeSecs*(cps||0)));
+// next-run boost price: grows with the best effective wave (max tier + wave) only
+const boostPrice=(base,eff)=>Math.ceil(base*Math.pow(ECO.tempCostGrowth,eff));
 const PERM_CATS=[['atk','ATTACK','bullet'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
 const PERM_UPGRADES=[
   // ── attack
@@ -3161,7 +3161,7 @@ const TEMP_UPGRADES=[
   {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:25,info:'Adds 8% critical hit chance for one run.'},
   {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:60,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
-const tempCost=u=>boostPrice(u.base,bestEffWave(),Math.max(save.peakCps||0,save.idleCps||0));
+const tempCost=u=>boostPrice(u.base,bestEffWave());
 // boosts marked AUTO are bought right before a run, if affordable
 function autoBuyBoosts(){
   const got=[];let budget=Math.floor(save.coins*ECO.autoBoostShare);   // never more than a fifth of the coins: savings for the shop stay safe

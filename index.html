@@ -128,6 +128,14 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .bnav button svg.i{width:22px;height:22px}
 .bnav .dot{position:absolute;top:8px;right:14px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
 .bnav button.cool{color:var(--mute);text-shadow:none}
+/* nothing in the menu column may be squashed; on short screens (9:16) the gaps and the bottom row tighten instead */
+#menuUI>*{flex-shrink:0}
+#menuUI>.hero{flex-shrink:1}
+.short .logo{margin-top:6px}
+.short .playw{margin-top:8px}
+.short .wkbtn{margin-top:8px}
+.short .bnav{padding-bottom:16px}
+.short .bnav button{height:52px;gap:3px}
 
 /* ── pause ── */
 #pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
@@ -1124,6 +1132,7 @@ function resize(){
   const z=GW/320;
   ui.style.width='320px';ui.style.height=(GH/z)+'px';
   ui.style.transformOrigin='top left';ui.style.transform=`scale(${z})`;
+  ui.classList.toggle('short',GH/z<650);   // the menu column needs ~650 authored px at full spacing
   buildStars();
 }
 window.addEventListener('resize',resize);resize();

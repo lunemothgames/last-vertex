@@ -38,7 +38,6 @@
  "A quest is done. Open QUESTS and claim its reward.": "Bir görev tamamlandı. GÖREVLER'i aç ve ödülünü al.",
  "A rare, tougher version of any enemy (dashed outline). Pays double coins.": "Herhangi bir düşmanın nadir, daha dayanıklı hâli (kesikli çerçeve). Çift altın verir.",
  "A reward for surviving: each time a new wave starts you get coins worth this many basic enemies of that wave.": "Hayatta kalma ödülü: her yeni dalga başladığında o dalganın bu kadar basic düşmanı değerinde altın kazanırsın.",
- "A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.": "Yavaş atışla 5 saçmalık bir patlama, kısa menzil, en sert yakından vurur. Düşmanların yaklaşmasına izin veren dizilimlere uygun: diken, zırh.",
  "A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.": "Her pazartesi değişen, kuralları değiştiren iki mutatörlü özel bir tur. En yüksek tier'ının bir altında oynanır ve 10, 20 ve 30. dalgalarda elmas verir. Tier rekorlarını hiç değiştirmez.",
  "A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.": "Bir dalga belirli bir süre sürer; dalga numarasının altındaki çubuk ne kadarının kaldığını gösterir. Her 10. dalgada can yarısının altında hızlanan bir BOSS gelir. Bazı dalgalar ekranda duyurulan özel bir kuralla gelir.",
  "ABORT THIS RUN?": "TUR BİTSİN Mİ?",
@@ -103,7 +102,6 @@
  "BOSS RUSH": "BOSS AKINI",
  "BULWARK": "BULWARK",
  "BURST": "PATLAMA",
- "BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "BURST, düşmanların yaklaşmasına izin veren dizilimlere uygun (diken, zırh). Mağazadaki her geliştirme ve her dövme iki modda da çalışır. Rekorlar ve tier'lar ortaktır, bekleme geliri daha çok kazandıran modu kullanır.",
  "BUY?": "AL?",
  "Back up your progress online and continue on another device. Nothing is uploaded until you turn this on.": "İlerlemeni çevrimiçi yedekle ve başka bir cihazda devam et. Sen açana kadar hiçbir şey yüklenmez.",
  "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most).": "Sınıra gelen her vuruşun bir kısmını engeller. Her seviye biraz daha az ekler: 100 seviye %50, 200 seviye %67, 600 seviye %74 engeller. Her dalgada aynı çalışır. Tüm hasar azaltmanın %70'in üstündeki kısmı yalnızca dörtte bir sayılır (en fazla %77,5).",
@@ -246,7 +244,6 @@
  "FX QUALITY: pick MID or LOW if the game feels slow on your phone.": "GRAFİK: oyun telefonunda yavaş hissettiriyorsa ORTA ya da DÜŞÜK seç.",
  "Fades out for a moment: bullets pass through it. Blasts and thorns still hit.": "Bir an için silikleşir: mermiler içinden geçer. Patlamalar ve dikenler yine de vurur.",
  "Fast but fragile.": "Hızlı ama kırılgan.",
- "Fast single shots with long range. Suits damage and multi-hit builds.": "Hızlı tekli atışlar, uzun menzil. Hasar ve çoklu vuruş dizilimlerine uygun.",
  "Finish your first run": "İlk turunu bitir",
  "Finish {0} runs": "{0} tur bitir",
  "Fire {0} multishots": "{0} çoklu atış yap",
@@ -657,5 +654,8 @@
  "HIT": "VURUŞ",
  "PER SEC": "SANİYEDE",
  "ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it": "AKTİF · düğmeye, sonra sahaya dokun: oradaki her şey enfekte olur ve {1} sn boyunca her saniye {0}x mermi hasarı kaybeder; enfekte bir düşman ölünce virüs yanındakilere atlar",
- "ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it": "AKTİF · düğmeye, sonra sahaya dokun: çamur oradaki her şeye {0}x mermi hasarı verir ve yapışır; {1} sn sonra yapışan her düşman kendine ve yanındakilere {2}x hasarla patlar"
+ "ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it": "AKTİF · düğmeye, sonra sahaya dokun: çamur oradaki her şeye {0}x mermi hasarı verir ve yapışır; {1} sn sonra yapışan her düşman kendine ve yanındakilere {2}x hasarla patlar",
+ "Fast single shots with long range.": "Hızlı tekli atışlar, uzun menzil.",
+ "A slow blast of 5 pellets, short range, hits hardest up close.": "Yavaş atışla 5 saçmalık bir patlama, kısa menzil, en sert yakından vurur.",
+ "Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "Mağazadaki her geliştirme ve her dövme iki modda da çalışır. Rekorlar ve tier'lar ortaktır, bekleme geliri daha çok kazandıran modu kullanır."
 }

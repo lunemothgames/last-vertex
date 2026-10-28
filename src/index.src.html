@@ -3115,8 +3115,8 @@ function renderMenu(){
 }
 // attack mode: the line under the triangle names the mode, the cards switch it (BURST opens at Tier 2)
 const MODES=[
-  {id:'rapid',name:'RAPID',icon:'stream',desc:'Fast single shots with long range. Suits damage and multi-hit builds.'},
-  {id:'burst',name:'BURST',icon:'spread',desc:'A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.'},
+  {id:'rapid',name:'RAPID',icon:'stream',desc:'Fast single shots with long range.'},
+  {id:'burst',name:'BURST',icon:'spread',desc:'A slow blast of 5 pellets, short range, hits hardest up close.'},
 ];
 function renderModeLine(){$('mModeTxt').textContent=T('MODE: {0}',isBurst()?'BURST':'RAPID');}
 function renderModeCards(){
@@ -4341,7 +4341,7 @@ const INBOX=[
   {id:'0.6.7',date:'2026-10-27',name:'UPDATE 0.6.7',
    lines:[
     {text:'New: attack modes. Tap MODE under the triangle on the home screen. RAPID is the classic triangle; BURST (opens at Tier 2) fires slow blasts of 5 pellets that hit hardest up close.'},
-    {text:'BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.'},
+    {text:'Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.'},
     {text:'Coin and gem drops no longer appear under the buttons at the top, and they are drawn over enemies, so you can always see and tap them.'},
     {text:'Summon is now called INK.'},
     {text:'Next-run boost prices now follow the highest average income you have reached.'},

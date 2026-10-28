@@ -38,7 +38,6 @@
  "A quest is done. Open QUESTS and claim its reward.": "Uma missão foi concluída. Abra MISSÕES e resgate a recompensa.",
  "A rare, tougher version of any enemy (dashed outline). Pays double coins.": "Uma versão rara e mais forte de qualquer inimigo (contorno tracejado). Dá o dobro de moedas.",
  "A reward for surviving: each time a new wave starts you get coins worth this many basic enemies of that wave.": "Uma recompensa por sobreviver: sempre que uma nova onda começa você ganha moedas equivalentes a essa quantidade de inimigos básicos da onda.",
- "A slow blast of 5 pellets, short range, hits hardest up close. Suits builds that let enemies come near: thorns, armor.": "Uma rajada lenta de 5 chumbos, pouco alcance, acerta mais forte de perto. Boa para builds que deixam os inimigos chegarem perto: espinhos, armadura.",
  "A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.": "Uma partida especial com dois mutadores que mudam as regras toda segunda-feira. É jogada um tier abaixo do seu mais alto e dá gemas nas ondas 10, 20 e 30. Nunca muda seus recordes de tier.",
  "A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.": "Uma onda dura um tempo fixo; a barra sob o número da onda mostra quanto resta. Toda 10.ª onda traz um CHEFE que acelera abaixo da metade da vida. Algumas ondas trazem uma regra especial, anunciada na tela.",
  "ABORT THIS RUN?": "ABANDONAR A PARTIDA?",
@@ -103,7 +102,6 @@
  "BOSS RUSH": "ENXURRADA DE CHEFES",
  "BULWARK": "BULWARK",
  "BURST": "ESTOURO",
- "BURST suits builds that let enemies come near (thorns, armor). Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "BURST combina com builds que deixam os inimigos chegarem perto (espinhos, armadura). Todas as melhorias da loja e todas as tatuagens funcionam nos dois modos. Recordes e tiers são compartilhados, e a renda ociosa usa o modo que rende mais.",
  "BUY?": "COMPRAR?",
  "Back up your progress online and continue on another device. Nothing is uploaded until you turn this on.": "Faça backup do seu progresso online e continue em outro dispositivo. Nada é enviado até você ativar.",
  "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most).": "Bloqueia parte de cada golpe no perímetro. Cada nível adiciona um pouco menos: 100 níveis bloqueiam 50%, 200 bloqueiam 67%, 600 bloqueiam 74%. Funciona igual em toda onda. Acima de 70%, toda a redução de dano junta conta só um quarto (no máximo 77,5%).",
@@ -246,7 +244,6 @@
  "FX QUALITY: pick MID or LOW if the game feels slow on your phone.": "GRÁFICOS: escolha MÉDIA ou BAIXA se o jogo estiver lento no seu celular.",
  "Fades out for a moment: bullets pass through it. Blasts and thorns still hit.": "Some por um instante: as balas o atravessam. Explosões e espinhos ainda o atingem.",
  "Fast but fragile.": "Rápido, mas frágil.",
- "Fast single shots with long range. Suits damage and multi-hit builds.": "Tiros rápidos, um de cada vez, com longo alcance. Bom para builds de dano e de acertos múltiplos.",
  "Finish your first run": "Termine sua primeira partida",
  "Finish {0} runs": "Termine {0} partidas",
  "Fire {0} multishots": "Dispare {0} tiros múltiplos",
@@ -657,5 +654,8 @@
  "HIT": "GOLPE",
  "PER SEC": "POR SEG.",
  "ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it": "ATIVO · toque no botão e depois no campo: tudo ali é infectado e perde {0}x o dano da bala a cada segundo por {1}s; quando um inimigo infectado morre o vírus pula para os ao lado",
- "ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it": "ATIVO · toque no botão e depois no campo: a gosma atinge tudo ali com {0}x o dano da bala e gruda; {1}s depois cada inimigo grudado explode com {2}x em si mesmo e nos que estão ao lado"
+ "ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it": "ATIVO · toque no botão e depois no campo: a gosma atinge tudo ali com {0}x o dano da bala e gruda; {1}s depois cada inimigo grudado explode com {2}x em si mesmo e nos que estão ao lado",
+ "Fast single shots with long range.": "Tiros rápidos, um de cada vez, com longo alcance.",
+ "A slow blast of 5 pellets, short range, hits hardest up close.": "Uma rajada lenta de 5 chumbos, pouco alcance, acerta mais forte de perto.",
+ "Every shop upgrade and tattoo works in both modes. Records and tiers are shared, and idle income uses the mode that earns more.": "Todas as melhorias da loja e todas as tatuagens funcionam nos dois modos. Recordes e tiers são compartilhados, e a renda ociosa usa o modo que rende mais."
 }

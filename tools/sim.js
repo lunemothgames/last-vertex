@@ -90,7 +90,7 @@ function run(tier,maxW=1e9){
     const pick=()=>{let r=Math.random()*tw;for(const x of pool){r-=x.w;if(r<0)return x;}return pool[0];};
     const mk=(T,y)=>({y,w:T.sz*1.1*GWH,hp:hpB*T.hp*(M.ehp||1),max:hpB*T.hp*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),kb:0,slow:0,frz:0,boss:false,
       sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0});
-    const E=[],dur=Math.min(45,18+w*.5),iv=Math.max(.5,2.2-w*.04)*(M.ival||1),per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
+    const E=[],dur=Math.min(45,18+w*.5)*(+process.env.SIM_WAVEK||1),iv=Math.max(.5,2.2-w*.04)*(M.ival||1),per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++)E.push(mk(pick(),.1-i*.09));
     if(boss){const bh=hpB*ECO.bossHpMul;E.push({y:.04,w:.13*1.1*GWH,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
       sh:bk==='bulwark'?bh*(ECO.bossShield||0):0,heal:bk==='regen'?(ECO.bossRegen||0):0,ht:1,ar:0});}

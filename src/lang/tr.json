@@ -624,6 +624,8 @@
  "INK x10 costs 180 gems instead of 200.": "YAPTIR x10 artık 200 yerine 180 elmas.",
  "Target STRONG / WEAK now picks the enemy that hits hardest / softest; when they hit the same, the closest one first.": "GÜÇLÜ / ZAYIF hedefleme artık en sert / en hafif vuran düşmanı seçiyor; eşit vuruyorlarsa önce en yakını.",
  "New: this inbox, for update notes and news.": "Yeni: güncelleme notları ve haberler için bu gelen kutusu.",
+ "AUTO RETRY": "OTO TEKRAR",
+ "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
  "AUTO": "OTO",
  "New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.": "OYNA'nın altında yeni takviye satırı: bir takviyeye dokunarak OTO'sunu açıp kapat. OTO artık altınının en fazla %20'sini harcar, mağaza için biriktirdiğin altın güvende.",
  "{0}: AUTO OFF": "{0}: OTO KAPALI",

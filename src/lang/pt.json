@@ -624,6 +624,8 @@
  "INK x10 costs 180 gems instead of 200.": "TATUAR x10 custa 180 gemas em vez de 200.",
  "Target STRONG / WEAK now picks the enemy that hits hardest / softest; when they hit the same, the closest one first.": "O alvo FORTE / FRACO agora escolhe o inimigo que bate mais forte / mais fraco; se batem igual, primeiro o mais perto.",
  "New: this inbox, for update notes and news.": "Novo: esta caixa de entrada, para notas de atualização e novidades.",
+ "AUTO RETRY": "REPETIR AUTO",
+ "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REPETIR AUTO (a partir do Tier {0}): ative na tela de resultado e o mesmo tier recomeça sozinho {1} segundos após a morte. Partidas iniciadas assim pagam {2} das moedas e encontram menos gemas; uma partida que você inicia paga tudo. A op semanal nunca recomeça sozinha.",
  "AUTO": "AUTO",
  "New boost row under PLAY: tap a boost to switch its AUTO on or off. AUTO now spends at most 20% of your coins, so your savings for the shop stay safe.": "Nova fileira de bônus abaixo de JOGAR: toque num bônus para ligar ou desligar o AUTO dele. O AUTO agora gasta no máximo 20% das suas moedas, então suas economias para a loja ficam seguras.",
  "{0}: AUTO OFF": "{0}: AUTO DESLIGADO",

@@ -160,6 +160,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .dr span{color:var(--mute)}
 .dr i{flex:1;border-bottom:1px dotted var(--dim);transform:translateY(-5px)}
 .dr b{font-weight:400}
+/* auto retry switch under HOME / RETRY (from Tier 3) */
+.artog{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:38px;margin-top:12px;border:1px dashed var(--dim);color:var(--mute);
+  font-family:'VT323',monospace;font-size:20px;letter-spacing:.08em;text-shadow:none}
+.artog svg.i{width:16px;height:16px}
+.artog.on{border-style:solid;border-color:var(--a);color:var(--a);box-shadow:0 0 10px var(--glow)}
 
 /* ── panels ── */
 .panel{position:absolute;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column;z-index:10;
@@ -703,6 +708,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button class="btn" id="dHome"><svg class="i"><use href="#i-home"/></svg>HOME</button>
       <button class="btn pri" id="dRetry"><svg class="i"><use href="#i-retry"/></svg>RETRY</button>
     </div>
+    <button class="artog" id="dAuto" style="display:none"><svg class="i"><use href="#i-retry"/></svg><span id="dAutoTxt">AUTO RETRY</span></button>
   </div>
 
   <!-- SHOP -->
@@ -855,7 +861,7 @@ function defaultSave(){return{
   coins:0,gems:0,
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
-  temp:{},autoBoost:{},tatCol:{},tatSlots:1,equipped:[],pity:0,
+  temp:{},autoBoost:{},autoRetry:false,tatCol:{},tatSlots:1,equipped:[],pity:0,
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
@@ -1250,6 +1256,8 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // range = range line (share of screen height) before RANGE upgrades, which count rangeUp as much; reach = how far a pellet flies past the line.
 // Tuned 2026-10-27 with the real game and `node tools/sim.js modes` / `SIM_MODE=burst npm run pace`: up close every pellet hits, so builds that
 // let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
+// AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
+const AUTO_RETRY={tier:3,share:.35,wait:5};
 const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2};
 const isBurst=()=>save.mode==='burst';
 // Tier mastery: reaching these waves inside a tier earns its stars; every star is a small permanent bonus
@@ -1606,6 +1614,8 @@ let state=ST.MENU;
 let triX,hp,runCoins,waveNum,enemies,bullets,pickups,
     wavePhase,waveTimer,deadTimer,fireCooldown,paused,confirmEndRun,
     runDmgDealt,runDmgTaken,runKills,runWave,runStart,runNewBest=false;
+let runAuto=false;   // this run was started by AUTO RETRY, not by the player
+const runPay=c=>runAuto&&c>0?Math.max(1,Math.round(c*AUTO_RETRY.share)):c;   // coins an AUTO RETRY run actually pays
 let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,waveDuration=0,shockCooldown=0;
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[],beams=[];
@@ -1694,7 +1704,7 @@ function playClick(x,y){
 // a coin drop pays ~30s of this run's income (pickups themselves don't count toward the rate)
 function coinDropValue(){
   const rate=runPlayT>5?runEarned/runPlayT:0;
-  const floor=ECO.coinDropMinKills*coinValueAt(effWave())*stats().mult;
+  const floor=ECO.coinDropMinKills*coinValueAt(effWave())*stats().mult*(runAuto?AUTO_RETRY.share:1);   // the rate part is already cut on AUTO runs
   return Math.max(1,Math.round(Math.max(rate*ECO.coinDropSecs,floor)));
 }
 // drops appear below the target / speed buttons and the stat overlay (top ~16%), where a tap can always reach them
@@ -1798,8 +1808,9 @@ function weeklyState(){
   if(!save.weekly||save.weekly.wk!==wk)save.weekly={wk,best:0,got:[]};
   return save.weekly;
 }
-function startRun(weekly=false){
+function startRun(weekly=false,auto=false){
   if(!tierUnlocked(save.tier))save.tier=1;
+  runAuto=!!auto&&!weekly;
   delete save.midRun;
   autoBuyBoosts();
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;runEvSeed=Math.floor(Math.random()*1e6);
@@ -1834,7 +1845,7 @@ function saveProgress(){
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
     // each attack mode keeps its own average; idle income (save.idleCps) uses the mode that earns more
-    if(runPlayT>=120){
+    if(runPlayT>=120&&!runAuto){   // AUTO RETRY runs pay less on purpose: they must not lower idle income
       const r=runEarned/runPlayT,k=isBurst()?'cpsB':'cpsR';
       if(save.cpsR===undefined)save.cpsR=save.idleCps||0;
       save[k]=save[k]?save[k]*.7+r*.3:r;save.idleCps=Math.max(save.cpsR||0,save.cpsB||0);
@@ -1854,7 +1865,7 @@ function triggerDeath(){
   screenFlash=0;shake={x:0,y:0,t:0};hudHidden=false;
   delete save.midRun;
   runMods=null;runEvent=null;   // weekly / event rules end with the run: the menu must show normal numbers
-  save.lastRun={coins:runCoins,kills:runKills,wave:runWave,tier:runTier,weekly:runWeekly,
+  save.lastRun={coins:runCoins,kills:runKills,wave:runWave,tier:runTier,weekly:runWeekly,auto:runAuto,
     dmgDealt:Math.round(runDmgDealt),dmgTaken:Math.round(runDmgTaken),
     time:Math.round(runPlayT)};
   if(runWeekly){runNewBest=runWave>(weeklyState().best||0);saveProgress();}
@@ -1867,7 +1878,7 @@ function triggerDeath(){
   save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
   track('run_end',{tier:runTier,wave:runWave,secs:Math.round(runPlayT),weekly:runWeekly?1:0,best:runNewBest?1:0,run_no:LIFE().runs});
-  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;keepAwake(false);
+  persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;autoLeft=0;keepAwake(wakeWanted());
 }
 // ── SLEEP / WAKE ──
 // Screen locked or app sent to the background: pause the run and silence everything (the music runs on
@@ -1889,7 +1900,7 @@ function goBackground(){
 function goForeground(){
   clearNotifs();
   if(AC){AC.resume().catch(()=>{});startMusic(state!==ST.PLAY);}
-  if(state===ST.PLAY)keepAwake(true);   // the browser drops the wake lock while hidden
+  if(wakeWanted())keepAwake(true);   // the browser drops the wake lock while hidden
 }
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){goBackground();return;}
@@ -1900,8 +1911,10 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pagehide',goBackground);
 
-// keep the screen on during a run (Screen Wake Lock, Chrome 84+); off again when the run ends
+// keep the screen on during a run (Screen Wake Lock, Chrome 84+); off again when the run ends,
+// unless AUTO RETRY is about to start the next one
 let wakeLock=null,wakePending=false;
+const wakeWanted=()=>state===ST.PLAY||(state===ST.DEAD&&autoRetryArmed());
 function keepAwake(on){
   if(!('wakeLock' in navigator))return;
   if(on){
@@ -1909,7 +1922,7 @@ function keepAwake(on){
     wakePending=true;
     navigator.wakeLock.request('screen').then(l=>{
       wakePending=false;
-      if(state!==ST.PLAY){l.release().catch(()=>{});return;}     // the run ended while we waited
+      if(!wakeWanted()){l.release().catch(()=>{});return;}     // the run ended while we waited
       wakeLock=l;l.addEventListener('release',()=>{if(wakeLock===l)wakeLock=null;});
     }).catch(()=>{wakePending=false;});
   }else if(wakeLock){const l=wakeLock;wakeLock=null;l.release().catch(()=>{});}
@@ -1922,6 +1935,7 @@ function killEnemy(e,st){
   const v=coinValueAt(effWave())*st.mult*e.coin;
   let coins=e.boss?Math.max(1,Math.round(v)):(e.coin>0&&Math.random()<st.coinChance?Math.max(1,Math.round(v)):0);
   if(coins>0&&Math.random()<st.jackpot)coins*=3;
+  coins=runPay(coins);
   if(coins>0){save.coins+=coins;runCoins+=coins;runEarned+=coins;snd('coin');spawnText(e.x,e.y-e.sz,'+'+fmtN(coins),C.a);qEvent('coins',coins);}
   runKills++;qEvent('kill');qEvent('kill_'+e.type);snd('kill');
   LIFE().kills++;if(e.boss)LIFE().bosses++;
@@ -1975,7 +1989,7 @@ function spawnWave(){
   runEvent=null;
   if(!runWeekly){runMods=null;runEvent=eventFor(waveNum,runTier,runEvSeed);if(runEvent)runMods=combineMods([runEvent],EVENTS);}
   // WAVE BOUNTY: surviving into a new wave (from wave 2) pays N basic enemies' worth of this wave's coins, silently
-  if(waveNum>1){const st=stats();if(st.bounty>0){const c=Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty);
+  if(waveNum>1){const st=stats();if(st.bounty>0){const c=runPay(Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty));
     if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);snd('bounty');}}}
   if(waveNum===3)hint('hud');
   if(waveNum===6)hint('target');
@@ -2260,7 +2274,7 @@ function updatePlay(dt){
 
   // random drops; each kind waits ECO.pickupCooldown (shortened by LUCK) after being collected
   const now=Date.now(),cdMs=ECO.pickupCooldown*1000/st.dropRate,gemCdMs=ECO.gemPickupCooldown*1000/st.dropRate,gnow=gameNow();
-  if(!pickups.some(g=>g.kind==='gem')&&gnow-(save.lastGemPickup||0)>gemCdMs&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate){spawnPickup('gem');hint('drops');}
+  if(!pickups.some(g=>g.kind==='gem')&&gnow-(save.lastGemPickup||0)>gemCdMs&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate*(runAuto?AUTO_RETRY.share:1)){spawnPickup('gem');hint('drops');}
   if(!pickups.some(g=>g.kind==='coin')&&gnow-(save.lastCoinPickup||0)>cdMs&&Math.random()<dt*ECO.coinDropPerSec*st.dropRate){spawnPickup('coin');hint('drops');}
   pickups=pickups.filter(g=>(now-g.spawnTime)<120000);
 
@@ -2448,6 +2462,12 @@ function separateEnemies(){
 
 function updateDead(dt){
   deadTimer+=dt;
+  // AUTO RETRY: the result screen shows from 2 s; the next run starts AUTO_RETRY.wait seconds later
+  if(autoRetryArmed()&&deadTimer>2){
+    const left=Math.ceil(2+AUTO_RETRY.wait-deadTimer);
+    if(left<=0){startRun(false,true);return;}
+    if(left!==autoLeft){autoLeft=left;renderAutoRetry();}
+  }
   if(screenFlash>0)screenFlash=Math.max(0,screenFlash-dt*2);
   if(deathShot&&deadTimer>1.4){deathShot=null;}
   updateParticles(dt);
@@ -2771,7 +2791,7 @@ function drawHUD(st){
 
   // wave text
   cx.textAlign='center';
-  glowText(`${runWeekly?T('WEEKLY'):'T'+runTier} · ${T('WAVE {0}',waveNum)}`,GW/2,GH*.045,hexA(runWeekly?C.r[2]:C.a,.75),GW*.058,4);
+  glowText(`${runWeekly?T('WEEKLY'):'T'+runTier} · ${T('WAVE {0}',waveNum)}${runAuto?' · '+T('AUTO'):''}`,GW/2,GH*.045,hexA(runWeekly?C.r[2]:C.a,.75),GW*.058,4);
   // wave duration bar (thin line under wave text, only during active phase)
   if(wavePhase==='active'&&waveDuration>0){
     const bw=GW*.38,bx=GW*.5-bw/2,by=GH*.059,bh=GH*.004,frac=Math.max(0,waveTimer/waveDuration);
@@ -3085,9 +3105,22 @@ function renderDead(){
   const rows=[[T('WAVE'),r.wave||0],[T('KILLS'),r.kills||0],[T('COINS'),'+'+fmtC(r.coins||0)],
     [T('COINS/MIN'),fmtN(cpm)],[T('DMG DEALT'),fmtN(r.dmgDealt||0)],[T('DMG TAKEN'),fmtN(r.dmgTaken||0)],[T('TIME'),formatTime(r.time||0)]];
   if(prevBest>0)rows.splice(1,0,[T('BEST'),prevBest]);
+  if(r.auto)rows.splice(rows.findIndex(x=>x[0]===T('COINS'))+1,0,[T('AUTO RETRY'),T('COINS x{0}',AUTO_RETRY.share)]);
   $('dStats').innerHTML=rows.map(([k,v])=>`<div class="dr"><span>${k}</span><i></i><b>${v}</b></div>`).join('');
+  renderAutoRetry();
 }
-$('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;startMusic(true);if(runUnlockedTier)maybeAskReview();});
+// the switch shows once Tier 3 is open, never after a weekly run
+const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(save.lastRun&&save.lastRun.weekly);
+const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
+let autoLeft=0;   // seconds shown on the switch while the next run counts down
+function renderAutoRetry(){
+  const b=$('dAuto');
+  b.style.display=autoRetryOffered()?'':'none';
+  b.classList.toggle('on',!!save.autoRetry);
+  $('dAutoTxt').textContent=T('AUTO RETRY')+': '+T(save.autoRetry?'ON':'OFF')+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
+}
+$('dAuto').addEventListener('click',()=>{save.autoRetry=!save.autoRetry;autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());});
+$('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;keepAwake(false);startMusic(true);if(runUnlockedTier)maybeAskReview();});
 // store rating prompt (app only): after a run that unlocked a new tier, once the player is a few tiers in.
 // At most 3 asks, 60+ days apart; Google / Apple also decide on their own whether the window really shows.
 function maybeAskReview(){
@@ -3836,7 +3869,8 @@ const HELP_TOPICS=[
     <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT adds 2 pellets to a blast, and ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
-    <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>`],
+    <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
+    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],

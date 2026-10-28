@@ -14,7 +14,7 @@ const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','i
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+  "return{GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
 // next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
 const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
@@ -31,6 +31,9 @@ Object.assign(ECO,JSON.parse(process.env.SIM_ECO||'{}'));
 // SIM_BURST='{"rate":0.4}' changes the BURST numbers · BURST_LAT = how often a pellet that misses its target meets another enemy (tuned against the real game)
 if(G.BURST)Object.assign(G.BURST,JSON.parse(process.env.SIM_BURST||'{}'));
 save.mode=process.env.SIM_MODE==='burst'?'burst':'rapid';
+// bombs: SIM_NOBOMB=1 never throws, SIM_BOMBP = chance a bomb also hits the other enemies at that height (no x position in the sim);
+// GOO: each stuck enemy takes its own burst plus about 1.5 from neighbours
+const NOBOMB=!!process.env.SIM_NOBOMB,BOMBP=+process.env.SIM_BOMBP||0,GOO_HITS=2.5;
 const PEL={n:0,h:0,f:0};const BURST_LAT=+process.env.BURST_LAT||1.4,GWH=9/16;   // screen width in screen heights
 for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_PU||'{}')))Object.assign(PU[id],o);
 // tattoo value what-ifs: SIM_TT='{"reaper":{"k":[0.15,0.4]}}' (each effect is [Lv1, Lv7])
@@ -44,15 +47,15 @@ const ECON={coinMult:1,lootChance:1,bounty:1,gameSpeed:1};
 const BASE={damage:3,fireRate:2,maxHp:1,regen:1,multishot:2,bounce:2,pierce:2,range:1,...ECON};
 const plus=x=>({...BASE,...Object.fromEntries(Object.entries(x).map(([k,v])=>[k,(BASE[k]||0)+v]))});
 const DEF={defense:2,thorns:3,dodge:1,lifesteal:1,waveHeal:1,regen:2,maxHp:2},CTRL={knockback:1,slowChance:2,slowAmt:2},COIN={coinMult:3,lootChance:2,bounty:2,gameSpeed:2};
+// bomb builds: offense shop, the bomb in place of SLAYER
+const bombB=t=>({shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:[t,'attack_power','attack_speed','crit_chance','crit_mult']});
 const BUILDS={
   offense:   {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['attack_power','attack_speed','crit_chance','crit_mult','boss_slayer']},
   swarm:     {shop:plus({}),tat:['twin','arc','ricochet','piercer','attack_power']},
   tank:      {shop:plus(DEF),tat:['thorns','aegis','defense','regen','max_hp']},
   thornsTank:{shop:plus(DEF),tat:['thorns','aegis','defense','regen','lifesteal']},
   bruiser:   {shop:plus(DEF),tat:['thorns','mend','shockwave','attack_power','dodge']},
-  bomb:      {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['logic_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
-  goo:       {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['goo_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
-  virus:     {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['virus_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
+  bomb:      bombB('logic_bomb'), goo:bombB('goo_bomb'), virus:bombB('virus_bomb'),
   active:    {shop:plus({}),tat:['nova','overdrive','stasis','mend','attack_power']},
   control:   {shop:plus(CTRL),tat:['frost','reach','stasis','attack_power','attack_speed']},
   shatter:   {shop:plus(CTRL),tat:['frost','shatter','stasis','attack_power','attack_speed']},
@@ -101,6 +104,8 @@ function run(tier,maxW=1e9){
     const midas=()=>A.midas&&A.midas.left>0?A.midas.m:1;
     const kill=e=>{coins+=e.boss?cv*e.coin*midas():(e.coin&&Math.random()<st.coinChance?cv*e.coin*midas()*(Math.random()<st.jackpot?3:1):0);};
     const hit=(e,d)=>{e.hp-=d;hp=Math.min(st.maxHp,hp+d*st.ls);};
+    const push=(e,m)=>{if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*m);};   // same rule as the game's knock()
+    const HD=st.dmg*st.pellet,vul=e=>(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1);   // game: st.hitDmg, bombVuln()
     // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
     const riseF=e=>{if(!(e.rs&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
     const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
@@ -150,13 +155,13 @@ function run(tier,maxW=1e9){
       hp=Math.min(st.maxHp,hp+st.regen*dt);cd-=dt;
       // active tattoos, cast as soon as they are useful
       for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
-        if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,st.dmg*st.pellet*a.m*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}}
-        else if(TT[id].gren&&!process.env.SIM_NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
-          const R=TT[id].r,bk=TT[id].gren,bm=bk==='goo'?a.m+2.5*a.m2:bk==='virus'?a.m*G.GRENADE.virus.t:a.m,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
-          let best=null,bn=0;for(const c of live){const n=live.filter(o=>Math.abs(o.y-c.y)<rY).length;if(n>bn){bn=n;best=c;}}
+        if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,HD*a.m*(e.boss?st.bossDmg:1));push(e,1.5);}}
+        else if(TT[id].gren&&!NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
+          const R=TT[id].r,bk=TT[id].gren,bm=bk==='goo'?a.m+GOO_HITS*a.m2:bk==='virus'?a.m*G.GRENADE.virus.t:a.m,rY=R*GWH,pHit=BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);
+          let best=null,bn=0;for(const c of live){let n=0;for(const o of live)if(Math.abs(o.y-c.y)<rY)n++;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
           const crit=Math.random()<st.crit?st.critM:1;
-          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,st.dmg*st.pellet*bm*crit*(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1));if(bk==='logic'&&!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}
+          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,HD*bm*crit*vul(e));if(bk==='logic')push(e,1.5);}
         }
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}
@@ -165,7 +170,7 @@ function run(tier,maxW=1e9){
         else continue;
         a.cd=tb(id).cd;
       }
-      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.y>.45){hit(e,st.dmg*st.pellet*st.shockM*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*2);}shock=st.shockCD;}
+      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.y>.45){hit(e,HD*st.shockM*(e.boss?st.bossDmg:1));push(e,2);}shock=st.shockCD;}
       for(const e of E){
         e.kb*=Math.pow(.03,dt);if(Math.abs(e.kb)<e.sp*.05)e.kb=0;
         if(e.frz>0){e.frz-=dt;continue;}
@@ -215,7 +220,7 @@ function run(tier,maxW=1e9){
             break;
           }
         }
-        if(st.arcEvery&&++shots%st.arcEvery===0)for(const e of vis.slice(0,st.arcN))hit(e,st.dmg*st.pellet*st.arcM*(e.boss?st.bossDmg:1));
+        if(st.arcEvery&&++shots%st.arcEvery===0)for(const e of vis.slice(0,st.arcN))hit(e,HD*st.arcM*(e.boss?st.bossDmg:1));
         cd+=1/rate;
       }
       for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){
@@ -349,7 +354,7 @@ let bank=0,clock=0,li=0,runs=0,tier=1;const tierBest={1:0};save.tierBest=tierBes
 const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300,400],hit={},atH={},AT=[42,84,168,336,600];
 const effNow=()=>Object.entries(tierBest).reduce((m,[t,w])=>w?Math.max(m,(t-1)*TIERS.offset+w):m,0);
 const BOOST=(process.env.SIM_BOOST==='all'?'lucky,power,berserk,rapid,shield,invincible,focus':process.env.SIM_BOOST||'').split(',').filter(Boolean);
-let idleCps=0;   // the game's average income per second (save.idleCps): boost prices follow it
+let idleCps=0;   // average income per second: only an older game (SIM_SRC) still prices boosts with it
 const buyBoosts=()=>{save.temp={};const e=effNow();for(const id of BOOST){const u=TEMP.find(x=>x.id===id);if(!u)continue;
   const c=G.boostPrice?G.boostPrice(u.base,e,idleCps):Math.ceil(u.base*Math.pow(ECO.tempCostGrowth,e));if(bank>=c){bank-=c;save.temp[id]=1;}}};
 const ranRun=r=>{if(r.t>=120)idleCps=idleCps?idleCps*.7+r.coins/r.t*.3:r.coins/r.t;save.temp={};};

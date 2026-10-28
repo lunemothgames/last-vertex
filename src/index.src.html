@@ -436,9 +436,10 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #playUI{pointer-events:none!important;animation:none!important}
 #abil{position:absolute;left:0;right:0;bottom:calc(17% + 8px);display:flex;justify-content:center;gap:6px}
 #abil.hi{bottom:calc(17% + 46px)}   /* 4-5 slots would run into the ad button on the right, so the row sits above it */
-.abx{width:46px;height:46px;pointer-events:none}
+.abx{pointer-events:none}
 #playUI.armed #abil,#playUI.armed #tgtBtn,#playUI.armed #spdCtl{visibility:hidden}
-.ab{width:46px;height:46px;position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
+.ab,.abx{width:46px;height:46px}
+.ab{position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
   background:rgba(var(--bg1-rgb),0.7);pointer-events:auto}
 .ab svg.i{width:26px;height:26px}
 .ab i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(var(--bg1-rgb),0.78);border-top:1px solid var(--dim)}
@@ -903,7 +904,7 @@ try{
 // idle income now uses an average rate; seed it from the old best rate
 if(!save.idleCps&&save.bestCps)save.idleCps=save.bestCps*.6;
 delete save.bestCps;
-if(!save.peakCps&&save.idleCps)save.peakCps=save.idleCps;
+delete save.peakCps;   // boost prices no longer follow income
 // FX QUALITY: high (everything) · mid (no glow / flicker, fewer particles) · low (potato phones)
 // older saves had a LOW FX on/off switch: on → mid, off → high
 if('lowFx' in save.settings){save.settings.fx=save.settings.lowFx?'mid':'high';delete save.settings.lowFx;}
@@ -1241,8 +1242,7 @@ const ECO={
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
   adGems:5,       adCooldown:900,  adDailyCap:10,
   pullCost:20,    pull10Cost:180,
-  tempCostGrowth:1.06,  tempIncomeSecs:3, autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
-  // next-run boost price: base x 1.05^best wave, but at least base x this many seconds of your average income
+  tempCostGrowth:1.06,  autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
   kbPush:2.6,     slowTime:4,  multiExtra:2,  executeAt:.3,
   reduceKnee:.7,  reduceAbove:.25,      // damage reduction above 70% counts a quarter (77.5% at most), so thorns tanks can't become untouchable
@@ -1580,11 +1580,13 @@ function stats(){
   const critRaw=v('critChance')+tb('crit_chance').c+(T.focus?.08:0);
   const reduce=1-(1-armorRed(v('defense')))*(1-tb('defense').red);
   const lk=tb('luck'),rk=tb('ricochet'),sw=tb('shockwave'),arc=tb('arc'),B=isBurst();
+  const dmg=v('damage')*(T.power?1.5:1)*(T.berserk?1.25:1)*(1+tb('attack_power').dmg)*(1+stars*STAR.dmg)*M.dmg;
   return{
-    dmg:       v('damage')*(T.power?1.5:1)*(T.berserk?1.25:1)*(1+tb('attack_power').dmg)*(1+stars*STAR.dmg)*M.dmg,
+    dmg,
     rate:      v('fireRate')*(T.rapid?1.25:1)*(T.berserk?1.2:1)*(1+tb('attack_speed').rate)*(runFx.odT>0?runFx.odM:1)*(B?BURST.rate:1),
     // BURST: pellets per salvo and the damage of one pellet as a share of bullet damage (RAPID: one bullet, x1)
     pellets:   B?BURST.pellets:1, pellet:B?BURST.dmg:1,
+    hitDmg:    dmg*(B?BURST.dmg:1),   // bullet damage with the mode bonus: pellets, TWIN, ARC, NOVA, SHOCKWAVE, bombs
     maxHp,
     regen:     (v('regen')+maxHp*tb('regen').pct)*M.regen,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
@@ -1662,7 +1664,7 @@ function initRun(){
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
   runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];runUnlockSnd=0;
-  armed=null;bombs=[];$('playUI').classList.remove('armed');
+  cancelArm();bombs=[];
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1688,20 +1690,19 @@ document.addEventListener('keydown',e=>{
   const k=e.key;
   if(k==='Escape'||k===' '||k==='p'||k==='P'){
     e.preventDefault();
-    cancelArm();
     if(!paused)paused=true;else if(!confirmEndRun)paused=false;
     snd('click');return;
   }
   if(paused)return;
   if(k==='t'||k==='T'){cycleTarget();return;}
   if(k==='-'||k==='+'||k==='='){stepSpeed(k==='-'?-1:1);return;}
-  const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=save.equipped[n-1];if(id&&TT[id]&&TT[id].act)useActive(id);}
+  const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=save.equipped[n-1];if(isAct(id))useActive(id);}
 });
 
 // returns true when the tap hit a control or a drop
 function playClick(x,y){
   const pbx=GW*.82,pby=GH*.012,pbw=GW*.16,pbh=GH*.048;
-  if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){cancelArm();paused=true;snd('click');return true;}
+  if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){paused=true;snd('click');return true;}
   if(armed){   // a grenade is armed: a tap on the field throws it, a tap below the perimeter cancels
     if(y>=bombCancelY())cancelArm();else throwBomb(x,y);
     return true;
@@ -1873,8 +1874,6 @@ function saveProgress(){
       if(save.cpsR===undefined)save.cpsR=save.idleCps||0;
       save[k]=save[k]?save[k]*.7+r*.3:r;save.idleCps=Math.max(save.cpsR||0,save.cpsB||0);
     }
-    // boost prices follow the highest average ever reached, so playing badly on purpose cannot make them cheaper
-    save.peakCps=Math.max(save.peakCps||0,save.idleCps||0);
   }
   persist();
 }
@@ -1957,7 +1956,7 @@ function killEnemy(e,st){
   if(e.gooT>0)gooBurst(e,st);
   if(e.virT>0){   // VIRUS jumps to the enemies next to the dead host, with the time the host had left
     const R=GW*GRENADE.virus.spread;
-    for(const o of enemies)if(o!==e&&o.hp>0&&Math.hypot(o.x-e.x,o.y-e.y)<=R+o.sz*.5){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}
+    for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R)){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}
   }
   if(st.shatter>0&&(e.slowT>0||e.frozenT>0)&&!e.boss)shatterQ.push({x:e.x,y:e.y,dmg:e.maxHp*st.shatter});
   const v=coinValueAt(effWave())*st.mult*e.coin;
@@ -2039,12 +2038,16 @@ function spawnWave(){
     if(bossKind==='regen'){b.healT=1;b.healAmt=ECO.bossRegen;}
   }
   runWave=waveNum;
-  if(runTier===1&&waveNum>=20&&!runWeekly&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T('LOGIC BOMB')),true);snd('unlock');achCheck();}
+  if(runTier===1&&waveNum>=20&&!runWeekly&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T(TT.logic_bomb.name)),true);snd('unlock');achCheck();}
   waveAnim={active:true,timer:2,num:waveNum,boss,ev:runEvent,bossKind};snd(boss?'boss':'wave');
   if(boss){screenFlash=.5;shake={x:0,y:0,t:.3};}
 }
 // damage that doesn't come from a bullet (arc, nova, shockwave); deaths are handled in the enemy loop
-function hurt(e,dmg){e.hp-=dmg;runDmgDealt+=dmg;e.hitFlash=.18;dmgText(e,dmg,false);}
+function hurt(e,dmg,quiet){e.hp-=dmg;runDmgDealt+=dmg;if(quiet)return;e.hitFlash=.18;dmgText(e,dmg,false);}
+// blast push (NOVA, SHOCKWAVE, LOGIC BOMB): bosses are not pushed, a stronger push already running is kept
+const knock=(e,m)=>{if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*m);};
+// inside a blast circle of radius R around (x,y), counting the enemy's own size
+const inBlast=(o,x,y,R)=>{const dx=o.x-x,dy=o.y-y,r=R+o.sz*.5;return dx*dx+dy*dy<=r*r;};
 
 // ── TARGETING & BULLETS ──────────────────────────────────────────────────────
 const TARGET_MODES=['FRONT','STRONG','WEAK'];
@@ -2080,7 +2083,7 @@ function fireBullets(st){
     const n=st.pellets*(multi?2:1),S=BURST.spread,left=(by-st.rangeY)*BURST.reach;
     for(let k=0;k<n;k++){
       const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*st.pellet,sz:bSize*.8,bounces:0,tgt:null,left});
+      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg,sz:bSize*.8,bounces:0,tgt:null,left});
     }
   }else{
     shots.push({e:target,m:1});
@@ -2090,7 +2093,7 @@ function fireBullets(st){
   if(st.twin>0)shots.push({e:order[1]||target,m:st.twin,twin:true});
   for(const s of shots){
     const x0=bx+(s.twin?GW*.025:0),a=s.e?Math.atan2(s.e.y-by,s.e.x-x0):base+s.ang;
-    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.dmg*st.pellet*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
+    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
   if(st.pellets>1){muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1,big:1});shake={x:0,y:0,t:Math.max(shake.t,.06)};snd('blast');}
@@ -2105,12 +2108,13 @@ function arcStrike(first,st){
     for(const o of enemies){if(o.hp<=0||hit.includes(o))continue;const d=(o.x-cur.x)**2+(o.y-cur.y)**2;if(d<nd){nd=d;nx=o;}}
     if(!nx)break;hit.push(nx);pts.push({x:nx.x,y:nx.y});cur=nx;
   }
-  for(const e of hit)hurt(e,st.dmg*st.pellet*st.arcM*(e.boss?st.bossDmg:1));
+  for(const e of hit)hurt(e,st.hitDmg*st.arcM*(e.boss?st.bossDmg:1));
   arcs.push({pts,life:1});
 }
 
 // ── ACTIVE TATTOOS ───────────────────────────────────────────────────────────
-const activeIds=()=>save.equipped.filter(id=>TT[id]&&TT[id].act);
+const isAct=id=>TT[id]&&TT[id].act;
+const activeIds=()=>save.equipped.filter(isAct);
 function useActive(id){
   if(state!==ST.PLAY||paused||(actCD[id]||0)>0){snd('deny');return;}
   if(TT[id].gren){if(armed===id)cancelArm();else armBomb(id);return;}
@@ -2118,8 +2122,8 @@ function useActive(id){
   if(id==='nova'){
     for(const e of enemies){
       if(e.hp<=0||e.y<GH*HUD_TOP-e.sz)continue;
-      hurt(e,st.dmg*st.pellet*x.m*(e.boss?st.bossDmg:1));
-      if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*1.5);
+      hurt(e,st.hitDmg*x.m*(e.boss?st.bossDmg:1));
+      knock(e,1.5);
     }
     novas.push({x:triX,y:TRI_Y,life:1,col:C.a2});screenFlash=.2;shake={x:0,y:0,t:.25};
   }else if(id==='overdrive'){runFx.odT=x.dur;runFx.odM=x.m;}
@@ -2147,25 +2151,19 @@ const bombVuln=(e,st)=>(e.boss?st.bossDmg:1)*(e.slowT>0||e.frozenT>0?st.frostVul
 function gooBurst(e,st){
   const R=GW*GRENADE.goo.r;e.gooT=0;
   for(const o of enemies){
-    if(o.hp<=0||(o!==e&&Math.hypot(o.x-e.x,o.y-e.y)>R+o.sz*.5))continue;
+    if(o.hp<=0||(o!==e&&!inBlast(o,e.x,e.y,R)))continue;
     hurt(o,e.gooD*bombVuln(o,st));
   }
   if(novas.length<10){novas.push({x:e.x,y:e.y,life:1,col:C.a,r:R,fill:true});burst(e.x,e.y,C.a,6,GH*.1);}   // a crowd of bursts at once draws only the first rings
   snd('bomb');
 }
 function blastBomb(b){
-  const kind=TT[b.id].gren,x=tb(b.id),st=stats(),R=GW*TT[b.id].r,isCrit=Math.random()<st.crit,base=st.dmg*st.pellet*(isCrit?st.critM:1);
+  const kind=TT[b.id].gren,x=tb(b.id),st=stats(),R=GW*TT[b.id].r,isCrit=Math.random()<st.crit,base=st.hitDmg*(isCrit?st.critM:1);
   for(const e of enemies){
-    if(e.hp<=0)continue;
-    const d=Math.hypot(e.x-b.x1,e.y-b.y1);if(d>R+e.sz*.5)continue;
-    if(kind==='logic'){
-      hurt(e,base*x.m*bombVuln(e,st));
-      if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*1.5);
-    }else if(kind==='goo'){
-      hurt(e,base*x.m*bombVuln(e,st));e.gooT=GRENADE.goo.t;e.gooD=base*x.m2;
-    }else{   // virus: a new infection refreshes the timer, it never stacks
-      e.virT=GRENADE.virus.t;e.virD=Math.max(e.virD||0,base*x.m);
-    }
+    if(e.hp<=0||!inBlast(e,b.x1,b.y1,R))continue;
+    if(kind==='virus'){e.virT=GRENADE.virus.t;e.virD=Math.max(e.virD||0,base*x.m);continue;}   // a new infection refreshes the timer, it never stacks
+    hurt(e,base*x.m*bombVuln(e,st));
+    if(kind==='goo'){e.gooT=GRENADE.goo.t;e.gooD=base*x.m2;}else knock(e,1.5);
   }
   const col=kind==='goo'?C.a:kind==='virus'?C.r[3]:C.a2;
   novas.push({x:b.x1,y:b.y1,life:1,col:isCrit?C.r[2]:col,r:R,fill:true});
@@ -2264,7 +2262,7 @@ function updateMenu(dt){
 }
 
 function updatePlay(dt){
-  if(paused)return;
+  if(paused){cancelArm();return;}   // every way of pausing drops an armed bomb
   const LINE_Y=GH*LINE_FRAC,TRI_Y=GH*TRI_FRAC,st=stats();
 
   if(shake.t>0){
@@ -2311,8 +2309,8 @@ function updatePlay(dt){
   if(st.shockM>0&&hp/st.maxHp<.3&&shockCooldown<=0){
     for(const e of enemies){
       if(e.hp<=0||e.y<GH*.45)continue;
-      hurt(e,st.dmg*st.pellet*st.shockM*(e.boss?st.bossDmg:1));
-      if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*2);
+      hurt(e,st.hitDmg*st.shockM*(e.boss?st.bossDmg:1));
+      knock(e,2);
     }
     novas.push({x:triX,y:LINE_Y,life:1,col:C.hot});screenFlash=.25;shake={x:0,y:0,t:.2};
     spawnText(triX,GH*.72,T('SHOCKWAVE!'),C.hot);snd('shock');
@@ -2482,7 +2480,7 @@ function updatePlay(dt){
     if(e.hitFlash>0)e.hitFlash-=dt;
     if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e,st);}
     // VIRUS ticks are quiet (no flash, no number): a whole wave can be infected at once
-    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){const d=e.virD*e.virAcc;e.hp-=d;runDmgDealt+=d;e.virAcc=0;}}
+    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){hurt(e,e.virD*e.virAcc,1);e.virAcc=0;}}
 
     // every touch while moving down counts as a hit (and knocks it back again); CLINGERS stay and hit again every few seconds
     if(e.clung){
@@ -2752,6 +2750,7 @@ function drawPlay(){
   cx.restore();
 }
 
+const VIR_DASH=[2,4];
 function drawEnemy(e,TOP){
   const fa=Math.max(0,Math.min(1,(e.y-(TOP-e.sz))/(e.sz*.8)));
   if(fa<=0)return;
@@ -2777,7 +2776,7 @@ function drawEnemy(e,TOP){
   cx.shadowBlur=0;cx.globalAlpha=.6*ga;cx.lineWidth=1;
   enemyInner(e.type,s);
   if(e.gooT>0){cx.globalAlpha=ga*.9;cx.strokeStyle=C.a;cx.lineWidth=2;cx.beginPath();cx.arc(0,0,s*1.45,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(0,e.gooT/GRENADE.goo.t));cx.stroke();}   // countdown ring
-  if(e.virT>0){cx.globalAlpha=ga*(.55+.25*Math.sin(lastTime*.012));cx.strokeStyle=C.r[3];cx.lineWidth=1.5;cx.setLineDash([2,4]);cx.beginPath();cx.arc(0,0,s*1.3,0,Math.PI*2);cx.stroke();cx.setLineDash([]);}
+  if(e.virT>0){cx.globalAlpha=ga*(.55+.25*Math.sin(lastTime*.012));cx.strokeStyle=C.r[3];cx.lineWidth=1.5;cx.setLineDash(VIR_DASH);cx.beginPath();cx.arc(0,0,s*1.3,0,Math.PI*2);cx.stroke();}
   cx.restore();
   // WARDEN shield ring (thins as it wears down) · MENDER heal pulse
   if(e.shield>0){cx.save();cx.globalAlpha=fa*(.35+.55*e.shield/e.maxShield);cx.strokeStyle=C.a2;cx.lineWidth=2;cx.shadowColor=C.a2;cx.shadowBlur=8;
@@ -2836,7 +2835,7 @@ function drawShots(st){
   novas.forEach(n=>{
     cx.save();cx.globalAlpha=n.life*.8;cx.strokeStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=16;cx.lineWidth=2+n.life*4;
     cx.beginPath();cx.arc(n.x,n.y,n.r?n.r*(1.15-n.life*.6):GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();
-    if(n.fill){cx.globalAlpha=n.life*.18;cx.fillStyle=n.col;cx.fill();}
+    if(n.fill){cx.shadowBlur=0;cx.globalAlpha=n.life*.18;cx.fillStyle=n.col;cx.fill();}
     cx.restore();
   });
 }
@@ -2937,7 +2936,7 @@ function drawHUD(st){
   const sy=GH*.985,sf=fs*.85;
   // exact values (2 decimals) below 1000; suffixes (1.23K…) only above that
   const exact=v=>v<1000?String(+v.toFixed(2)):fmtN(v);
-  cx.textAlign='left';glowText(`${T('ATK')} ${exact(st.dmg*st.pellet)}${st.pellets>1?' x'+st.pellets:''}`,GW*.04,sy,C.mute,sf,0);
+  cx.textAlign='left';glowText(`${T('ATK')} ${exact(st.hitDmg)}${st.pellets>1?' x'+st.pellets:''}`,GW*.04,sy,C.mute,sf,0);
   cx.textAlign='center';glowText(`${T('SPD')} ${st.rate.toFixed(2)}/s`,GW*.5,sy,C.mute,sf,0);
   cx.textAlign='right';glowText(`${T('CRT')} ${+(st.crit*100).toFixed(1)}% x${st.critM.toFixed(2)}`,GW*.96,sy,C.mute,sf,0);
 
@@ -3049,17 +3048,16 @@ function renderPlayUI(){
   $('abil').classList.toggle('hi',IS_APP&&save.tatSlots>=4);
   // one fixed cell per tattoo slot, so a button never moves when another slot changes
   $('abil').innerHTML=activeIds().length?Array.from({length:save.tatSlots},(_,i)=>{const id=save.equipped[i];
-    return id&&TT[id]&&TT[id].act?`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`:'<span class="abx"></span>';}).join(''):'';
+    return isAct(id)?`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`:'<span class="abx"></span>';}).join(''):'';
   _abState='';
 }
 let _abState='';
 function updatePlayUI(){
   $('playUI').classList.toggle('nohud',hudHidden);
-  const btns=$('abil').children;if(!btns.length)return;
+  const btns=$('abil').getElementsByClassName('ab');if(!btns.length)return;
   // only touch the DOM when a displayed value changes
   let key='';const rows=[];
   for(const b of btns){
-    if(!b.dataset.act)continue;
     const id=b.dataset.act,cd=actCD[id]||0,full=tb(id).cd||1;
     const on=(id==='overdrive'&&runFx.odT>0)||(id==='midas'&&runFx.midT>0);
     const r=[id,Math.ceil(cd),Math.round(cd/full*20),on];rows.push([b,...r]);key+=r.join(',')+';';

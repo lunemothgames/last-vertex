@@ -14,7 +14,7 @@ const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','i
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+  "return{GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
 // next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
 const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
@@ -51,6 +51,8 @@ const BUILDS={
   thornsTank:{shop:plus(DEF),tat:['thorns','aegis','defense','regen','lifesteal']},
   bruiser:   {shop:plus(DEF),tat:['thorns','mend','shockwave','attack_power','dodge']},
   bomb:      {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['logic_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
+  goo:       {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['goo_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
+  virus:     {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['virus_bomb','attack_power','attack_speed','crit_chance','crit_mult']},
   active:    {shop:plus({}),tat:['nova','overdrive','stasis','mend','attack_power']},
   control:   {shop:plus(CTRL),tat:['frost','reach','stasis','attack_power','attack_speed']},
   shatter:   {shop:plus(CTRL),tat:['frost','shatter','stasis','attack_power','attack_speed']},
@@ -149,12 +151,12 @@ function run(tier,maxW=1e9){
       // active tattoos, cast as soon as they are useful
       for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
         if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,st.dmg*st.pellet*a.m*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}}
-        else if(id==='logic_bomb'&&!process.env.SIM_NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
-          const R=TT.logic_bomb.r,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
+        else if(TT[id].gren&&!process.env.SIM_NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
+          const R=TT[id].r,bk=TT[id].gren,bm=bk==='goo'?a.m+1.5*a.m2:bk==='virus'?a.m*G.GRENADE.virus.t:a.m,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
           let best=null,bn=0;for(const c of live){const n=live.filter(o=>Math.abs(o.y-c.y)<rY).length;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
           const crit=Math.random()<st.crit?st.critM:1;
-          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,st.dmg*st.pellet*a.m*crit*(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}
+          for(const e of live)if(Math.abs(e.y-best.y)<rY&&(e===best||Math.random()<pHit)){hit(e,st.dmg*st.pellet*bm*crit*(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1));if(bk==='logic'&&!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}
         }
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}

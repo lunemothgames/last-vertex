@@ -108,7 +108,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 /* next-run boosts under PLAY: lit = AUTO on, filled = already bought for the next run */
 /* same width as PLAY, AUTO label centered on top, so the row lines up with the button edges */
 .bstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:224px;margin:8px auto 0}
-.bstrip>span{grid-column:1/-1;text-align:center;font-family:'VT323',monospace;font-size:15px;line-height:1;letter-spacing:.06em;color:var(--mute)}
+.bstrip>span{display:none}   /* the AUTO label was dropped to give the hero triangle room */
 .bstrip button{width:100%;height:30px;display:grid;place-items:center;border:1px solid var(--dim);color:var(--mute);position:relative}
 .bstrip button svg.i{width:16px;height:16px}
 .bstrip button.on{border-color:var(--a);color:var(--a);box-shadow:0 0 8px var(--glow)}
@@ -129,7 +129,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .short .logo{margin-top:4px}
 .short .logo .l1{font-size:36px}
 .short .logo .l2{font-size:62px}
-.short .logo .rule{display:none}
 .short .playw{margin-top:8px}
 .short .wkbtn{margin-top:8px}
 .short .bnav{padding-bottom:16px}

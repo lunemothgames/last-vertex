@@ -1477,7 +1477,7 @@ const TAT_TYPES=[
   {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
    desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
-  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:1,r:.2,v:{m:[2.5,6],cd:[8,5]},
+  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:1,r:.2,v:{m:[.3,.7],cd:[8,5]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},

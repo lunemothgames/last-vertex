@@ -434,10 +434,12 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #coachTip::before{content:'> ';color:var(--mute)}
 /* ── in-run controls: active tattoo abilities + target priority ── */
 #playUI{pointer-events:none!important;animation:none!important}
-#abil{position:absolute;left:10px;bottom:calc(17% + 8px);display:flex;gap:5px}
-.ab{width:40px;height:40px;position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
+#abil{position:absolute;left:0;right:0;bottom:calc(17% + 40px);display:flex;justify-content:center;gap:6px}
+.abx{width:46px;height:46px;pointer-events:none}
+#playUI.armed #abil,#playUI.armed #tgtBtn,#playUI.armed #spdCtl{visibility:hidden}
+.ab{width:46px;height:46px;position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
   background:rgba(var(--bg1-rgb),0.7);pointer-events:auto}
-.ab svg.i{width:22px;height:22px}
+.ab svg.i{width:26px;height:26px}
 .ab i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(var(--bg1-rgb),0.78);border-top:1px solid var(--dim)}
 .ab b{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;font-family:'VT323',monospace;font-weight:400;font-size:19px;color:var(--a2)}
 .ab.rdy{box-shadow:0 0 10px var(--glow),inset 0 0 8px rgba(var(--a-rgb),0.3)}
@@ -599,6 +601,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13"/><path d="M3 7l9 7 9-7"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12"/><path d="M3 13h18M12 9v12"/><path d="M12 9C9 9 7.5 7.5 8 6s3-1.5 4 3zM12 9c3 0 4.5-1.5 4-3s-3-1.5-4 3z"/></symbol>
 <symbol id="i-nova" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></symbol>
+<symbol id="i-bomb" viewBox="0 0 24 24"><path d="M12 8l9 14H3z"/><path d="M12 8V4M12 4l3-2"/><path d="M12 14v3" stroke-dasharray="1 2"/></symbol>
 <symbol id="i-od" viewBox="0 0 24 24"><path d="M4 18l5-6-5-6M11 18l5-6-5-6"/><path d="M19 6v12"/></symbol>
 <symbol id="i-stasis" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9s10 4 10 9"/></symbol>
 <symbol id="i-mend" viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/><path d="M12 9v6M9 12h6"/></symbol>
@@ -863,7 +866,7 @@ function defaultSave(){return{
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
   temp:{},autoBoost:{},autoRetry:false,tatCol:{},tatSlots:1,equipped:[],pity:0,
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
-  life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0},achClaimed:[],hints:{},adDay:'',adCount:0,
+  life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
   lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],mode:'rapid',
   tier:1,tierBest:{1:0},quests:[],qNextDaily:0,qNextWeekly:0,
@@ -1100,7 +1103,7 @@ function sfxGain(){
 function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
 // minimum ms between two plays of the same effect: dozens of oscillators a second clog weak phones'
 // audio thread, and then sounds arrive late and in bunches
-const SFX_GAP={shoot:70,blast:120,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
+const SFX_GAP={throw:80,bomb:80,shoot:70,blast:120,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
 const _sfxLast={};
 let _noiseBuf=null;
 function snd(type){
@@ -1128,6 +1131,8 @@ function snd(type){
     switch(type){
       // ── combat (rate-limited, kept light)
       case 'shoot':  tone('square',760,.035,.035,320);break;
+      case 'throw':  noise(.16,1800,1.2,.07);tone('triangle',300,.05,.16,900);break;
+      case 'bomb':   noise(.4,260,.5,.22);tone('sawtooth',130,.12,.3,40);tone('square',520,.05,.1,160);break;
       case 'blast':  noise(.13,1100,.6,.13);tone('square',240,.06,.1,70);break;
       case 'hit':    tone('triangle',220,.06,.05,120);noise(.03,2400,1.2,.05);break;
       case 'crit':   tone('square',1300,.05,.05,2600);tone('sine',2600,.04,.07,0,.02);break;
@@ -1472,6 +1477,8 @@ const TAT_TYPES=[
   {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
    desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
+  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:1,r:.2,v:{m:[2.5,6],cd:[8,5]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
 ];
@@ -1620,6 +1627,7 @@ let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
 let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,arcs=[],novas=[],beams=[];
 let actCD={};                           // active tattoo id → seconds until ready
+let armed=null,bombs=[];                // grenade waiting for a tap on the field · grenades in the air
 let shatterQ=[],runUnlockSnd=0;                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
 const SHATTER_R=.2;                     // burst radius, share of screen width
 
@@ -1645,6 +1653,7 @@ function initRun(){
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
   runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];runUnlockSnd=0;
+  armed=null;bombs=[];$('playUI').classList.remove('armed');
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
 
@@ -1670,19 +1679,24 @@ document.addEventListener('keydown',e=>{
   const k=e.key;
   if(k==='Escape'||k===' '||k==='p'||k==='P'){
     e.preventDefault();
+    cancelArm();
     if(!paused)paused=true;else if(!confirmEndRun)paused=false;
     snd('click');return;
   }
   if(paused)return;
   if(k==='t'||k==='T'){cycleTarget();return;}
   if(k==='-'||k==='+'||k==='='){stepSpeed(k==='-'?-1:1);return;}
-  const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=activeIds()[n-1];if(id)useActive(id);}
+  const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=save.equipped[n-1];if(id&&TT[id]&&TT[id].act)useActive(id);}
 });
 
 // returns true when the tap hit a control or a drop
 function playClick(x,y){
   const pbx=GW*.82,pby=GH*.012,pbw=GW*.16,pbh=GH*.048;
-  if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){paused=true;snd('click');return true;}
+  if(!hudHidden&&x>=pbx&&x<=pbx+pbw&&y>=pby&&y<=pby+pbh){cancelArm();paused=true;snd('click');return true;}
+  if(armed){   // a grenade is armed: a tap on the field throws it, a tap below the perimeter cancels
+    if(y>=bombCancelY())cancelArm();else throwBomb(x,y);
+    return true;
+  }
   const ad=!IS_APP||adCooldown()>0?{x:-1e9,y:-1e9,w:0,h:0}:adRect();
   if(x>=ad.x&&x<=ad.x+ad.w&&y>=ad.y-GH*.01&&y<=ad.y+ad.h+GH*.01){handleRunAd();return true;}
   for(let i=pickups.length-1;i>=0;i--){
@@ -2011,6 +2025,7 @@ function spawnWave(){
     if(bossKind==='regen'){b.healT=1;b.healAmt=ECO.bossRegen;}
   }
   runWave=waveNum;
+  if(runTier===1&&waveNum>=20&&!runWeekly&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T('LOGIC BOMB')),true);snd('unlock');achCheck();}
   waveAnim={active:true,timer:2,num:waveNum,boss,ev:runEvent,bossKind};snd(boss?'boss':'wave');
   if(boss){screenFlash=.5;shake={x:0,y:0,t:.3};}
 }
@@ -2084,6 +2099,7 @@ function arcStrike(first,st){
 const activeIds=()=>save.equipped.filter(id=>TT[id]&&TT[id].act);
 function useActive(id){
   if(state!==ST.PLAY||paused||(actCD[id]||0)>0){snd('deny');return;}
+  if(TT[id].gren){if(armed===id)cancelArm();else armBomb(id);return;}
   const x=tb(id),st=stats(),TRI_Y=GH*TRI_FRAC;
   if(id==='nova'){
     for(const e of enemies){
@@ -2098,6 +2114,32 @@ function useActive(id){
   else if(id==='mend'){const h=st.maxHp*x.heal;hp=Math.min(st.maxHp,hp+h);burst(triX,TRI_Y,C.r[2],14,GH*.08);spawnText(triX,TRI_Y-GH*.08,'+'+fmtN(h)+' HP',C.r[2]);}
   actCD[id]=x.cd;snd({nova:'nova',stasis:'freeze',mend:'heal',overdrive:'power',midas:'collect'}[id]||'gem');qEvent('active');
   spawnText(GW/2,GH*.4,T(TT[id].name)+'!',C.a2);
+}
+
+// ── GRENADES ─────────────────────────────────────────────────────────────────
+// The button arms a grenade (all buttons hide, the field waits for a tap); a tap above the cancel line throws it, a tap below cancels.
+// Cooldown starts at the throw and counts in game time, so game speed shortens it.
+const bombCancelY=()=>GH*LINE_FRAC+GH*.05;
+function armBomb(id){armed=id;$('playUI').classList.add('armed');snd('click');}
+function cancelArm(){if(!armed)return;armed=null;$('playUI').classList.remove('armed');}
+function throwBomb(x,y){
+  const id=armed,x1=Math.max(GW*.03,Math.min(GW*.97,x)),y1=Math.max(GH*HUD_TOP,y);
+  cancelArm();
+  bombs.push({id,x0:triX,y0:GH*TRI_FRAC-GH*.05,x1,y1,t:0,dur:.3});
+  actCD[id]=tb(id).cd;snd('throw');qEvent('bomb');LIFE().bombs=(LIFE().bombs||0)+1;achCheck();
+}
+function blastBomb(b){
+  const x=tb(b.id),st=stats(),R=GW*TT[b.id].r,isCrit=Math.random()<st.crit;
+  for(const e of enemies){
+    if(e.hp<=0)continue;
+    const d=Math.hypot(e.x-b.x1,e.y-b.y1);if(d>R+e.sz*.5)continue;
+    hurt(e,st.dmg*x.m*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1));
+    if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*1.5);
+  }
+  novas.push({x:b.x1,y:b.y1,life:1,col:isCrit?C.r[2]:C.a2,r:R,fill:true});
+  burst(b.x1,b.y1,C.a2,22,GH*.2);screenFlash=Math.max(screenFlash,.1);shake={x:0,y:0,t:.18};
+  snd('bomb');
+  if(isCrit)snd('crit');
 }
 
 // ── PARTICLES ────────────────────────────────────────────────────────────────
@@ -2204,6 +2246,7 @@ function updatePlay(dt){
   novas.forEach(n=>n.life-=dt*2.2);novas=novas.filter(n=>n.life>0);
   beams.forEach(b=>b.life-=dt*2.5);beams=beams.filter(b=>b.life>0);
 
+  for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];b.t+=dt;if(b.t>=b.dur){bombs.splice(i,1);blastBomb(b);}}
   // tattoo timers
   for(const id in actCD)actCD[id]=Math.max(0,actCD[id]-dt);
   if(runFx.odT>0)runFx.odT-=dt;
@@ -2666,6 +2709,7 @@ function drawPlay(){
     hb.addColorStop(0,hexA(C.bg1,.92));hb.addColorStop(.75,hexA(C.bg1,.7));hb.addColorStop(1,hexA(C.bg1,0));
     cx.fillStyle=hb;cx.fillRect(-6,-6,GW+12,TOP+6);
   }
+  drawBombs();
   drawAdButton();
   if(!hudHidden){drawHUD(st);if(!paused)drawWaveBanner();}
 
@@ -2754,8 +2798,28 @@ function drawShots(st){
   });
   novas.forEach(n=>{
     cx.save();cx.globalAlpha=n.life*.8;cx.strokeStyle=n.col;cx.shadowColor=n.col;cx.shadowBlur=16;cx.lineWidth=2+n.life*4;
-    cx.beginPath();cx.arc(n.x,n.y,n.r?n.r*(1.15-n.life*.6):GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();cx.restore();
+    cx.beginPath();cx.arc(n.x,n.y,n.r?n.r*(1.15-n.life*.6):GH*(1-n.life)*.9+GW*.05,0,Math.PI*2);cx.stroke();
+    if(n.fill){cx.globalAlpha=n.life*.18;cx.fillStyle=n.col;cx.fill();}
+    cx.restore();
   });
+}
+
+// grenades in flight (a small spinning triangle on an arc) and the armed screen: tint, hint, faint CANCEL strip below the perimeter
+function drawBombs(){
+  for(const b of bombs){
+    const k=b.t/b.dur,x=b.x0+(b.x1-b.x0)*k,y=b.y0+(b.y1-b.y0)*k-Math.sin(k*Math.PI)*GH*.06,r=GW*.025,a=k*Math.PI*6;
+    cx.save();cx.translate(x,y);cx.rotate(a);cx.strokeStyle=C.a2;cx.shadowColor=C.a2;cx.shadowBlur=fxMid()?0:12;cx.lineWidth=2;
+    cx.beginPath();cx.moveTo(0,-r);cx.lineTo(r*.9,r*.7);cx.lineTo(-r*.9,r*.7);cx.closePath();cx.stroke();cx.restore();
+  }
+  if(!armed||paused)return;
+  const cy=bombCancelY();
+  cx.save();cx.fillStyle=hexA(C.a2,.05);cx.fillRect(0,0,GW,cy);
+  cx.fillStyle=hexA(C.hot,.07);cx.fillRect(0,cy,GW,GH-cy);
+  cx.strokeStyle=hexA(C.hot,.5);cx.setLineDash([GW*.02,GW*.02]);cx.lineWidth=1;cx.beginPath();cx.moveTo(0,cy);cx.lineTo(GW,cy);cx.stroke();cx.setLineDash([]);
+  cx.letterSpacing='0px';cx.textAlign='center';cx.textBaseline='alphabetic';
+  glowText(T('TAP THE FIELD TO THROW'),GW/2,GH*.2,C.a2,GH*.03,8);
+  cx.textAlign='right';glowText(T('CANCEL'),GW*.97,cy+GH*.035,hexA(C.hot,.7),GH*.026,0);
+  cx.restore();
 }
 
 // ad button: just above the perimeter, right side
@@ -2945,7 +3009,9 @@ function syncUI(){
 function renderPlayUI(){
   $('tgtTxt').textContent=T(TARGET_MODES[save.settings.target||0]);
   const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
-  $('abil').innerHTML=activeIds().map((id,i)=>`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`).join('');
+  // one fixed cell per tattoo slot, so a button never moves when another slot changes
+  $('abil').innerHTML=activeIds().length?Array.from({length:save.tatSlots},(_,i)=>{const id=save.equipped[i];
+    return id&&TT[id]&&TT[id].act?`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`:'<span class="abx"></span>';}).join(''):'';
   _abState='';
 }
 let _abState='';
@@ -2955,6 +3021,7 @@ function updatePlayUI(){
   // only touch the DOM when a displayed value changes
   let key='';const rows=[];
   for(const b of btns){
+    if(!b.dataset.act)continue;
     const id=b.dataset.act,cd=actCD[id]||0,full=tb(id).cd||1;
     const on=(id==='overdrive'&&runFx.odT>0)||(id==='midas'&&runFx.midT>0);
     const r=[id,Math.ceil(cd),Math.round(cd/full*20),on];rows.push([b,...r]);key+=r.join(',')+';';
@@ -3395,6 +3462,7 @@ const TAT_COLS={
   ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shatter:[['p','BURST','%']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
   twin:[['m','TWIN DMG','%']],arc:[['every','EVERY','1/n'],['n','TARGETS','n'],['m','DMG EACH','%']],
   midas:[['m','COINS','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
+  logic_bomb:[['m','BLAST','x'],['cd','COOLDOWN','s']],
 };
 function tatCell(v,f){
   const p=v*100,pct=(p<10&&p%1?p.toFixed(1):Math.round(p))+'%';
@@ -3498,6 +3566,7 @@ const QUEST_DEFS=[
   {k:'slow',         txt:n=>T('Slow down {0} enemies',fmtN(n)),        d:[15,30], w:[180,300],need:()=>permVal('slowChance')>0&&permVal('slowAmt')>0},
   {k:'multishot',    txt:n=>T('Fire {0} multishots',fmtN(n)),          d:[15,30], w:[180,300],need:()=>permVal('multishot')>0},
   {k:'dodge',        txt:n=>T('Dodge {0} hits',fmtN(n)),               d:[4,8],   w:[40,70],  need:()=>permVal('dodge')>0},
+  {k:'bomb',         txt:n=>T('Throw {0} bombs',fmtN(n)),              d:[10,20], w:[80,140], need:()=>tatOf('logic_bomb').lv>0},
   {k:'pierce',       txt:n=>T('Pierce through {0} enemies',fmtN(n)),   d:[10,20], w:[120,200],need:()=>permVal('pierce')>0},
   {k:'drop',         txt:n=>T(n>1?'Collect {0} field drops':'Collect {0} field drop',n),d:[1,2],   w:[6,10]},
   {k:'wave',         txt:n=>T('Clear {0} waves in a single run',n),    wave:true},
@@ -3724,6 +3793,7 @@ ach('boss1','BOSS DOWN','Destroy your first boss',5,()=>LIFE().bosses,1);
 [[5,3],[10,8],[20,25],[TAT_TYPES.length,40]].forEach(([n,g])=>ach('tf'+n,['COLLECTOR {0}',n],['Discover {0} different tattoos',n],g,tatFound,n));
 [[10,10],[30,25],[60,50],[90,100]].forEach(([n,g])=>ach('stars'+n,['STARGAZER {0}',n],['Earn {0} tier mastery stars',n],g,totalStars,n));
 [[3,5],[5,15],[7,40]].forEach(([n,g])=>ach('tl'+n,['INKED LV{0}',n],['Raise any tattoo to LV{0}',n],g,tatTopLv,n));
+[[10,3],[100,8],[1000,20]].forEach(([n,g])=>ach('bombs'+n,['BOMBER {0}',fmtN(n)],['Throw {0} bombs',fmtN(n)],g,()=>LIFE().bombs||0,n));
 const achDone=a=>a.v()>=a.t;
 const achClaimable=()=>ACHS.filter(a=>achDone(a)&&!save.achClaimed.includes(a.id));
 function achCheck(){
@@ -3897,6 +3967,7 @@ const HELP_TOPICS=[
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
   ['tattoos','spark','TATTOOS',()=>`<p>${T('Get tattoos inked with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
     <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 inks.')}</p>
+    <p>${T('BOMBS are active tattoos you aim: tap the bomb button, then tap the field where it should land. Tap below the perimeter to cancel. The cooldown starts at the throw and runs on game time.')}</p>
     <div class="odds">${oddsGrid()}</div>`],
   ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and 4 weekly quests every Monday; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
     <p>${T('Achievements reward milestones once each.')}</p>`],

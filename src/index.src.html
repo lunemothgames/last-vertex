@@ -1485,7 +1485,7 @@ const TAT_TYPES=[
   {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[1,2],cd:[60,40]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
   {id:'goo_bomb',    name:'GOO BOMB',icon:'goo',rar:3,w:1.2,act:1,gren:'goo',r:.2,v:{m:[.6,1.2],m2:[1.2,2.4],cd:[60,40]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
   {id:'virus_bomb',  name:'VIRUS BOMB',icon:'virus',rar:2,w:3,act:1,gren:'virus',r:.2,v:{m:[.15,.35],cd:[55,36]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it',x.m.toFixed(2),GRENADE.virus.t)+cdTxt(x)},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
@@ -2143,11 +2143,11 @@ function throwBomb(x,y){
   actCD[id]=tb(id).cd;snd('throw');qEvent('bomb');LIFE().bombs=(LIFE().bombs||0)+1;achCheck();
 }
 const bombVuln=(e,st)=>(e.boss?st.bossDmg:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
-// GOO bursts (on its timer, or when its host dies): damages whatever is next to it, not the host itself
+// GOO bursts (on its timer, or when its host dies): damages the host itself and whatever is next to it
 function gooBurst(e,st){
   const R=GW*GRENADE.goo.r;e.gooT=0;
   for(const o of enemies){
-    if(o===e||o.hp<=0||Math.hypot(o.x-e.x,o.y-e.y)>R+o.sz*.5)continue;
+    if(o.hp<=0||(o!==e&&Math.hypot(o.x-e.x,o.y-e.y)>R+o.sz*.5))continue;
     hurt(o,e.gooD*bombVuln(o,st));
   }
   if(novas.length<10){novas.push({x:e.x,y:e.y,life:1,col:C.a,r:R,fill:true});burst(e.x,e.y,C.a,6,GH*.1);}   // a crowd of bursts at once draws only the first rings

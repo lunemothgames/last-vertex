@@ -152,7 +152,7 @@ function run(tier,maxW=1e9){
       for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
         if(id==='nova'&&E.filter(e=>e.y>.1).length>=3){for(const e of E)if(e.y>.1){hit(e,st.dmg*st.pellet*a.m*(e.boss?st.bossDmg:1));if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*1.5);}}
         else if(TT[id].gren&&!process.env.SIM_NOBOMB){   // a player who throws it whenever 3+ enemies are on the field; no x position in the sim, so a hit chance stands for the circle covering the width
-          const R=TT[id].r,bk=TT[id].gren,bm=bk==='goo'?a.m+1.5*a.m2:bk==='virus'?a.m*G.GRENADE.virus.t:a.m,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
+          const R=TT[id].r,bk=TT[id].gren,bm=bk==='goo'?a.m+2.5*a.m2:bk==='virus'?a.m*G.GRENADE.virus.t:a.m,rY=R*GWH,pHit=+process.env.SIM_BOMBP||Math.min(1,2*R*1.3),live=E.filter(e=>e.y>.1);if(live.length<3)continue;
           let best=null,bn=0;for(const c of live){const n=live.filter(o=>Math.abs(o.y-c.y)<rY).length;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
           const crit=Math.random()<st.crit?st.critM:1;

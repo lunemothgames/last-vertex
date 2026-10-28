@@ -1941,6 +1941,8 @@ function weeklyState(){
 }
 function startRun(weekly=false,auto=false){
   if(!tierUnlocked(save.tier))save.tier=1;
+  // players who were already past wave 20 in Tier 1 before the bombs existed get the gift at their next run
+  if((save.tierBest[1]||0)>=20&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T(TT.logic_bomb.name)),true);snd('unlock');achCheck();}
   runAuto=!!auto&&!weekly;
   delete save.midRun;
   autoBuyBoosts();

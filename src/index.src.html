@@ -434,7 +434,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #coachTip::before{content:'> ';color:var(--mute)}
 /* ── in-run controls: active tattoo abilities + target priority ── */
 #playUI{pointer-events:none!important;animation:none!important}
-#abil{position:absolute;left:0;right:0;bottom:calc(17% + 40px);display:flex;justify-content:center;gap:6px}
+#abil{position:absolute;left:0;right:0;bottom:calc(17% + 8px);display:flex;justify-content:center;gap:6px}
+#abil.hi{bottom:calc(17% + 46px)}   /* 4-5 slots would run into the ad button on the right, so the row sits above it */
 .abx{width:46px;height:46px;pointer-events:none}
 #playUI.armed #abil,#playUI.armed #tgtBtn,#playUI.armed #spdCtl{visibility:hidden}
 .ab{width:46px;height:46px;position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
@@ -1477,7 +1478,7 @@ const TAT_TYPES=[
   {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
    desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
-  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:1,r:.2,v:{m:[.3,.7],cd:[8,5]},
+  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:1,r:.2,v:{m:[1,2],cd:[60,40]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
@@ -2818,7 +2819,7 @@ function drawBombs(){
   cx.strokeStyle=hexA(C.hot,.5);cx.setLineDash([GW*.02,GW*.02]);cx.lineWidth=1;cx.beginPath();cx.moveTo(0,cy);cx.lineTo(GW,cy);cx.stroke();cx.setLineDash([]);
   cx.letterSpacing='0px';cx.textAlign='center';cx.textBaseline='alphabetic';
   glowText(T('TAP THE FIELD TO THROW'),GW/2,GH*.2,C.a2,GH*.03,8);
-  cx.textAlign='right';glowText(T('CANCEL'),GW*.97,cy+GH*.035,hexA(C.hot,.7),GH*.026,0);
+  cx.font=fnt(GW*.034);cx.textAlign='left';cx.fillStyle=hexA(C.hot,.5);cx.fillText('// '+T('CANCEL'),GW*.03,cy+GH*.022);   // same label style as '// PERIMETER'
   cx.restore();
 }
 
@@ -3009,6 +3010,7 @@ function syncUI(){
 function renderPlayUI(){
   $('tgtTxt').textContent=T(TARGET_MODES[save.settings.target||0]);
   const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
+  $('abil').classList.toggle('hi',IS_APP&&save.tatSlots>=4);
   // one fixed cell per tattoo slot, so a button never moves when another slot changes
   $('abil').innerHTML=activeIds().length?Array.from({length:save.tatSlots},(_,i)=>{const id=save.equipped[i];
     return id&&TT[id]&&TT[id].act?`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`:'<span class="abx"></span>';}).join(''):'';

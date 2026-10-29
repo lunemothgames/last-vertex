@@ -697,6 +697,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="p-btns main">
       <button class="btn pri" id="pResume"><svg class="i"><use href="#i-play"/></svg>RESUME</button>
       <button class="btn" id="pSet">SETTINGS</button>
+      <button class="artog" id="pAuto" style="display:none;margin-top:0"><svg class="i"><use href="#i-retry"/></svg><span id="pAutoTxt">AUTO RETRY</span></button>
       <button class="btn hot" id="pEnd">END RUN</button>
     </div>
     <div class="p-btns conf">
@@ -3039,6 +3040,7 @@ function syncUI(){
   $('pauseUI').classList.toggle('confirm',k==='confirm');
   $('deadUI').classList.toggle('show',k==='dead');
   $('playUI').classList.toggle('show',k==='play');
+  if(k==='pause')renderAutoRetry();
   if(k==='menu')renderMenu();
   if(k==='dead')renderDead();
 }
@@ -3215,16 +3217,18 @@ function renderDead(){
   renderAutoRetry();
 }
 // the switch shows once Tier 3 is open, never after a weekly run
-const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(save.lastRun&&save.lastRun.weekly);
+const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
 const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
 let autoLeft=0;   // seconds shown on the switch while the next run counts down
-function renderAutoRetry(){
-  const b=$('dAuto');
-  b.style.display=autoRetryOffered()?'':'none';
-  b.classList.toggle('on',!!save.autoRetry);
-  $('dAutoTxt').textContent=T('AUTO RETRY')+': '+T(save.autoRetry?'ON':'OFF')+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
+function renderAutoRetry(){   // the same switch sits on the result screen and in the pause menu
+  for(const [bid,tid] of [['dAuto','dAutoTxt'],['pAuto','pAutoTxt']]){
+    const b=$(bid);
+    b.style.display=autoRetryOffered()?'':'none';
+    b.classList.toggle('on',!!save.autoRetry);
+    $(tid).textContent=T('AUTO RETRY')+': '+T(save.autoRetry?'ON':'OFF')+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
+  }
 }
-$('dAuto').addEventListener('click',()=>{save.autoRetry=!save.autoRetry;autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());});
+for(const id of ['dAuto','pAuto'])$(id).addEventListener('click',()=>{save.autoRetry=!save.autoRetry;autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());});
 $('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;keepAwake(false);startMusic(true);if(runUnlockedTier)maybeAskReview();});
 // store rating prompt (app only): after a run that unlocked a new tier, once the player is a few tiers in.
 // At most 3 asks, 60+ days apart; Google / Apple also decide on their own whether the window really shows.
@@ -3979,7 +3983,7 @@ const HELP_TOPICS=[
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
-    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
+    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],

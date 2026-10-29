@@ -78,7 +78,7 @@
  "AUTO",
  "AUTO RETRY",
  "AUTO RETRY (from Tier 3): a switch on the result screen starts the same tier again 5 s after a death. Such runs pay 35% coins, find fewer gems and never lower your idle income.",
- "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.",
+ "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.",
  "AUTO: {0} BOOST",
  "AUTO: {0} BOOSTS",
  "Achievements reward milestones once each.",

@@ -73,7 +73,7 @@
  "ATTACK MODE": "MODO DE ATAQUE",
  "AUTO": "AUTO",
  "AUTO RETRY": "REINTENTO AUTO",
- "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REINTENTO AUTO (desde el Tier {0}): actívalo en la pantalla de resultados y el mismo tier vuelve a empezar solo {1} segundos después de morir. Las partidas que empiezan así dan el {2} de las monedas y encuentran menos gemas; una partida que empiezas tú paga completa. La op semanal nunca se reinicia sola.",
+ "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REINTENTO AUTO (desde el Tier {0}): actívalo en el menú de pausa o en la pantalla de resultados y el mismo tier vuelve a empezar solo {1} segundos después de morir. Las partidas que empiezan así dan el {2} de las monedas y encuentran menos gemas; una partida que empiezas tú paga completa. La op semanal nunca se reinicia sola.",
  "AUTO: {0} BOOST": "AUTO: {0} MEJORA",
  "AUTO: {0} BOOSTS": "AUTO: {0} MEJORAS",
  "Achievements reward milestones once each.": "Los logros premian cada hito una sola vez.",

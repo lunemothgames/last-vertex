@@ -73,7 +73,7 @@
  "ATTACK MODE": "SALDIRI MODU",
  "AUTO": "OTO",
  "AUTO RETRY": "OTO TEKRAR",
- "AUTO RETRY (from Tier {0}): switch it on in the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
+ "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): duraklatma menüsünden ya da sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
  "AUTO: {0} BOOST": "OTO: {0} TAKVİYE",
  "AUTO: {0} BOOSTS": "OTO: {0} TAKVİYE",
  "Achievements reward milestones once each.": "Başarımlar her kilometre taşını bir kez ödüllendirir.",

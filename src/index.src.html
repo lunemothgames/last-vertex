@@ -1147,6 +1147,10 @@ function snd(type){
       case 'dodge':  tone('sine',1800,.06,.1,700);noise(.07,5000,1,.04);break;
       case 'block':  tone('triangle',520,.12,.14,520);tone('sine',1560,.05,.18,0,.01);break;
       case 'die':    noise(.5,500,.5,.32);tone('sawtooth',220,.18,.55,40);break;
+      // AUTO RETRY countdown: a clean launch-style beep each second (the last one a little higher), a rising whoosh at lift-off
+      case 'count':  tone('sine',880,.1,.13);tone('triangle',1760,.025,.08);break;
+      case 'count1': tone('sine',1175,.11,.2);tone('triangle',2350,.03,.12);break;
+      case 'launch': tone('sine',440,.09,.6,2400);noise(.6,1500,.6,.1);tone('triangle',2400,.05,.25,0,.35);break;
       case 'crtoff': tone('sine',1600,.07,.45,50);tone('square',8000,.015,.12);break;
       // ── run events
       case 'wave':   arp('square',[392,523],.07,.045,.09);break;
@@ -2544,8 +2548,8 @@ function updateDead(dt){
   // AUTO RETRY: the result screen shows from 2 s; the next run starts AUTO_RETRY.wait seconds later
   if(autoRetryArmed()&&deadTimer>2){
     const left=Math.ceil(2+AUTO_RETRY.wait-deadTimer);
-    if(left<=0){startRun(false,true);return;}
-    if(left!==autoLeft){autoLeft=left;renderAutoRetry();}
+    if(left<=0){snd('launch');startRun(false,true);return;}
+    if(left!==autoLeft){autoLeft=left;renderAutoRetry();snd(left===1?'count1':'count');}
   }
   if(screenFlash>0)screenFlash=Math.max(0,screenFlash-dt*2);
   if(deathShot&&deadTimer>1.4){deathShot=null;}

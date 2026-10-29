@@ -142,6 +142,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 #ecoUI .eco-s{font-size:24px;margin-top:22px;opacity:.5}
 #ecoUI .eco-h{position:absolute;bottom:60px;left:0;right:0;font-size:22px;letter-spacing:.15em;opacity:.35}
 #ecoUI .eco-h span{animation:blink 1s steps(1) infinite}
+body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* nothing may light up the black screen */
 /* ── pause ── */
 #pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
 .p-title{font-family:'VT323',monospace;font-size:60px;letter-spacing:.1em}
@@ -1122,14 +1123,15 @@ function sfxGain(){
   if(!_sfxGain){_sfxGain=getAC().createGain();_sfxGain.connect(_master);}
   _sfxGain.gain.value=(save.settings.sfxOn?save.settings.sfxVol:0)/100;return _sfxGain;
 }
-function musGain(){getAC();_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;return _musGain;}
+let _ecoShown=false;   // the black ECO+ screen is up: no sound at all
+function musGain(){getAC();_musGain.gain.value=(save.settings.musOn&&!_ecoShown?save.settings.musVol:0)/100*.55;return _musGain;}
 // minimum ms between two plays of the same effect: dozens of oscillators a second clog weak phones'
 // audio thread, and then sounds arrive late and in bunches
-const SFX_GAP={throw:80,bomb:80,shoot:70,blast:120,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,blip:30,click:30};
+const SFX_GAP={throw:80,bomb:80,shoot:70,blast:120,hit:55,crit:80,kill:70,coin:80,die:90,breach:120,dodge:100,block:120,shatter:90,bounty:200,gem:120,ready:300,blip:30,click:30};
 const _sfxLast={};
 let _noiseBuf=null;
 function snd(type){
-  if(!save.settings.sfxOn||!save.settings.sfxVol)return;
+  if(!save.settings.sfxOn||!save.settings.sfxVol||_ecoShown)return;
   const now=performance.now();if(now-(_sfxLast[type]||0)<(SFX_GAP[type]||0))return;_sfxLast[type]=now;
   if(AC&&AC.state!=='running'&&document.hidden)return;
   try{
@@ -1168,6 +1170,7 @@ function snd(type){
       case 'count':  tone('sine',880,.1,.13);tone('triangle',1760,.025,.08);break;
       case 'count1': tone('sine',1175,.11,.2);tone('triangle',2350,.03,.12);break;
       case 'launch': tone('sine',440,.09,.6,2400);noise(.6,1500,.6,.1);tone('triangle',2400,.05,.25,0,.35);break;
+      case 'ready':  tone('sine',990,.07,.07);tone('sine',1480,.08,.12,0,.08);break;   // a bomb is ready again
       case 'crtoff': tone('sine',1600,.07,.45,50);tone('square',8000,.015,.12);break;
       // ── run events
       case 'wave':   arp('square',[392,523],.07,.045,.09);break;
@@ -1243,7 +1246,7 @@ function playPad(){
   }catch(e){}}
   setTimeout(playPad,4400);
 }
-function updateMusicVolume(){if(_musGain)_musGain.gain.value=(save.settings.musOn?save.settings.musVol:0)/100*.55;}
+function updateMusicVolume(){if(_musGain)_musGain.gain.value=(save.settings.musOn&&!_ecoShown?save.settings.musVol:0)/100*.55;}
 
 // ── ECONOMY ──────────────────────────────────────────────────────────────────
 // Built for months/years: enemy power grows slowly per wave, flat upgrades get
@@ -2263,22 +2266,22 @@ function loop(ts){
   if(fxLow()&&ts-lastTime<30)return;   // LOW: 30 fps cap (less heat and battery on weak phones)
   const rawMs=ts-lastTime;
   frameDt=Math.min(rawMs/1000,.05);lastTime=ts;
+  if(ecoWake>0&&!paused)ecoWake=Math.max(0,ecoWake-frameDt);   // a tap on the ECO+ screen shows the game for ECO_WAKE seconds
   if(state===ST.PLAY&&!paused&&!document.hidden)perfSample(rawMs);
   if(state===ST.MENU){updateMenu(frameDt);drawMenu();}
   else if(state===ST.PLAY){
     if(!paused)runPlayT+=frameDt;
     // game speed: split into sub-steps so fast bullets don't tunnel through enemies
-    if(ecoWake>0&&!paused)ecoWake=Math.max(0,ecoWake-frameDt);   // a tap on the ECO+ screen shows the game for ECO_WAKE seconds
     const sp=paused?1:stats().speed,n=Math.ceil(sp),view=paused?'full':autoView();
     for(let i=0;i<n&&state===ST.PLAY;i++)updatePlay(frameDt*sp/n);
     if(state!==ST.PLAY)drawDead();
     else if(view==='eco'&&ecoWake<=0)ecoTick(ts);   // black screen: the run is only calculated, never drawn
     else if(view!=='save'||ts-_lastDraw>=AUTO_RETRY.saveMs){_lastDraw=ts;drawPlay();updatePlayUI();}   // 20 fps drawing on the cooler setting
   }
-  else{updateDead(frameDt);drawDead();}
+  else{updateDead(frameDt);if(autoView()==='eco'&&ecoWake<=0)ecoTick(ts);else drawDead();}   // ECO+: not even the result screen is drawn
   syncUI();
-  const ecoOn=state===ST.PLAY&&!paused&&autoView()==='eco'&&ecoWake<=0;
-  if(ecoOn!==_ecoShown){_ecoShown=ecoOn;$('ecoUI').classList.toggle('show',ecoOn);}
+  const ecoOn=(state===ST.PLAY&&!paused||state===ST.DEAD)&&autoView()==='eco'&&ecoWake<=0;
+  if(ecoOn!==_ecoShown){_ecoShown=ecoOn;$('ecoUI').classList.toggle('show',ecoOn);document.body.classList.toggle('eco',ecoOn);updateMusicVolume();}
 }
 
 // ── UPDATE ───────────────────────────────────────────────────────────────────
@@ -2309,7 +2312,7 @@ function updatePlay(dt){
 
   for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];b.t+=dt;if(b.t>=b.dur){bombs.splice(i,1);blastBomb(b);}}
   // tattoo timers
-  for(const id in actCD)actCD[id]=Math.max(0,actCD[id]-dt);
+  for(const id in actCD){const was=actCD[id];actCD[id]=Math.max(0,was-dt);if(was>0&&actCD[id]===0&&TT[id]&&TT[id].gren)snd('ready');}
   if(runFx.odT>0)runFx.odT-=dt;
   if(runFx.midT>0)runFx.midT-=dt;
   aegisT=Math.max(0,aegisT-dt);
@@ -3248,7 +3251,7 @@ function renderDead(){
 const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
 const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
 const autoView=()=>autoRetryArmed()?save.autoView:'full';   // how a run looks while AUTO RETRY is on: full, save (20 fps) or eco (black screen)
-let ecoWake=0,_lastDraw=0,_ecoShown=false,_ecoTxtT=0,autoLeft=0;
+let ecoWake=0,_lastDraw=0,_ecoTxtT=0,autoLeft=0;
 function ecoTick(ts){
   if(ts-_ecoTxtT<1000)return;_ecoTxtT=ts;
   $('ecoW').textContent=(runWeekly?T('WEEKLY'):'T'+runTier)+' · '+T('WAVE {0}',waveNum);
@@ -3257,7 +3260,10 @@ function ecoTick(ts){
 $('ecoUI').addEventListener('click',()=>{ecoWake=ECO_WAKE;snd('click');});
 // OFF → FULL → ECO (20 fps) → ECO+ (black screen) → OFF (works in the pause menu and on the result screen)
 function cycleAuto(){
-  if(!save.autoRetry){save.autoRetry=true;save.autoView='full';}
+  if(!save.autoRetry){
+    save.autoRetry=true;save.autoView='full';
+    if(!(save.hints||{}).autoView){(save.hints||(save.hints={})).autoView=1;toast(T('TAP AGAIN FOR THE ECO MODES')+'<small>'+T('ECO: 20 FPS, STAYS COOLER')+'</small><small>'+T('ECO+: BLACK SCREEN, TAP TO SEE THE GAME')+'</small>',false,true,4500);}
+  }
   else if(save.autoView==='full')save.autoView='save';
   else if(save.autoView==='save'){save.autoView='eco';ecoWake=0;}
   else{save.autoRetry=false;save.autoView='full';}

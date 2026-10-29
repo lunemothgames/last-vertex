@@ -255,6 +255,8 @@ function depth(maxTier=40){
   }
   return{eff:best,tier:Math.min(t,maxTier),cph,spread};
 }
+// required by another tool (tools/referee.js): hand over the builds and the run code, skip the command line below
+if(require.main!==module){module.exports={BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;}};return;}
 
 // trace: one run, wave by wave (health at the end of the wave, kills, perimeter contacts, damage taken)
 //   node tools/sim.js trace <build> <budget> <tier> [lv=5]

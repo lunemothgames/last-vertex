@@ -13,7 +13,8 @@
     "promo-video": "node tools/make-promo-video.js all",
     "check-listing": "node tools/check-listing.js",
     "pace": "node tools/sim-pace.js",
-    "exp": "node tools/sim-exp.js"
+    "exp": "node tools/sim-exp.js",
+    "referee": "node tools/referee.js"
   },
   "engines": {
     "node": ">=18"

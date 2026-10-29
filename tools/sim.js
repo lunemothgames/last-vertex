@@ -9,6 +9,12 @@
 // Builds = a shop shopping list (weights) + 5 equipped tattoos (see BUILDS below).
 // What-ifs without editing the game: SIM_ECO='{"bossHpMul":6}' SIM_PU='{"damage":{"ms":[100,1.15]}}'
 const fs=require('fs'),path=require('path');
+// seeded RNG so a run is repeatable: SIM_SEED=n (default 1) picks the stream; same seed + same settings = same numbers,
+// which is what lets later sessions check a fix against a fixed baseline instead of noise. A different SIM_SEED is an
+// independent sample (sim-pace.js uses this to run each build several times and print a mean ± range, not one lucky/unlucky run).
+let _seed=((+process.env.SIM_SEED||1)>>>0)||1;
+function rand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;_seed>>>=0;return _seed/4294967296;}
+Math.random=rand;   // the game's own copied-in code (via `new Function`) also calls Math.random(), so this seeds it too
 // SIM_SRC=<file> measures another copy of the game (e.g. an older version) with the same builds
 const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
@@ -237,15 +243,17 @@ function run(tier,maxW=1e9){
 }
 
 // how deep a build gets: climb tiers while it clears the unlock wave, report effective wave + coins/hour
+const DEPTH_N=+process.env.SIM_DEPTH_N||4;   // runs per tier (was 2 — raised to cut the ±5-8% noise from a single unlucky/lucky run)
 function depth(maxTier=40){
-  let best=0,cph=0,t=1;
+  let best=0,cph=0,t=1,spread=0;
   for(;t<=maxTier;t++){
-    const r=[run(t,TIERS.unlockWave+10),run(t,TIERS.unlockWave+10)];
-    const w=Math.max(...r.map(x=>x.w));best=(t-1)*TIERS.offset+w;
+    const r=[];for(let i=0;i<DEPTH_N;i++)r.push(run(t,TIERS.unlockWave+10));
+    const ws=r.map(x=>x.w),w=Math.max(...ws);best=(t-1)*TIERS.offset+w;
+    spread=Math.max(...ws)-Math.min(...ws);
     cph=Math.max(cph,r.reduce((s,x)=>s+x.coins,0)/r.reduce((s,x)=>s+x.t,0)*3600);
     if(w<TIERS.unlockWave)break;
   }
-  return{eff:best,tier:Math.min(t,maxTier),cph};
+  return{eff:best,tier:Math.min(t,maxTier),cph,spread};
 }
 
 // trace: one run, wave by wave (health at the end of the wave, kills, perimeter contacts, damage taken)
@@ -293,11 +301,11 @@ if(process.argv[2]==='debug'){
 if(process.argv[2]==='compare'){
   const LV=+process.argv[3]||5,names=(process.argv[4]||Object.keys(BUILDS).join(',')).split(',');
   const BUDGETS=(process.env.SIM_BUDGETS||'1e4,1e6,1e8,1e10,1e12').split(',').map(Number);
-  console.log(`tattoos at Lv${LV} · effective wave reached (tier) · coins per hour at best tier`);
+  console.log(`tattoos at Lv${LV} · effective wave reached (tier, ±noise at the final tier) · coins per hour at best tier`);
   console.log('build    '+BUDGETS.map(b=>fmtN(b).padStart(20)).join(''));
   for(const b of names){
     let line=b.padEnd(9);
-    for(const B of BUDGETS){save.perm={};shop(b,B,{gameSpeed:1});equip(b,LV);const d=depth();line+=`${String(d.eff).padStart(5)} (T${String(d.tier).padStart(2)}) ${fmtN(d.cph).padStart(7)}/h`;}
+    for(const B of BUDGETS){save.perm={};shop(b,B,{gameSpeed:1});equip(b,LV);const d=depth();line+=`${String(d.eff).padStart(5)}±${d.spread} (T${String(d.tier).padStart(2)}) ${fmtN(d.cph).padStart(7)}/h`;}
     console.log(line);
   }
   process.exit(0);

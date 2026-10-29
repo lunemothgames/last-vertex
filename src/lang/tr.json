@@ -73,7 +73,7 @@
  "ATTACK MODE": "SALDIRI MODU",
  "AUTO": "OTO",
  "AUTO RETRY": "OTO TEKRAR",
- "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): duraklatma menüsünden ya da sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
+ "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, 20 FPS (stays cooler) or ECO (black screen, tap to wake). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): duraklatma menüsünden ya da sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Anahtara tekrar basarak ekranın nasıl görüneceğini seç: TAM, 20 FPS (daha az ısınır) ya da TASARRUF (siyah ekran, uyandırmak için dokun). Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
  "AUTO: {0} BOOST": "OTO: {0} TAKVİYE",
  "AUTO: {0} BOOSTS": "OTO: {0} TAKVİYE",
  "Achievements reward milestones once each.": "Başarımlar her kilometre taşını bir kez ödüllendirir.",
@@ -651,5 +651,8 @@
  "STASIS, NOVA and OVERDRIVE are stronger and recharge faster.": "STASIS, NOVA ve OVERDRIVE daha güçlü ve daha çabuk doluyor.",
  "BURST: MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder.": "BURST: ÇOKLU ATIŞ bir patlamayı 10 saçmaya çıkarır; ARC, TWIN, NOVA, SHOCKWAVE ve bombalar 1,2 kat sert vurur.",
  "Next-run boost prices now follow only your best tier and wave.": "Sonraki run güçlendirmelerinin fiyatı artık sadece en iyi tier ve dalgana göre belirleniyor.",
- "UPDATE 0.6.8": "GÜNCELLEME 0.6.8"
+ "UPDATE 0.6.8": "GÜNCELLEME 0.6.8",
+ "// ECO": "// TASARRUF",
+ "FULL": "TAM",
+ "TAP TO WAKE": "UYANDIRMAK İÇİN DOKUN"
 }

@@ -134,6 +134,14 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 .short .bnav{padding-bottom:16px}
 .short .bnav button{height:52px;gap:3px}
 
+/* ── ECO screen (AUTO RETRY, black screen while the run goes on) ── */
+#ecoUI{background:#000;justify-content:center;align-items:center;z-index:6;font-family:'VT323',monospace;color:var(--a);text-shadow:0 0 8px var(--glow);text-align:center}
+#ecoUI .eco-t{font-size:22px;letter-spacing:.2em;opacity:.5}
+#ecoUI .eco-w{font-size:64px;margin:18px 0 4px;opacity:.85}
+#ecoUI .eco-c{font-size:34px;opacity:.7}
+#ecoUI .eco-s{font-size:24px;margin-top:22px;opacity:.5}
+#ecoUI .eco-h{position:absolute;bottom:60px;left:0;right:0;font-size:22px;letter-spacing:.15em;opacity:.35}
+#ecoUI .eco-h span{animation:blink 1s steps(1) infinite}
 /* ── pause ── */
 #pauseUI{justify-content:center;align-items:center;background:rgba(var(--bg1-rgb),0.86)}
 .p-title{font-family:'VT323',monospace;font-size:60px;letter-spacing:.1em}
@@ -706,6 +714,15 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     </div>
   </div>
 
+  <!-- ECO (AUTO RETRY) -->
+  <div class="layer" id="ecoUI">
+    <div class="eco-t">// ECO</div>
+    <div class="eco-w" id="ecoW"></div>
+    <div class="eco-c" id="ecoC"></div>
+    <div class="eco-s">AUTO RETRY</div>
+    <div class="eco-h">TAP TO WAKE<span>_</span></div>
+  </div>
+
   <!-- DEAD -->
   <div class="layer" id="deadUI">
     <div class="d-title">SIGNAL<br>LOST<span>_</span></div>
@@ -869,7 +886,7 @@ function defaultSave(){return{
   coins:0,gems:0,
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
-  temp:{},autoBoost:{},autoRetry:false,tatCol:{},tatSlots:1,equipped:[],pity:0,
+  temp:{},autoBoost:{},autoRetry:false,autoView:'full',tatCol:{},tatSlots:1,equipped:[],pity:0,
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
@@ -1270,7 +1287,7 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // Tuned 2026-10-27 with the real game and `node tools/sim.js modes` / `SIM_MODE=burst npm run pace`: up close every pellet hits, so builds that
 // let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
 // AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
-const AUTO_RETRY={tier:3,share:.35,wait:5};
+const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50};
 const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2};
 const isBurst=()=>save.mode==='burst';
 // Tier mastery: reaching these waves inside a tier earns its stars; every star is a small permanent bonus
@@ -1553,6 +1570,7 @@ if(!save.tierBest||typeof save.tierBest!=='object')save.tierBest={};
 if(!save.tierBest[1]&&save.bestWave)save.tierBest[1]=save.bestWave;
 if(!save.tier||!tierUnlocked(save.tier))save.tier=1;
 if(save.mode!=='burst'||maxUnlockedTier()<BURST.tier)save.mode='rapid';
+if(!['full','save','eco'].includes(save.autoView))save.autoView='full';
 save.coins=Math.floor(save.coins||0);
 
 // ── STATS ────────────────────────────────────────────────────────────────────
@@ -1842,6 +1860,7 @@ function startRun(weekly=false,auto=false){
   // players who were already past wave 20 in Tier 1 before the bombs existed get the gift at their next run
   if((save.tierBest[1]||0)>=20&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T(TT.logic_bomb.name)),true);snd('unlock');achCheck();}
   runAuto=!!auto&&!weekly;
+  ecoWoken=false;
   delete save.midRun;
   autoBuyBoosts();
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;runEvSeed=Math.floor(Math.random()*1e6);
@@ -2249,12 +2268,16 @@ function loop(ts){
   else if(state===ST.PLAY){
     if(!paused)runPlayT+=frameDt;
     // game speed: split into sub-steps so fast bullets don't tunnel through enemies
-    const sp=paused?1:stats().speed,n=Math.ceil(sp);
+    const sp=paused?1:stats().speed,n=Math.ceil(sp),view=paused?'full':autoView();
     for(let i=0;i<n&&state===ST.PLAY;i++)updatePlay(frameDt*sp/n);
-    if(state===ST.PLAY){drawPlay();updatePlayUI();}else drawDead();
+    if(state!==ST.PLAY)drawDead();
+    else if(view==='eco'&&!ecoWoken)ecoTick(ts);   // black screen: the run is only calculated, never drawn
+    else if(view!=='save'||ts-_lastDraw>=AUTO_RETRY.saveMs){_lastDraw=ts;drawPlay();updatePlayUI();}   // 20 fps drawing on the cooler setting
   }
   else{updateDead(frameDt);drawDead();}
   syncUI();
+  const ecoOn=state===ST.PLAY&&!paused&&autoView()==='eco'&&!ecoWoken;
+  if(ecoOn!==_ecoShown){_ecoShown=ecoOn;$('ecoUI').classList.toggle('show',ecoOn);}
 }
 
 // ── UPDATE ───────────────────────────────────────────────────────────────────
@@ -3223,16 +3246,31 @@ function renderDead(){
 // the switch shows once Tier 3 is open, never after a weekly run
 const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
 const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
-let autoLeft=0;   // seconds shown on the switch while the next run counts down
+const autoView=()=>autoRetryArmed()?save.autoView:'full';   // how a run looks while AUTO RETRY is on: full, save (20 fps) or eco (black screen)
+let ecoWoken=false,_lastDraw=0,_ecoShown=false,_ecoTxtT=0,autoLeft=0;
+function ecoTick(ts){
+  if(ts-_ecoTxtT<1000)return;_ecoTxtT=ts;
+  $('ecoW').textContent=(runWeekly?T('WEEKLY'):'T'+runTier)+' · '+T('WAVE {0}',waveNum);
+  $('ecoC').textContent='◉ '+fmtC(save.coins);
+}
+$('ecoUI').addEventListener('click',()=>{ecoWoken=true;snd('click');});
+// OFF → FULL → 20 FPS → ECO → OFF (works in the pause menu and on the result screen)
+function cycleAuto(){
+  if(!save.autoRetry){save.autoRetry=true;save.autoView='full';}
+  else if(save.autoView==='full')save.autoView='save';
+  else if(save.autoView==='save'){save.autoView='eco';ecoWoken=false;}
+  else{save.autoRetry=false;save.autoView='full';}
+  autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());
+}   // seconds shown on the switch while the next run counts down
 function renderAutoRetry(){   // the same switch sits on the result screen and in the pause menu
   for(const [bid,tid] of [['dAuto','dAutoTxt'],['pAuto','pAutoTxt']]){
     const b=$(bid);
     b.style.display=autoRetryOffered()?'':'none';
     b.classList.toggle('on',!!save.autoRetry);
-    $(tid).textContent=T('AUTO RETRY')+': '+T(save.autoRetry?'ON':'OFF')+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
+    $(tid).textContent=T('AUTO RETRY')+': '+(!save.autoRetry?T('OFF'):save.autoView==='eco'?'ECO':save.autoView==='save'?'20 FPS':T('FULL'))+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
   }
 }
-for(const id of ['dAuto','pAuto'])$(id).addEventListener('click',()=>{save.autoRetry=!save.autoRetry;autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());});
+for(const id of ['dAuto','pAuto'])$(id).addEventListener('click',cycleAuto);
 $('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;keepAwake(false);startMusic(true);if(runUnlockedTier)maybeAskReview();});
 // store rating prompt (app only): after a run that unlocked a new tier, once the player is a few tiers in.
 // At most 3 asks, 60+ days apart; Google / Apple also decide on their own whether the window really shows.
@@ -3988,7 +4026,7 @@ const HELP_TOPICS=[
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
-    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
+    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, 20 FPS (stays cooler) or ECO (black screen, tap to wake). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],

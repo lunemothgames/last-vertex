@@ -11,7 +11,7 @@
 //   REF_TRACE=1 also prints the first game run and the first sim run wave by wave (health, kills, perimeter hits, damage taken
 //   and dealt, coins, enemies left, bullets that never hit), when each boss died, where the enemies stand, bullet hits per
 //   second and where the coins came from. Rows are noisy (waves cluster at the boss waves 10/20/30): check one with REF_N=24.
-//   SIM_MODE=burst plays BURST on both sides. The other SIM_* what-ifs only change the sim side.
+//   SIM_MODE=burst plays BURST on both sides, SIM_NOEVENTS=1 switches wave events off on both. The other SIM_* what-ifs only change the sim side.
 //
 // The player on the game side is as perfect as the sim's: actives are used by the same rules as sim.js, a bomb goes on the
 // enemy with the most others inside its circle, field drops are tapped the moment they appear (both sides; the drop share of
@@ -103,6 +103,8 @@ const fmtW=a=>(mean(a).toFixed(1)+' ±'+half(a).toFixed(1)).padEnd(12);
   // no sound, notes or saving; saveProgress would also add mastery stars mid-run, which the sim does not
   // (function declarations are global bindings: reassigning them by name is what the game's own calls see)
   await p.evaluate(()=>{saveLocked=true;snd=toast=hint=track=startMusic=keepAwake=saveProgress=coachClear=()=>{};});
+  // SIM_NOEVENTS=1 switches the wave events off on the game side too (the sim reads the same setting)
+  if(process.env.SIM_NOEVENTS==='1')await p.evaluate(()=>{eventFor=()=>null;});
   const ratios=[];
   console.log(`tattoos Lv${LV} · ${N} runs per side · wave cap ${MAXW} · ${S.save.mode.toUpperCase()} · frame ${(DT*1000).toFixed(1)} ms · drops ${PICK?'tapped':'ignored'}`);
   console.log('build      budget  tier   sim waves    game waves   game/sim   sim min  game min   sim coins (drops) game coins (drops)  gems sim / game');

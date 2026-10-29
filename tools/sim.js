@@ -153,8 +153,13 @@ function run(tier,maxW=1e9){
       if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
       if(!e.boss&&Math.random()<st.kbChance)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);
       if(st.slowAmt>0&&Math.random()<st.slowChance)e.slow=ECO.slowTime;
-      return e.hp<=0&&d>before?1-before/d:0;   // share of the damage left over after a kill (a BURST pellet flies on with it)
+      const carry=e.hp<=0&&d>before?1-before/d:0;   // share of the damage left over after a kill (a BURST pellet flies on with it)
+      if(e.hp<=0)dead(e);
+      return carry;
     };
+    // a bullet kill is handled at once, like the game's: SPLITTER shards appear on the spot, where the rest of a BURST salvo
+    // (and the pellet that killed, with its leftover damage) still hits them. Other deaths wait for the end of the step.
+    const dead=e=>{const i=E.indexOf(e);if(i<0)return;E.splice(i,1);e.td=t;kill(e);tkills++;};
     // a bullet flying straight from (ox,oy) along (ux,uy): the nearest enemy on that line further than `from` whose edge it reaches
     // within `lim`
     // (game: the path test against each enemy's square box, half-size 0.55 x its size), or null if it leaves the screen first

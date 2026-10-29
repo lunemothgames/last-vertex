@@ -11,6 +11,7 @@
 //   REF_TRACE=1 also prints the first game run and the first sim run wave by wave (health, kills, perimeter hits, damage taken
 //   and dealt, coins, enemies left, bullets that never hit), when each boss died, where the enemies stand, bullet hits per
 //   second and where the coins came from. Rows are noisy (waves cluster at the boss waves 10/20/30): check one with REF_N=24.
+//   REF_WEEKLY=glass,horde plays weekly-op runs with these mutators on both sides (no wave events, as in the game).
 //   SIM_MODE=burst plays BURST on both sides, SIM_NOEVENTS=1 switches wave events off on both. The other SIM_* what-ifs only change the sim side.
 //
 // The player on the game side is as perfect as the sim's: actives are used by the same rules as sim.js, a bomb goes on the
@@ -24,7 +25,7 @@ const BROWSER=process.env.CHROME_PATH||'C:/Program Files (x86)/Microsoft/Edge/Ap
 const GAME='file:///'+path.join(root,'index.html').replace(/\\/g,'/');
 const N=+process.env.REF_N||8,SEED=+process.env.REF_SEED||1,DT=eval(process.env.REF_DT||'1/60'),PICK=process.env.REF_PICKUPS!=='0';
 const MAXW=+process.env.REF_MAXW||S.TIERS.unlockWave+10,TRACE=process.env.REF_TRACE==='1';
-const CAL=process.argv[2]==='calibrate';
+const CAL=process.argv[2]==='calibrate',WEEKLY=process.env.REF_WEEKLY?process.env.REF_WEEKLY.split(','):null;
 const BUILDS=(CAL?'offense,swarm,tank,bruiser,active,control,bomb,farm':process.argv[2]||'offense').split(',');
 const BUDGETS=(CAL?'1e6,1e9':process.argv[3]||'1e8').split(',').map(Number);
 const TIER=CAL?'sim':process.argv[4]||'sim',LV=+process.argv[5]||5;
@@ -36,7 +37,8 @@ if(fs.statSync(path.join(root,'src','index.src.html')).mtimeMs>fs.statSync(path.
 function pageRun(cfg){
   let r=cfg.seed>>>0||1;Math.random=()=>{r^=r<<13;r^=r>>>17;r^=r<<5;r>>>=0;return r/4294967296;};
   save=Object.assign(defaultSave(),JSON.parse(cfg.save));
-  startRun();runTier=cfg.tier;
+  if(cfg.weekly)weeklyKeys=()=>cfg.weekly;
+  startRun(!!cfg.weekly);runTier=cfg.tier;
   const acts=activeIds();let frames=0,pickCoins=0,gems=save.gems,c0=save.coins;
   const step=()=>{
     const st=stats(),sp=st.speed,n=Math.ceil(sp);
@@ -110,12 +112,12 @@ const fmtW=a=>(mean(a).toFixed(1)+' ±'+half(a).toFixed(1)).padEnd(12);
   console.log('build      budget  tier   sim waves    game waves   game/sim   sim min  game min   sim coins (drops) game coins (drops)  gems sim / game');
   for(const b of BUILDS)for(const B of BUDGETS){
     S.save.perm={};S.shop(b,B,{gameSpeed:1});S.equip(b,LV);S.save.tierBest={1:0};
-    S.reseed(SEED);const T=TIER==='sim'?S.depth().tier:+TIER;
-    const sim=[];for(let i=0;i<N;i++){S.reseed(SEED+i);S.resetDrops();sim.push(S.run(T,MAXW));}
+    S.reseed(SEED);S.resetDrops();const T=TIER==='sim'?S.depth().tier:+TIER;   // drops reset: the tier must not depend on the builds measured before
+    const sim=[];for(let i=0;i<N;i++){S.reseed(SEED+i);S.resetDrops();sim.push(S.run(T,MAXW,WEEKLY?{mods:S.weeklyMods(WEEKLY)}:{}));}
     const gsave=JSON.stringify({perm:S.save.perm,tatCol:S.save.tatCol,equipped:S.save.equipped,tatSlots:5,mode:S.save.mode,
       tier:1,tierBest:{},settings:{fx:'low',target:0,lang:'en'},tatV6:1,permV6:1});
     const game=[];const t0=Date.now();
-    for(let i=0;i<N;i++)game.push(await p.evaluate(pageRun,{save:gsave,tier:T,seed:SEED+i,dt:DT,maxW:MAXW,pick:PICK,trace:TRACE}));
+    for(let i=0;i<N;i++)game.push(await p.evaluate(pageRun,{save:gsave,tier:T,seed:SEED+i,dt:DT,maxW:MAXW,pick:PICK,trace:TRACE,weekly:WEEKLY}));
     if(TRACE){console.log(`-- ${b} ${S.fmtN(B)} T${T}, game run 1:`);console.log(game[0].trace.join('\n'));
       console.log('-- sim run 1:');process.env.SIM_TRACE='1';S.reseed(SEED);S.run(T,MAXW);delete process.env.SIM_TRACE;}
     const sw=sim.map(x=>x.w),gw=game.map(x=>x.w),ratio=mean(gw)/mean(sw);ratios.push(ratio);

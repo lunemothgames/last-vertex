@@ -19,9 +19,15 @@ Math.random=rand;   // the game's own copied-in code (via `new Function`) also c
 // SIM_SRC=<file> measures another copy of the game (e.g. an older version) with the same builds
 const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
+const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an older game (SIM_SRC) may not have
+// the economy outside the runs (SIM_ECON=1): inks, quests, achievements and the daily reward, taken from the game itself
+const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
+  opt('// ── LIFETIME STATS','function achCheck'),opt('const DAILY=','function renderDailyDot')].join('\n');
+const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','makeQuest','QUEST','DAILY','dailyCoins',
+  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
-const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),
-  "return{GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
+  "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
 // next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
 const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
@@ -95,8 +101,16 @@ function shop(b,bank,skip){
 // DROP.t = wall seconds played so far, coin / gem = when the next one may appear. tools/referee.js resets it before each run (fresh save).
 const DROP={t:0,coin:0,gem:0};
 const SHATTER_R=+(src.match(/const SHATTER_R=([\d.]+)/)||[0,.2])[1];
-function run(tier,maxW=1e9){
-  setTier(tier);const st=stats();
+// o.auto: an AUTO RETRY run with nobody watching (game runAuto): every coin pays AUTO_RETRY.share, no actives, no bombs, drops not tapped
+// o.mods: a WEEKLY OP run with these mutators (game combineMods(weeklyKeys())): they hold for the whole run, no wave events
+function run(tier,maxW=1e9,o={}){
+  if(G.setMods)G.setMods(o.mods||null);
+  try{return run0(tier,maxW,o);}finally{if(G.setMods)G.setMods(null);}
+}
+function run0(tier,maxW,o){
+  setTier(tier);const st=stats(),AUTO=!!o.auto,WM=o.mods||null;
+  const pay=c=>AUTO&&c>0?Math.max(1,Math.round(c*G.AUTO_RETRY.share)):c;   // game runPay()
+  const TOT={k:0,b:0,d:0,bombs:0,taps:0},fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps});
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
   const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
@@ -127,7 +141,8 @@ function run(tier,maxW=1e9){
       if(e.virT>0){const R=G.GRENADE.virus.spread*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R)){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}}
       if(st.shatter>0&&(e.slow>0||e.frz>0)&&!e.boss)SQ.push({x:e.x,y:e.y,d:e.max*st.shatter});
       if(e.T===ENEMY_TYPES.splitter)for(const s of[-1,1]){const m=mk(ENEMY_TYPES.mini,e.y,e.x+s*e.h*.45);m.sc=1;m.kb=e.kb;E.push(m);}
-      if(e.boss||e.coin&&Math.random()<st.coinChance)coins+=cv*e.coin*midas()*(Math.random()<st.jackpot?3:1);
+      if(e.boss)TOT.b++;
+      if(e.boss||e.coin&&Math.random()<st.coinChance)coins+=pay(cv*e.coin*midas()*(Math.random()<st.jackpot?3:1));
       ck+=coins-c0;};   // the x3 jackpot can hit a boss too (game killEnemy)
     // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
     const riseF=e=>{if(!(e.rs&&e.wv===w&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
@@ -227,17 +242,17 @@ function run(tier,maxW=1e9){
       hp=Math.min(st.maxHp,hp+st.regen*dt);cd-=dt;
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
-      {const wall=DROP.t+t/st.speed;
-        if(wall>=DROP.gem&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate){gems++;DROP.gem=wall+ECO.gemPickupCooldown/st.dropRate;}
+      if(!AUTO){const wall=DROP.t+t/st.speed;
+        if(wall>=DROP.gem&&Math.random()<dt*ECO.gemDropPerSec*st.dropRate){gems++;TOT.taps++;DROP.gem=wall+ECO.gemPickupCooldown/st.dropRate;}
         if(wall>=DROP.coin&&Math.random()<dt*ECO.coinDropPerSec*st.dropRate){const pt=t/st.speed,rate=pt>5?(coins-dropC)/pt:0;
-          const v=Math.max(1,Math.round(Math.max(rate*ECO.coinDropSecs,ECO.coinDropMinKills*coinValueAt(ew)*st.mult*mid())));coins+=v;dropC+=v;DROP.coin=wall+ECO.pickupCooldown/st.dropRate;}}
+          const v=Math.max(1,Math.round(Math.max(rate*ECO.coinDropSecs,ECO.coinDropMinKills*coinValueAt(ew)*st.mult*mid())));coins+=v;dropC+=v;TOT.taps++;DROP.coin=wall+ECO.pickupCooldown/st.dropRate;}}
       for(let i=BOMBS.length-1;i>=0;i--)if(BOMBS[i].at<=t){blast(BOMBS[i]);BOMBS.splice(i,1);}
       // the triangle slides under its target: the front enemy in range, or the front one of all (game updatePlay)
       {let tg=null;for(const e of E)if(e.y>=st.rangeY&&e.hp>0&&!e.ph&&(!tg||e.y>tg.y))tg=e;
         if(!tg)for(const e of E)if(!tg||e.y>tg.y)tg=e;
         if(tg)triX=Math.max(GWH*.06,Math.min(GWH*.94,triX+(tg.x-triX)*Math.min(1,dt*1.8)));}
       // active tattoos, cast as soon as they are useful (same rules as the referee's player)
-      for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
+      if(!AUTO)for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
         const live=E.filter(e=>e.hp>0&&e.y>.1);
         if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*(e.boss?st.bossDmg:1));push(e,1.5);}}
         else if(TT[id].gren&&!NOBOMB){   // the player puts the bomb on the enemy with the most others inside its circle, if 3+
@@ -245,7 +260,7 @@ function run(tier,maxW=1e9){
           const R=TT[id].r*GWH;let best=null,bn=0;
           for(const c of live){let n=0;for(const o of live)if(inBlast(o,c.x,c.y,R))n++;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
-          BOMBS.push({id,x:Math.max(GWH*.03,Math.min(GWH*.97,best.x)),y:Math.max(.1,best.y),at:t+.3});   // game: 0.3 s in the air
+          TOT.bombs++;BOMBS.push({id,x:Math.max(GWH*.03,Math.min(GWH*.97,best.x)),y:Math.max(.1,best.y),at:t+.3});   // game: 0.3 s in the air
         }
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}
@@ -320,7 +335,7 @@ function run(tier,maxW=1e9){
           near.sort((p,q)=>p[0]-q[0]);for(const [,o] of near.slice(0,ECO.shatterMax)){hit(o,b.d*(o.boss?.25:1));o.slow=Math.max(o.slow,ECO.slowTime);}}}
       separate();
       if(TRACE&&Math.round(t/dt)%Math.round(1/dt)===0){const L=E.filter(e=>e.hp>0&&e.y>0);FS.y+=L.reduce((a,e)=>a+e.y,0);FS.n+=L.length;FS.l+=L.filter(e=>e.y>.6).length;FS.k++;}
-      if(hp<=0||t>5400){DROP.t+=t/st.speed;summary();if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp+1};}
+      if(hp<=0||t>5400){DROP.t+=t/st.speed;summary();if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp+1,...fin()};}
     };
     var summary=()=>{if(TRACE)console.log('mean height of kills '+(ky/kn).toFixed(3)+' · bullet hits '+HN.n+', '+fmtN(HN.d/HN.n)+' each, per second '+(HN.n/(t/st.speed)).toFixed(2)+' · bullets fired '+(BUL.N+BUL.n)+', '+((BUL.M+BUL.m)/(BUL.N+BUL.n)*100).toFixed(0)+'% never hit');BUL.N=BUL.M=0;if(TRACE)console.log('field: '+(FS.n/FS.k).toFixed(1)+' enemies on screen, average height '+(FS.y/FS.n).toFixed(3)+', '+(FS.l/FS.k).toFixed(1)+' past 60%');if(TRACE)console.log('coins: kills '+fmtN(ck)+', wave bounty '+fmtN(cb)+', drops '+fmtN(dropC));};
     // game separateEnemies(): overlapping enemies are pushed apart, the lighter one more, mostly sideways
@@ -336,23 +351,25 @@ function run(tier,maxW=1e9){
     };
   }
   for(;;){
-    w++;ew=w+(tier-1)*TIERS.offset;const boss=w%ECO.bossEvery===0;
-    const evk=NOEV?null:FORCE?(w>=4&&w%ECO.bossEvery?FORCE:null):G.eventFor?G.eventFor(w,tier,evSeed):null;M=evk?G.combineMods([evk],G.EVENTS):G.NOMODS;
-    const bk=boss&&G.bossKindFor&&!process.env.SIM_BOSSKIND?G.bossKindFor(w,ECO.bossEvery):'classic';
+    // a weekly op keeps its mutators all run long (BOSS RUSH: a boss every 3 waves) and has no wave events
+    const BE=(WM&&WM.bossEvery)||ECO.bossEvery;
+    w++;ew=w+(tier-1)*TIERS.offset;const boss=w%BE===0;
+    const evk=WM||NOEV?null:FORCE?(w>=4&&w%ECO.bossEvery?FORCE:null):G.eventFor?G.eventFor(w,tier,evSeed):null;M=WM||(evk?G.combineMods([evk],G.EVENTS):G.NOMODS);
+    const bk=boss&&G.bossKindFor&&!process.env.SIM_BOSSKIND?G.bossKindFor(w,BE):'classic';
     hpB=ECO.enemyHp*Math.pow(ECO.enemyHpGrowth,ew-1);atkB=ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1);spB=.032*(1+Math.min(ew,150)*.005);
     pool=Object.values(ENEMY_TYPES).filter(x=>x.w>0&&ew>=x.from);tw=pool.reduce((s,x)=>s+x.w,0);cv=coinValueAt(ew)*st.mult;
-    if(w>1){const b=cv*st.bounty*mid();coins+=b;cb+=b;}   // MIDAS counts: it is part of the game's coin multiplier   // game: WAVE BOUNTY is paid as each new wave starts (from wave 2)
-    if(w>maxW){DROP.t+=t/st.speed;summary();return{w:w-1,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp};}
+    if(w>1){const b=pay(cv*st.bounty*mid());coins+=b;cb+=b;}   // MIDAS counts: it is part of the game's coin multiplier   // game: WAVE BOUNTY is paid as each new wave starts (from wave 2)
+    if(w>maxW){DROP.t+=t/st.speed;summary();return{w:w-1,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp,...fin()};}
     dur=Math.min(45,18+w*.5)*(+process.env.SIM_WAVEK||1);iv=Math.max(.5,2.2-w*.04)*(M.ival||1);per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
     // game spawnWave(): a first group queued above the entry line, then the boss in the middle
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++){const T=pick();E.push(mk(T,.1-T.sz*GWH/2-i*(.07+Math.random()*.04)));}
-    if(boss){const bh=hpB*ECO.bossHpMul,h=.13*GWH*(M.esz||1);E.push({x:GWH/2,y:.1-h/2,sc:.1,wv:w,h,w:h*1.1,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5,coin:ECO.bossCoins,kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
+    if(boss){const bh=hpB*ECO.bossHpMul*(M.ehp||1),h=.13*GWH*(M.esz||1);E.push({x:GWH/2,y:.1-h/2,sc:.1,wv:w,h,w:h*1.1,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5*(M.espd||1),coin:ECO.bossCoins*(M.ecoin||1),kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,
       sh:bk==='bulwark'?bh*(ECO.bossShield||0):0,heal:bk==='regen'?(ECO.bossRegen||0):0,ht:1,ar:0});}
     left=dur;spawnT=0;let r;
     while(left>0)if(r=tick(true))return r;
     hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
     if(TRACE)console.log('wave '+String(w).padStart(3)+' (eff '+String(ew).padStart(3)+')  hp '+String(Math.round(hp/st.maxHp*100)).padStart(3)+'%  kills '+String(tkills).padStart(4)+'  contacts '+String(tcontacts).padStart(4)+'  dmg taken '+(tdmg/st.maxHp*100).toFixed(1)+'% of maxHp  (atk/contact '+(tcontacts?(tdmg/tcontacts/st.maxHp*100).toFixed(2):'0')+'% of maxHp)  dealt '+fmtN(tdealt)+'  coins '+fmtN(coins-tc0)+'  left on field '+E.length+(E.some(e=>e.boss)?' +boss':'')+' ('+E.filter(e=>e.T===ENEMY_TYPES.mini).length+' shards)  bullets '+BUL.n+', '+Math.round(BUL.m/Math.max(1,BUL.n)*100)+'% missed');BUL.N+=BUL.n;BUL.M+=BUL.m;BUL.n=BUL.m=0;
-    tkills=0;tdmg=0;tcontacts=0;tdealt=0;tc0=coins;
+    TOT.k+=tkills;TOT.d+=tdealt;tkills=0;tdmg=0;tcontacts=0;tdealt=0;tc0=coins;
     // the 2-2.5 s break: nothing spawns, but the field keeps moving and the triangle keeps shooting
     for(let gap=2+Math.random()*.5;gap>0;gap-=dt)if(r=tick(false))return r;
   }
@@ -372,7 +389,7 @@ function depth(maxTier=40){
   return{eff:best,tier:Math.min(t,maxTier),cph,spread};
 }
 // required by another tool (tools/referee.js): hand over the builds and the run code, skip the command line below
-if(require.main!==module){module.exports={BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
+if(require.main!==module){module.exports={weeklyMods:k=>G.combineMods(k),BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
 
 // trace: one run, wave by wave (health at the end of the wave, kills, perimeter contacts, damage taken)
 //   node tools/sim.js trace <build> <budget> <tier> [lv=5]
@@ -471,7 +488,17 @@ if(process.argv[2]==='value'){
 }
 
 // ── long-term progression ──
-const HOURS=+process.argv[2]||600,BUILD=process.argv[3]||'offense',TLV=+process.env.SIM_TLV||0;
+// SIM_TLV=n: the build's 5 tattoos at Lv n in 5 slots from hour 0 (the old, simple model; npm run pace uses it unless SIM_ECON=1).
+// SIM_ECON=1: a new save, and everything outside the shop is earned as in the game (overhaul step A2):
+//   gems from field drops, daily + weekly quests, the 7-day daily reward, the weekly op, achievements and ads; they buy tattoo
+//   slots and inks (pity, Lv7 cap and the LOGIC BOMB gift as in the game), and the build's tattoos are put on as they turn up.
+//   Coins on top of runs: idle income for the time away (8 h a day at most), the daily reward, quest and achievement coins.
+//   The calendar is a placeholder until overhaul step A3 (player types, Ahmet's minutes a day): one "day" = SIM_DAYH play hours
+//   (default 2), SIM_ADS rewarded ads a day (default 0; the first one doubles the idle income), SIM_AFKH hours a day left on
+//   AUTO RETRY with nobody watching (default 0, from Tier 3), SIM_GEMPLAN=slot (save gems for the next slot, default) or ink.
+//   The player finishes every quest he gets and plays the weekly op once a week. Not modelled: themes (gems spent on looks),
+//   which quest it is (only its reward counts), paid gems.
+const HOURS=+process.argv[2]||600,BUILD=process.argv[3]||'offense',EC=process.env.SIM_ECON==='1',TLV=EC?0:+process.env.SIM_TLV||0;
 if(!BUILDS[BUILD])throw new Error('unknown build '+BUILD);
 if(TLV)equip(BUILD,TLV);
 const LOG=[1,2,5,10,20,42,84,168,336,600,1000,1500,2000,3000].filter(h=>h<=HOURS);
@@ -480,25 +507,92 @@ let bank=0,clock=0,li=0,runs=0,tier=1;const tierBest={1:0};save.tierBest=tierBes
 const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300,400],hit={},atH={},AT=[42,84,168,336,600];
 const effNow=()=>Object.entries(tierBest).reduce((m,[t,w])=>w?Math.max(m,(t-1)*TIERS.offset+w):m,0);
 const BOOST=(process.env.SIM_BOOST==='all'?'lucky,power,berserk,rapid,shield,invincible,focus':process.env.SIM_BOOST||'').split(',').filter(Boolean);
-let idleCps=0;   // average income per second: only an older game (SIM_SRC) still prices boosts with it
+let idleCps=0;   // average income per second of recent runs (game save.idleCps): idle income, daily reward coins, and an older game's (SIM_SRC) boost prices
 const buyBoosts=()=>{save.temp={};const e=effNow();for(const id of BOOST){const u=TEMP.find(x=>x.id===id);if(!u)continue;
   const c=G.boostPrice?G.boostPrice(u.base,e,idleCps):Math.ceil(u.base*Math.pow(ECO.tempCostGrowth,e));if(bank>=c){bank-=c;save.temp[id]=1;}}};
-const ranRun=r=>{if(r.t>=120)idleCps=idleCps?idleCps*.7+r.coins/r.t*.3:r.coins/r.t;save.temp={};};
+// game saveProgress(): runs of 2+ minutes, kills and wave bounty only (field drops are not part of the rate), AUTO RETRY runs never count
+const ranRun=r=>{const c=(r.coins-(r.drops||0))/r.t;if(r.t>=120)idleCps=idleCps?idleCps*.7+c*.3:c;save.temp={};};
+
+// ── the economy outside the runs (SIM_ECON=1) ──
+const GEM={drop:0,quest:0,daily:0,weekly:0,ach:0,ad:0},SPENT={slot:0,ink:0},CX={runs:0,idle:0,daily:0,quest:0,ach:0,afk:0,weekly:0};
+const DAYH=+process.env.SIM_DAYH||2,ADS=Math.min(ECO.adDailyCap,+process.env.SIM_ADS||0),AFKH=+process.env.SIM_AFKH||0,PLAN=process.env.SIM_GEMPLAN||'slot';
+let day=0,afkClock=0;
+// idle income is worth buying once the time away pays (every build buys it like a coin upgrade)
+if(EC)for(const b in BUILDS)BUILDS[b].shop={...BUILDS[b].shop,offline:BUILDS[b].shop.offline||1};
+if(EC)Object.assign(save,{tatCol:{},equipped:[],tatSlots:1,pity:0,gems:0,quests:[],achClaimed:[],daily:{n:0,last:''},
+  life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0}});
+const owned=()=>G.TAT_TYPES.filter(t=>G.tatOf(t.id).lv>0).map(t=>t.id);
+// what goes in the slots: the build's own tattoos first (in its order), then the best of the rest (rarer and higher level first)
+const equipBest=()=>{const own=owned(),want=BUILDS[BUILD].tat.filter(id=>own.includes(id));
+  const sc=id=>G.tatOf(id).lv*(1+G.TT[id].rar*.5),rest=own.filter(id=>!want.includes(id)).sort((a,b)=>sc(b)-sc(a));
+  save.equipped=[...want,...rest].slice(0,save.tatSlots);};
+// gems: the next slot first as long as there is a tattoo to put in it (SIM_GEMPLAN=slot), else inks 10 at a time (cheaper each);
+// one at a time only while a slot is still empty. The pity counter and the pool work as in the game's doPull().
+const spendGems=()=>{
+  for(;;){const own=owned().length,sp=G.TAT_SLOT_PRICES[save.tatSlots-1],slotNext=save.tatSlots<G.MAX_SLOTS&&own>save.tatSlots;
+    if(slotNext&&save.gems>=sp){save.gems-=sp;SPENT.slot+=sp;save.tatSlots++;continue;}
+    if(slotNext&&PLAN==='slot')break;
+    const n=save.gems>=ECO.pull10Cost?10:save.gems>=ECO.pullCost&&own<save.tatSlots?1:0;
+    if(!n||!G.tatPool().length)break;
+    const c=n===10?ECO.pull10Cost:ECO.pullCost;save.gems-=c;SPENT.ink+=c;save.life.pulls+=n;
+    for(let i=0;i<n;i++){const top=G.pityRar(),t=G.rollType();if(!t)break;save.pity=t.rar===top?0:(save.pity||0)+1;G.addTatCopy(t.id);}
+  }
+  equipBest();};
+const claimAch=()=>{for(const a of G.ACHS)if(!save.achClaimed.includes(a.id)&&G.achDone(a)){save.achClaimed.push(a.id);save.gems+=a.gems;GEM.ach+=a.gems;bank+=a.coins||0;CX.ach+=a.coins||0;}};
+// after every run: lifetime counts (achievements read them), field gems, the LOGIC BOMB gift (Tier 1 wave 20), achievements, gems
+const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kills||0;L.dmg+=r.dealt||0;L.bosses+=r.bosses||0;L.bombs+=r.bombs||0;L.drops+=r.taps||0;
+  save.gems+=r.gems||0;GEM.drop+=r.gems||0;CX[src]+=r.coins;
+  if((tierBest[1]||0)>=20&&!G.tatOf('logic_bomb').lv)G.addTatCopy('logic_bomb');
+  claimAch();spendGems();};
+const shopL=b=>{const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
+// once a week: the weekly op, one tier below the highest, this week's two mutators; gems at waves 10/20/30 (not a tier record, not idle income)
+let wk=0;
+const weeklyOp=()=>{if(!G.MUTATORS)return;const T=Math.max(1,G.maxUnlockedTier()-1),r=run(T,1e9,{mods:G.combineMods(G.weeklyKeys(wk++))});
+  clock+=r.t+3;bank+=r.coins;afterRun(r,'weekly');for(const [w,g] of G.WEEKLY_REWARDS)if(r.w>=w){save.gems+=g;GEM.weekly+=g;}};
+// a new day: last night's idle income, ads, the daily reward, 8 daily quests (one every 3 h), and on every 7th day 4 weekly quests + the weekly op
+const newDay=()=>{
+  if(day>0){
+    if(AFKH>0&&G.maxUnlockedTier()>=G.AUTO_RETRY.tier){let s=0;   // AUTO RETRY left on: the same tier again and again, 2+5 s between runs
+      while(s<AFKH*3600){const r=run(tier,1e9,{auto:true});s+=r.t+2+G.AUTO_RETRY.wait;afkClock+=r.t;bank+=r.coins;afterRun(r,'afk');tierBest[tier]=Math.max(tierBest[tier]||0,r.w);}}
+    const away=Math.max(0,24-DAYH-AFKH)*3600,secs=Math.min(ECO.offlineDayH*3600,away);
+    if(away>=ECO.offlineMinSec&&idleCps>0){const c=idleCps*G.permVal('offline')*secs*(ADS>0?2:1);bank+=c;CX.idle+=c;}
+    const g=Math.max(0,ADS-(idleCps>0?1:0))*ECO.adGems;save.gems+=g;GEM.ad+=g;
+  }
+  save.idleCps=idleCps;
+  const d=G.DAILY[save.daily.n%G.DAILY.length];save.daily.n++;
+  if(d.g){save.gems+=d.g;GEM.daily+=d.g;}if(d.c){const c=G.dailyCoins(d.c);bank+=c;CX.daily+=c;}
+  const quest=k=>{const q=G.makeQuest(k);save.gems+=q.gems;GEM.quest+=q.gems;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;};
+  for(let i=0;i<24/G.QUEST.dailyEveryH;i++)quest('daily');
+  if(day%7===0){for(let i=0;i<G.QUEST.weeklyCount;i++)quest('weekly');weeklyOp();}
+  day++;claimAch();spendGems();
+};
+
 while(clock<HOURS*3600){
+  if(EC)while(clock>=day*DAYH*3600)newDay();
   // every 10th run goes back to farm mastery stars in the highest tier (3+ below) that still misses one
   const farm=runs%10===9?[...Array(Math.max(0,tier-3)).keys()].map(i=>tier-3-i).find(t=>(tierBest[t]||0)<G.MASTERY[2]):0;
-  if(farm){buyBoosts();const r=run(farm);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);bank=shop(BUILD,bank);continue;}
+  if(farm){buyBoosts();const r=run(farm);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);afterRun(r,'runs');bank=shopL(bank);continue;}
   buyBoosts();const r=run(tier);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;
   tierBest[tier]=Math.max(tierBest[tier]||0,r.w);
   if(tierBest[tier]>=TIERS.unlockWave&&tier<TIERS.max){tier++;tierBest[tier]=tierBest[tier]||0;}
   else if(r.w<6&&tier>1)tier--;
-  bank=shop(BUILD,bank);
+  afterRun(r,'runs');
+  bank=shopL(bank);
   if(PACE){const e=effNow();for(const m of MILES)if(e>=m&&hit[m]===undefined)hit[m]=+(clock/3600).toFixed(1);for(const h of AT)if(clock>=h*3600&&atH[h]===undefined)atH[h]=e;if(hit[MILES[MILES.length-1]]!==undefined)break;continue;}
   while(li<LOG.length&&clock>=LOG[li]*3600){
     const mt=Object.keys(tierBest).map(Number).filter(t=>tierBest[t]>0).reduce((a,b)=>Math.max(a,b),1);
     const p=id=>save.perm[id]||0;
-    console.log(`${String(LOG[li]).padStart(5)}h  runs ${String(runs).padStart(5)}  T${mt} best ${String(tierBest[mt]).padStart(2)} (eff ${(mt-1)*TIERS.offset+tierBest[mt]}) ★${G.totalStars()}  dmg L${p('damage')} hp L${p('maxHp')} rgn L${p('regen')} arm L${p('defense')} thr L${p('thorns')}  spd x${G.permVal('gameSpeed').toFixed(1)}  bank ${fmtN(bank)}`);
+    console.log(`${String(LOG[li]).padStart(5)}h  runs ${String(runs).padStart(5)}  T${mt} best ${String(tierBest[mt]).padStart(2)} (eff ${(mt-1)*TIERS.offset+tierBest[mt]}) ★${G.totalStars()}  dmg L${p('damage')} hp L${p('maxHp')} rgn L${p('regen')} arm L${p('defense')} thr L${p('thorns')}  spd x${G.permVal('gameSpeed').toFixed(1)}  bank ${fmtN(bank)}`+
+      (EC?`  · day ${day}  gems ${save.gems}  slots ${save.tatSlots}  ${save.equipped.map(id=>id+' '+G.tatOf(id).lv).join(', ')}`:''));
     li++;
   }
 }
-if(PACE)console.log('PACE '+JSON.stringify({build:BUILD,hours:HOURS,hit,at:atH}));
+// where the gems and coins came from (and went), and the whole collection at the end
+const econ=EC?{days:day,gems:GEM,spent:SPENT,coins:Object.fromEntries(Object.entries(CX).map(([k,v])=>[k,+v.toPrecision(3)])),afkHours:+(afkClock/3600).toFixed(1),
+  slots:save.tatSlots,equipped:save.equipped.map(id=>id+':'+G.tatOf(id).lv),owned:owned().length,pity:save.pity}:undefined;
+if(PACE)console.log('PACE '+JSON.stringify({build:BUILD,hours:HOURS,hit,at:atH,econ}));
+else if(EC){const tg=Object.values(GEM).reduce((a,x)=>a+x,0),tc=Object.values(CX).reduce((a,x)=>a+x,0);
+  console.log(`after ${day} days (${DAYH} h play a day): gems earned ${tg} = `+Object.entries(GEM).map(([k,v])=>`${k} ${v} (${Math.round(v/tg*100)}%)`).join(' · '));
+  console.log(`gems spent: slots ${SPENT.slot} · inks ${SPENT.ink} (${SPENT.ink/ECO.pullCost|0}+ inks) · left ${save.gems}`);
+  console.log('coins earned '+fmtN(tc)+' = '+Object.entries(CX).map(([k,v])=>`${k} ${fmtN(v)} (${(v/tc*100).toFixed(1)}%)`).join(' · '));
+  console.log('tattoos: '+owned().map(id=>id+' '+G.tatOf(id).lv).join(', '));}

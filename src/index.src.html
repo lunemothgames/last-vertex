@@ -4392,15 +4392,13 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
-  {id:'0.6.8',date:'2026-10-28',name:'UPDATE 0.6.8',
+  {id:'0.6.9',date:'2026-10-29',name:'UPDATE 0.6.9',
    lines:[
-    {text:'New: bomb tattoos. Tap a bomb button, then tap the field where it should land; tap below the perimeter to cancel. LOGIC BOMB blasts and pushes back, GOO BOMB sticks and bursts 3 s later, VIRUS BOMB eats health and jumps to the next enemy when its host dies.'},
-    {text:'Your first bomb waits at wave 20 of Tier 1. The others come from INK.'},
-    {text:'AUTO RETRY (from Tier 3): a switch on the result screen starts the same tier again 5 s after a death. Such runs pay 35% coins, find fewer gems and never lower your idle income.'},
-    {text:'Active tattoo buttons now have a fixed place per tattoo slot, centred and bigger, right above the perimeter.'},
-    {text:'STASIS, NOVA and OVERDRIVE are stronger and recharge faster.'},
-    {text:'BURST: MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder.'},
-    {text:'Next-run boost prices now follow only your best tier and wave.'},
+    {text:'AUTO RETRY can now also be switched on in the pause menu. The switch has four settings: OFF, FULL, ECO (draws 20 times a second, runs cooler) and ECO+ (black screen, no sound; tap to see the game for 15 s).'},
+    {text:'A countdown beep now sounds before the next AUTO RETRY run starts.'},
+    {text:'New bomb icons, and a soft ping when a bomb is ready again.'},
+    {text:'If you were already past wave 20 of Tier 1, your first bomb (LOGIC BOMB) arrives at your next run.'},
+    {text:'The shop opened from the pause menu now shows only THEMES, so upgrades cannot be bought in the middle of a run.'},
   ]},
 ];
 // a fresh player starts with everything read: old notes are not news to them
@@ -4518,7 +4516,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.6.8';
+const GAME_VERSION='0.6.9';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

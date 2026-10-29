@@ -3430,11 +3430,12 @@ function permPlan(u){
 }
 
 function renderShop(){
+  if(state===ST.PLAY)shopTab='theme';   // reached from the pause menu: only themes, upgrades must not change mid-run
   const isTheme=shopTab==='theme';
   const pill=$('shopPill');
   pill.className='pill'+(isTheme?' gem':'');
   pill.innerHTML=isTheme?I('gem')+`<b>${fmtN(save.gems)}</b>`:I('coin')+`<b>${fmtC(save.coins)}</b>`;
-  $('shopTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===shopTab));
+  $('shopTabs').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.t===shopTab);b.style.display=state===ST.PLAY&&b.dataset.t!=='theme'?'none':'';});
   const seg=$('buyModeRow');
   seg.style.display=shopTab==='perm'?'':'none';
   seg.innerHTML=[1,5,10,'MAX'].map(m=>`<button data-m="${m}" class="${shopBuyMode===m?'on':''}">${m==='MAX'?T('MAX'):'x'+m}</button>`).join('');

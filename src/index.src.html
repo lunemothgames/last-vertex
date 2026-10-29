@@ -1287,7 +1287,7 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // Tuned 2026-10-27 with the real game and `node tools/sim.js modes` / `SIM_MODE=burst npm run pace`: up close every pellet hits, so builds that
 // let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
 // AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
-const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50};
+const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50},ECO_WAKE=15;
 const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2};
 const isBurst=()=>save.mode==='burst';
 // Tier mastery: reaching these waves inside a tier earns its stars; every star is a small permanent bonus
@@ -1860,7 +1860,7 @@ function startRun(weekly=false,auto=false){
   // players who were already past wave 20 in Tier 1 before the bombs existed get the gift at their next run
   if((save.tierBest[1]||0)>=20&&!tatOf('logic_bomb').lv){addTatCopy('logic_bomb');persist();toast(T('NEW TATTOO · {0}',T(TT.logic_bomb.name)),true);snd('unlock');achCheck();}
   runAuto=!!auto&&!weekly;
-  ecoWoken=false;
+  ecoWake=0;
   delete save.midRun;
   autoBuyBoosts();
   runWeekly=!!weekly;runMods=runWeekly?combineMods(weeklyKeys()):null;runEvSeed=Math.floor(Math.random()*1e6);
@@ -2268,15 +2268,16 @@ function loop(ts){
   else if(state===ST.PLAY){
     if(!paused)runPlayT+=frameDt;
     // game speed: split into sub-steps so fast bullets don't tunnel through enemies
+    if(ecoWake>0&&!paused)ecoWake=Math.max(0,ecoWake-frameDt);   // a tap on the ECO+ screen shows the game for ECO_WAKE seconds
     const sp=paused?1:stats().speed,n=Math.ceil(sp),view=paused?'full':autoView();
     for(let i=0;i<n&&state===ST.PLAY;i++)updatePlay(frameDt*sp/n);
     if(state!==ST.PLAY)drawDead();
-    else if(view==='eco'&&!ecoWoken)ecoTick(ts);   // black screen: the run is only calculated, never drawn
+    else if(view==='eco'&&ecoWake<=0)ecoTick(ts);   // black screen: the run is only calculated, never drawn
     else if(view!=='save'||ts-_lastDraw>=AUTO_RETRY.saveMs){_lastDraw=ts;drawPlay();updatePlayUI();}   // 20 fps drawing on the cooler setting
   }
   else{updateDead(frameDt);drawDead();}
   syncUI();
-  const ecoOn=state===ST.PLAY&&!paused&&autoView()==='eco'&&!ecoWoken;
+  const ecoOn=state===ST.PLAY&&!paused&&autoView()==='eco'&&ecoWake<=0;
   if(ecoOn!==_ecoShown){_ecoShown=ecoOn;$('ecoUI').classList.toggle('show',ecoOn);}
 }
 
@@ -3247,18 +3248,18 @@ function renderDead(){
 const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
 const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
 const autoView=()=>autoRetryArmed()?save.autoView:'full';   // how a run looks while AUTO RETRY is on: full, save (20 fps) or eco (black screen)
-let ecoWoken=false,_lastDraw=0,_ecoShown=false,_ecoTxtT=0,autoLeft=0;
+let ecoWake=0,_lastDraw=0,_ecoShown=false,_ecoTxtT=0,autoLeft=0;
 function ecoTick(ts){
   if(ts-_ecoTxtT<1000)return;_ecoTxtT=ts;
   $('ecoW').textContent=(runWeekly?T('WEEKLY'):'T'+runTier)+' · '+T('WAVE {0}',waveNum);
   $('ecoC').textContent='◉ '+fmtC(save.coins);
 }
-$('ecoUI').addEventListener('click',()=>{ecoWoken=true;snd('click');});
-// OFF → FULL → 20 FPS → ECO → OFF (works in the pause menu and on the result screen)
+$('ecoUI').addEventListener('click',()=>{ecoWake=ECO_WAKE;snd('click');});
+// OFF → FULL → ECO (20 fps) → ECO+ (black screen) → OFF (works in the pause menu and on the result screen)
 function cycleAuto(){
   if(!save.autoRetry){save.autoRetry=true;save.autoView='full';}
   else if(save.autoView==='full')save.autoView='save';
-  else if(save.autoView==='save'){save.autoView='eco';ecoWoken=false;}
+  else if(save.autoView==='save'){save.autoView='eco';ecoWake=0;}
   else{save.autoRetry=false;save.autoView='full';}
   autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());
 }   // seconds shown on the switch while the next run counts down
@@ -3267,7 +3268,7 @@ function renderAutoRetry(){   // the same switch sits on the result screen and i
     const b=$(bid);
     b.style.display=autoRetryOffered()?'':'none';
     b.classList.toggle('on',!!save.autoRetry);
-    $(tid).textContent=T('AUTO RETRY')+': '+(!save.autoRetry?T('OFF'):save.autoView==='eco'?'ECO':save.autoView==='save'?'20 FPS':T('FULL'))+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
+    $(tid).textContent=T('AUTO RETRY')+': '+(!save.autoRetry?T('OFF'):save.autoView==='eco'?'ECO+':save.autoView==='save'?'ECO':T('FULL'))+(save.autoRetry&&autoLeft>0?' · '+autoLeft:'');
   }
 }
 for(const id of ['dAuto','pAuto'])$(id).addEventListener('click',cycleAuto);
@@ -4026,7 +4027,7 @@ const HELP_TOPICS=[
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
-    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, 20 FPS (stays cooler) or ECO (black screen, tap to wake). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
+    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],

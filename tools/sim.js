@@ -678,6 +678,8 @@ while(clock<HOURS*3600){
   }
 }
 if(DAYS)logDay();
+// a checkpoint passed during a mastery-farm run (those skip the PACE bookkeeping) still gets its value
+if(PACE)for(const h of AT)if(h<=HOURS&&clock>=h*3600&&atH[h]===undefined)atH[h]=effNow();
 // where the gems and coins came from (and went), and the whole collection at the end
 const econ=EC?{days:day,gems:GEM,spent:SPENT,coins:Object.fromEntries(Object.entries(CX).map(([k,v])=>[k,+v.toPrecision(3)])),afkHours:+(afkClock/3600).toFixed(1),
   slots:save.tatSlots,equipped:save.equipped.map(id=>id+':'+G.tatOf(id).lv),owned:owned().length,pity:save.pity}:undefined;

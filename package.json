@@ -18,7 +18,9 @@
     "types": "node tools/sim-types.js",
     "gemcard": "node tools/sim-gemcard.js",
     "exp": "node tools/sim-exp.js",
-    "referee": "node tools/referee.js"
+    "referee": "node tools/referee.js",
+    "diff": "node tools/sim-diff.js pace",
+    "wall": "node tools/sim-diff.js wall"
   },
   "engines": {
     "node": ">=18"

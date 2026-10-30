@@ -13,6 +13,12 @@
 //   second and where the coins came from. Rows are noisy (waves cluster at the boss waves 10/20/30): check one with REF_N=24.
 //   REF_WEEKLY=glass,horde plays weekly-op runs with these mutators on both sides (no wave events, as in the game).
 //   SIM_MODE=burst plays BURST on both sides, SIM_NOEVENTS=1 switches wave events off on both. The other SIM_* what-ifs only change the sim side.
+//   node tools/referee.js sweep [parts=tattoos,modes,mutators]   the final calibration (GUIDE.md 8.1, finish condition a):
+//     tattoos  = every tattoo alone at Lv7 (REF_LV) on its style's shop vs no tattoo, 1e6 and 1e9, in the no-tattoo frontier tier: does the
+//                tattoo change the game as much as the sim says? (effect = with/without, waves; coin tattoos also coins per minute)
+//     modes    = the calibrate builds in RAPID and in BURST · mutators = each weekly mutator alone, offense and tank, one tier below the frontier
+//     REF_ONLY=nova,arc limits the tattoo list (to split the sweep over several processes) · REF_OUT=<file> writes the rows as JSON
+//     Flags: ABS = game/sim waves off by more than 10% · EFF = the tattoo's effect differs by more than 8% and by more than twice its noise
 //
 // The player on the game side is as perfect as the sim's: actives are used by the same rules as sim.js, a bomb goes on the
 // enemy with the most others inside its circle, field drops are tapped the moment they appear (both sides; the drop share of
@@ -24,9 +30,11 @@ const root=path.join(__dirname,'..');
 const BROWSER=process.env.CHROME_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const GAME='file:///'+path.join(root,'index.html').replace(/\\/g,'/');
 const N=+process.env.REF_N||8,SEED=+process.env.REF_SEED||1,DT=eval(process.env.REF_DT||'1/60'),PICK=process.env.REF_PICKUPS!=='0';
-const MAXW=+process.env.REF_MAXW||S.TIERS.unlockWave+10,TRACE=process.env.REF_TRACE==='1';
-const CAL=process.argv[2]==='calibrate',WEEKLY=process.env.REF_WEEKLY?process.env.REF_WEEKLY.split(','):null;
-const BUILDS=(CAL?'offense,swarm,tank,bruiser,active,control,bomb,farm':process.argv[2]||'offense').split(',');
+const CAL=process.argv[2]==='calibrate',SWEEP=process.argv[2]==='sweep',TRACE=process.env.REF_TRACE==='1';
+// the sweep plays further (+30): a strong tattoo at Lv7 would hit the +10 cap on both sides and hide the difference
+const MAXW=+process.env.REF_MAXW||S.TIERS.unlockWave+(SWEEP?30:10),WEEKLY=process.env.REF_WEEKLY?process.env.REF_WEEKLY.split(','):null;
+const CALB='offense,swarm,tank,bruiser,active,control,bomb,farm';
+const BUILDS=(CAL?CALB:SWEEP?'offense':process.argv[2]||'offense').split(',');
 const BUDGETS=(CAL?'1e6,1e9':process.argv[3]||'1e8').split(',').map(Number);
 const TIER=CAL?'sim':process.argv[4]||'sim',LV=+process.argv[5]||5;
 for(const b of BUILDS)if(!S.BUILDS[b])throw new Error('unknown build '+b);
@@ -92,6 +100,59 @@ function pageRun(cfg){
 const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
 const half=a=>(Math.max(...a)-Math.min(...a))/2;
 const fmtW=a=>(mean(a).toFixed(1)+' ±'+half(a).toFixed(1)).padEnd(12);
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/Math.max(1,a.length-1));};
+
+// sweep: every row is the same tier played twice on both sides, "none" (the yardstick) and "with" (one tattoo, BURST, one mutator)
+const SWEEP_STYLE={max_hp:'tank',regen:'tank',defense:'tank',dodge:'tank',thorns:'tank',aegis:'tank',lifesteal:'tank',mend:'tank',shockwave:'tank',
+  frost:'control',reach:'control',stasis:'control',shatter:'control',coin_mult:'farm',luck:'farm',midas:'farm',
+  twin:'swarm',arc:'swarm',ricochet:'swarm',piercer:'swarm'};   // every other tattoo on the offense shop
+const ABS_TOL=.10,EFF_TOL=.08;
+function sweepRow(part,id,ctx,B,T,none,wit){
+  const wv=a=>a.map(x=>x.w),cpm=a=>a.reduce((s,x)=>s+x.coins,0)/a.reduce((s,x)=>s+x.t,0)*60;
+  // effect = with / none in waves; its noise from the per-seed differences (same seeds on both halves)
+  const eff=(n,w)=>{const a=wv(n),b=wv(w),m0=mean(a),d=b.map((x,i)=>x-a[i]);return{e:mean(b)/m0,se:sd(d)/Math.sqrt(d.length)/m0};};
+  const es=eff(none.sim,wit.sim),eg=eff(none.game,wit.game);
+  const ms=mean(wv(wit.sim)),mg=mean(wv(wit.game));
+  const abs=mg/ms,absSe=Math.sqrt((sd(wv(wit.sim))/ms)**2+(sd(wv(wit.game))/mg)**2)/Math.sqrt(N);
+  const dev=eg.e-es.e,devSe=Math.hypot(es.se,eg.se);
+  const cs=cpm(wit.sim)/cpm(none.sim),cg=cpm(wit.game)/cpm(none.game);
+  const flags=[];
+  if(Math.abs(abs-1)>ABS_TOL&&Math.abs(abs-1)>2*absSe)flags.push('ABS');
+  if(Math.abs(dev)>EFF_TOL&&Math.abs(dev)>2*devSe)flags.push('EFF');
+  if(part==='tattoo'&&['coin_mult','luck','midas'].includes(id)&&Math.abs(cg-cs)>EFF_TOL)flags.push('COINS');
+  const r={part,id,ctx,B,T,sim:[mean(wv(none.sim)),ms],game:[mean(wv(none.game)),mg],effSim:es.e,effGame:eg.e,dev,devSe,abs,absSe,coinSim:cs,coinGame:cg,flags};
+  const f2=x=>x.toFixed(2);
+  console.log(`${part.padEnd(7)} ${id.padEnd(13)} ${ctx.padEnd(8)} ${S.fmtN(B).padStart(5)} T${String(T).padEnd(3)} `+
+    `sim ${r.sim[0].toFixed(1).padStart(5)} > ${ms.toFixed(1).padStart(5)}  game ${r.game[0].toFixed(1).padStart(5)} > ${mg.toFixed(1).padStart(5)}  `+
+    `effect sim x${f2(es.e)} game x${f2(eg.e)} (${dev>=0?'+':''}${f2(dev)} ±${f2(devSe)})  game/sim x${f2(abs)}  coins/min effect sim x${f2(cs)} game x${f2(cg)}  ${flags.join(' ')}`);
+  return r;
+}
+async function sweep(both,frontier){
+  const parts=(process.argv[3]||'tattoos,modes,mutators').split(','),rows=[],t0=Date.now();
+  const BUD=(process.env.REF_SWEEPB||'1e6,1e9').split(',').map(Number),LVT=+process.env.REF_LV||7;
+  const only=process.env.REF_ONLY?process.env.REF_ONLY.split(','):null;
+  console.log(`sweep ${parts.join(',')} · ${N} runs per side, same seeds · tattoos Lv${LVT} · wave cap ${MAXW} · flags ABS >${ABS_TOL*100}%, EFF >${EFF_TOL*100} points and >2x noise`);
+  const put=(st,B,tat,mode='rapid')=>{S.save.mode=mode;S.save.perm={};S.shop(st,B,{gameSpeed:1});
+    if(tat===undefined)S.equip(st,LV);else{S.save.tatCol=tat?{[tat]:{lv:LVT,copies:0}}:{};S.save.equipped=tat?[tat]:[];}};
+  if(parts.includes('tattoos')){const base={};
+    for(const id of S.TAT_TYPES.map(t=>t.id).filter(id=>!only||only.includes(id))){const st=SWEEP_STYLE[id]||'offense';
+      for(const B of BUD){const k=st+B;
+        if(!base[k]){put(st,B,null);const T=frontier();base[k]={T,...await both(T)};}
+        put(st,B,id);rows.push(sweepRow('tattoo',id,st,B,base[k].T,base[k],await both(base[k].T)));}}}
+  // modes: the calibrate builds with their 5 tattoos (Lv LV), BURST against RAPID in RAPID's frontier tier
+  if(parts.includes('modes'))for(const b of CALB.split(','))for(const B of BUD){
+    put(b,B);const T=frontier(),none=await both(T);put(b,B,undefined,'burst');
+    rows.push(sweepRow('mode','burst',b,B,T,none,await both(T)));}
+  // mutators: one tier below the frontier, as the weekly op picks it (max tier - 1), against the same tier without it
+  if(parts.includes('mutators'))for(const b of ['offense','tank'])for(const B of BUD){
+    put(b,B);const T=Math.max(1,frontier()-1),none=await both(T);
+    for(const m of Object.keys(S.MUTATORS))
+      rows.push(sweepRow('mutator',m,b,B,T,none,await both(T,[m])));}
+  const fl=rows.filter(r=>r.flags.length);
+  console.log(`\n${rows.length} rows in ${((Date.now()-t0)/60000).toFixed(1)} min · mean game/sim x${mean(rows.map(r=>r.abs)).toFixed(2)} · mean |effect difference| ${mean(rows.map(r=>Math.abs(r.dev))).toFixed(3)}`);
+  console.log(fl.length?`flagged (${fl.length}): `+fl.map(r=>`${r.id} ${r.ctx} ${S.fmtN(r.B)} [${r.flags.join(',')}]`).join(' · '):'nothing flagged');
+  if(process.env.REF_OUT)fs.writeFileSync(process.env.REF_OUT,JSON.stringify(rows));
+}
 
 (async()=>{
   // a Windows compatibility setting inherited from some terminals (VS Code: __COMPAT_LAYER) makes Edge restart itself, which puppeteer reads as a failed launch
@@ -107,17 +168,25 @@ const fmtW=a=>(mean(a).toFixed(1)+' ±'+half(a).toFixed(1)).padEnd(12);
   await p.evaluate(()=>{saveLocked=true;snd=toast=hint=track=startMusic=keepAwake=saveProgress=coachClear=()=>{};});
   // SIM_NOEVENTS=1 switches the wave events off on the game side too (the sim reads the same setting)
   if(process.env.SIM_NOEVENTS==='1')await p.evaluate(()=>{eventFor=()=>null;});
+  // whatever S.save holds now (shop, tattoos, mode): N runs per side in tier T, same seeds on both sides
+  const both=async(T,weekly)=>{
+    const sim=[];for(let i=0;i<N;i++){S.reseed(SEED+i);S.resetDrops();sim.push(S.run(T,MAXW,weekly?{mods:S.weeklyMods(weekly)}:{}));}
+    const gsave=JSON.stringify({perm:S.save.perm,tatCol:S.save.tatCol,equipped:S.save.equipped,tatSlots:5,mode:S.save.mode,
+      tier:1,tierBest:{},settings:{fx:'low',target:0,lang:'en'},tatV6:1,permV6:1});
+    const game=[];
+    for(let i=0;i<N;i++)game.push(await p.evaluate(pageRun,{save:gsave,tier:T,seed:SEED+i,dt:DT,maxW:MAXW,pick:PICK,trace:TRACE,weekly}));
+    return{sim,game};
+  };
+  // drops reset: the tier must not depend on the builds measured before
+  const frontier=()=>{S.reseed(SEED);S.resetDrops();return S.depth().tier;};
+  if(SWEEP){await sweep(both,frontier);await br.close();return;}
   const ratios=[];
   console.log(`tattoos Lv${LV} · ${N} runs per side · wave cap ${MAXW} · ${S.save.mode.toUpperCase()} · frame ${(DT*1000).toFixed(1)} ms · drops ${PICK?'tapped':'ignored'}`);
   console.log('build      budget  tier   sim waves    game waves   game/sim   sim min  game min   sim coins (drops) game coins (drops)  gems sim / game');
   for(const b of BUILDS)for(const B of BUDGETS){
     S.save.perm={};S.shop(b,B,{gameSpeed:1});S.equip(b,LV);S.save.tierBest={1:0};
-    S.reseed(SEED);S.resetDrops();const T=TIER==='sim'?S.depth().tier:+TIER;   // drops reset: the tier must not depend on the builds measured before
-    const sim=[];for(let i=0;i<N;i++){S.reseed(SEED+i);S.resetDrops();sim.push(S.run(T,MAXW,WEEKLY?{mods:S.weeklyMods(WEEKLY)}:{}));}
-    const gsave=JSON.stringify({perm:S.save.perm,tatCol:S.save.tatCol,equipped:S.save.equipped,tatSlots:5,mode:S.save.mode,
-      tier:1,tierBest:{},settings:{fx:'low',target:0,lang:'en'},tatV6:1,permV6:1});
-    const game=[];const t0=Date.now();
-    for(let i=0;i<N;i++)game.push(await p.evaluate(pageRun,{save:gsave,tier:T,seed:SEED+i,dt:DT,maxW:MAXW,pick:PICK,trace:TRACE,weekly:WEEKLY}));
+    const T=TIER==='sim'?frontier():+TIER;
+    const t0=Date.now(),{sim,game}=await both(T,WEEKLY);
     if(TRACE){console.log(`-- ${b} ${S.fmtN(B)} T${T}, game run 1:`);console.log(game[0].trace.join('\n'));
       console.log('-- sim run 1:');process.env.SIM_TRACE='1';S.reseed(SEED);S.run(T,MAXW);delete process.env.SIM_TRACE;}
     const sw=sim.map(x=>x.w),gw=game.map(x=>x.w),ratio=mean(gw)/mean(sw);ratios.push(ratio);

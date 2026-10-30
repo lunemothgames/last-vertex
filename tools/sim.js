@@ -493,12 +493,19 @@ if(process.argv[2]==='value'){
 //   gems from field drops, daily + weekly quests, the 7-day daily reward, the weekly op, achievements and ads; they buy tattoo
 //   slots and inks (pity, Lv7 cap and the LOGIC BOMB gift as in the game), and the build's tattoos are put on as they turn up.
 //   Coins on top of runs: idle income for the time away (8 h a day at most), the daily reward, quest and achievement coins.
-//   The calendar is a placeholder until overhaul step A3 (player types, Ahmet's minutes a day): one "day" = SIM_DAYH play hours
-//   (default 2), SIM_ADS rewarded ads a day (default 0; the first one doubles the idle income), SIM_AFKH hours a day left on
-//   AUTO RETRY with nobody watching (default 0, from Tier 3), SIM_GEMPLAN=slot (save gems for the next slot, default) or ink.
-//   The player finishes every quest he gets and plays the weekly op once a week. Not modelled: themes (gems spent on looks),
-//   which quest it is (only its reward counts), paid gems.
-const HOURS=+process.argv[2]||600,BUILD=process.argv[3]||'offense',EC=process.env.SIM_ECON==='1',TLV=EC?0:+process.env.SIM_TLV||0;
+//   One "day" = SIM_DAYH play hours (default 2, or SIM_TYPE below), SIM_ADS rewarded ads a day (default 0; the first one doubles
+//   the idle income), SIM_AFKH hours a day left on AUTO RETRY with nobody watching (default 0, from Tier 3), SIM_SESS sessions a day
+//   (only limits the ads: one per 15 min), SIM_GEMPLAN=slot (save gems for the next slot, default) or ink. Quests wait on the board
+//   until the runs finish them; the weekly op is played once a week. Not modelled: themes (gems spent on looks), paid gems.
+// SIM_TYPE=short|normal|keen|afk (overhaul step A3, agreed with Ahmet 2026-10-30): a player type sets SIM_ECON=1 and the day
+//   (play hours, ads, AUTO RETRY hours, sessions); a SIM_DAYH/SIM_ADS/SIM_AFKH set by hand still wins. Balance aims at normal,
+//   the others only check that nobody is stuck for days and nobody finishes the content in a week. Placeholders until real data.
+//   SIM_DAYS=n: play n calendar days (the hours argument is ignored then) and print one DAYS line (tools/sim-types.js reads it).
+const PTYPES={short:{dayH:.25,ads:1,afkH:0,sess:1},normal:{dayH:.75,ads:4,afkH:1,sess:2},keen:{dayH:2,ads:10,afkH:3,sess:3},afk:{dayH:1/3,ads:2,afkH:6,sess:1}};
+const PT=process.env.SIM_TYPE?PTYPES[process.env.SIM_TYPE]:null;if(process.env.SIM_TYPE&&!PT)throw new Error('unknown player type '+process.env.SIM_TYPE);
+const env=(k,d)=>process.env[k]!==undefined&&process.env[k]!==''?+eval(process.env[k]):d;
+const DAYH=env('SIM_DAYH',PT?PT.dayH:2),AFKH=env('SIM_AFKH',PT?PT.afkH:0),SESS=env('SIM_SESS',PT?PT.sess:1),DAYS=env('SIM_DAYS',0);
+const HOURS=DAYS?DAYS*DAYH:+process.argv[2]||600,BUILD=process.argv[3]||'offense',EC=process.env.SIM_ECON==='1'||!!PT,TLV=EC?0:+process.env.SIM_TLV||0;
 if(!BUILDS[BUILD])throw new Error('unknown build '+BUILD);
 if(TLV)equip(BUILD,TLV);
 const LOG=[1,2,5,10,20,42,84,168,336,600,1000,1500,2000,3000].filter(h=>h<=HOURS);
@@ -515,7 +522,8 @@ const ranRun=r=>{const c=(r.coins-(r.drops||0))/r.t;if(r.t>=120)idleCps=idleCps?
 
 // ── the economy outside the runs (SIM_ECON=1) ──
 const GEM={drop:0,quest:0,daily:0,weekly:0,ach:0,ad:0},SPENT={slot:0,ink:0},CX={runs:0,idle:0,daily:0,quest:0,ach:0,afk:0,weekly:0};
-const DAYH=+process.env.SIM_DAYH||2,ADS=Math.min(ECO.adDailyCap,+process.env.SIM_ADS||0),AFKH=+process.env.SIM_AFKH||0,PLAN=process.env.SIM_GEMPLAN||'slot';
+// ads: the daily cap, and one every adCooldown (15 min) inside a session (nobody watches ads during AUTO RETRY)
+const ADS_FIT=SESS*(Math.floor(DAYH*3600/SESS/ECO.adCooldown)+1),ADS=Math.min(ECO.adDailyCap,ADS_FIT,env('SIM_ADS',PT?PT.ads:0)),PLAN=process.env.SIM_GEMPLAN||'slot';
 let day=0,afkClock=0;
 // idle income is worth buying once the time away pays (every build buys it like a coin upgrade)
 if(EC)for(const b in BUILDS)BUILDS[b].shop={...BUILDS[b].shop,offline:BUILDS[b].shop.offline||1};
@@ -538,10 +546,21 @@ const spendGems=()=>{
     for(let i=0;i<n;i++){const top=G.pityRar(),t=G.rollType();if(!t)break;save.pity=t.rar===top?0:(save.pity||0)+1;G.addTatCopy(t.id);}
   }
   equipBest();};
+// quests sit on the board (game: refreshQuests) until the runs fill them (game: qEvent / qReach); AUTO RETRY and weekly runs count too.
+// The sim counts kills, bosses, bombs, drops, coins and waves; the other kinds are a share of the kills (a guess: the sim does not
+// count crits, knockbacks etc.). A finished quest is claimed at once.
+const QSHARE={kill_basic:.4,kill_runner:.1,kill_tank:.05,kill_splitter:.08,knockback:.3,crit:.3,slow:.3,multishot:.3,pierce:.3,dodge:.01};
+const questProg=r=>{for(const q of save.quests){
+    const v=q.k==='kill'?r.kills:q.k==='kill_boss'?r.bosses:q.k==='bomb'?r.bombs:q.k==='drop'?r.taps:q.k==='coins'?r.coins:q.k==='wave'?0:(r.kills||0)*(QSHARE[q.k]||0);
+    if(q.k==='wave'){if(r.w>q.prog)q.prog=Math.min(q.target,r.w);}else q.prog=Math.min(q.target,q.prog+Math.floor(v||0));}
+  for(const q of save.quests.filter(q=>q.prog>=q.target)){save.gems+=q.gems;GEM.quest+=q.gems;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;}
+  save.quests=save.quests.filter(q=>q.prog<q.target);};
+// SIM_DAYS: the state at the start of every day (entry d = after d days): effective wave, highest open tier, slots, tattoos owned, gems earned
+const dayLog=[],logDay=()=>dayLog.push({e:effNow(),t:G.maxUnlockedTier(),s:save.tatSlots,o:owned().length,g:Object.values(GEM).reduce((a,x)=>a+x,0)});
 const claimAch=()=>{for(const a of G.ACHS)if(!save.achClaimed.includes(a.id)&&G.achDone(a)){save.achClaimed.push(a.id);save.gems+=a.gems;GEM.ach+=a.gems;bank+=a.coins||0;CX.ach+=a.coins||0;}};
 // after every run: lifetime counts (achievements read them), field gems, the LOGIC BOMB gift (Tier 1 wave 20), achievements, gems
 const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kills||0;L.dmg+=r.dealt||0;L.bosses+=r.bosses||0;L.bombs+=r.bombs||0;L.drops+=r.taps||0;
-  save.gems+=r.gems||0;GEM.drop+=r.gems||0;CX[src]+=r.coins;
+  save.gems+=r.gems||0;GEM.drop+=r.gems||0;CX[src]+=r.coins;questProg(r);
   if((tierBest[1]||0)>=20&&!G.tatOf('logic_bomb').lv)G.addTatCopy('logic_bomb');
   claimAch();spendGems();};
 const shopL=b=>{const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
@@ -561,9 +580,10 @@ const newDay=()=>{
   save.idleCps=idleCps;
   const d=G.DAILY[save.daily.n%G.DAILY.length];save.daily.n++;
   if(d.g){save.gems+=d.g;GEM.daily+=d.g;}if(d.c){const c=G.dailyCoins(d.c);bank+=c;CX.daily+=c;}
-  const quest=k=>{const q=G.makeQuest(k);save.gems+=q.gems;GEM.quest+=q.gems;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;};
-  for(let i=0;i<24/G.QUEST.dailyEveryH;i++)quest('daily');
-  if(day%7===0){for(let i=0;i<G.QUEST.weeklyCount;i++)quest('weekly');weeklyOp();}
+  for(let i=0;i<24/G.QUEST.dailyEveryH;i++)if(save.quests.filter(q=>q.kind==='daily').length<G.QUEST.cap)save.quests.push(G.makeQuest('daily'));
+  if(day%7===0){save.quests=save.quests.filter(q=>q.kind!=='weekly');   // last week's unfinished ones expire (finished ones were claimed)
+    for(let i=0;i<G.QUEST.weeklyCount;i++)save.quests.push(G.makeQuest('weekly'));weeklyOp();}
+  if(DAYS)logDay();
   day++;claimAch();spendGems();
 };
 
@@ -587,9 +607,11 @@ while(clock<HOURS*3600){
     li++;
   }
 }
+if(DAYS)logDay();
 // where the gems and coins came from (and went), and the whole collection at the end
 const econ=EC?{days:day,gems:GEM,spent:SPENT,coins:Object.fromEntries(Object.entries(CX).map(([k,v])=>[k,+v.toPrecision(3)])),afkHours:+(afkClock/3600).toFixed(1),
   slots:save.tatSlots,equipped:save.equipped.map(id=>id+':'+G.tatOf(id).lv),owned:owned().length,pity:save.pity}:undefined;
+if(DAYS)console.log('DAYS '+JSON.stringify({build:BUILD,type:process.env.SIM_TYPE||'',dayH:DAYH,ads:ADS,afkH:AFKH,playH:+(clock/3600).toFixed(1),maxSlots:G.MAX_SLOTS,tatTotal:G.TAT_TYPES.length,days:dayLog,econ}));
 if(PACE)console.log('PACE '+JSON.stringify({build:BUILD,hours:HOURS,hit,at:atH,econ}));
 else if(EC){const tg=Object.values(GEM).reduce((a,x)=>a+x,0),tc=Object.values(CX).reduce((a,x)=>a+x,0);
   console.log(`after ${day} days (${DAYH} h play a day): gems earned ${tg} = `+Object.entries(GEM).map(([k,v])=>`${k} ${v} (${Math.round(v/tg*100)}%)`).join(' · '));

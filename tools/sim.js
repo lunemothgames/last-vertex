@@ -100,6 +100,7 @@ function shop(b,bank,skip){
 // field drops: the cooldowns run on the real clock and carry over from run to run (game save.lastCoinPickup / lastGemPickup);
 // DROP.t = wall seconds played so far, coin / gem = when the next one may appear. tools/referee.js resets it before each run (fresh save).
 const DROP={t:0,coin:0,gem:0};
+const ETYPE=new Map(Object.entries(ENEMY_TYPES).map(([k,T])=>[T,k]));   // enemy type → its id (game e.type), for the kill_<type> quests
 const SHATTER_R=+(src.match(/const SHATTER_R=([\d.]+)/)||[0,.2])[1];
 // o.auto: an AUTO RETRY run with nobody watching (game runAuto): every coin pays AUTO_RETRY.share, no actives, no bombs, drops not tapped
 // o.mods: a WEEKLY OP run with these mutators (game combineMods(weeklyKeys())): they hold for the whole run, no wave events
@@ -110,7 +111,10 @@ function run(tier,maxW=1e9,o={}){
 function run0(tier,maxW,o){
   setTier(tier);const st=stats(),AUTO=!!o.auto,WM=o.mods||null;
   const pay=c=>AUTO&&c>0?Math.max(1,Math.round(c*G.AUTO_RETRY.share)):c;   // game runPay()
-  const TOT={k:0,b:0,d:0,bombs:0,taps:0},fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps});
+  // QE = the quest events of this run, counted where the game calls qEvent() / qReach() (kill_<type>, crit, knockback, slow, pierce,
+  // multishot, dodge; wave = the last wave whose timer ran out)
+  const TOT={k:0,b:0,d:0,bombs:0,taps:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
+    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps,qe:QE});
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
   const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
@@ -142,6 +146,7 @@ function run0(tier,maxW,o){
       if(st.shatter>0&&(e.slow>0||e.frz>0)&&!e.boss)SQ.push({x:e.x,y:e.y,d:e.max*st.shatter});
       if(e.T===ENEMY_TYPES.splitter)for(const s of[-1,1]){const m=mk(ENEMY_TYPES.mini,e.y,e.x+s*e.h*.45);m.sc=1;m.kb=e.kb;E.push(m);}
       if(e.boss)TOT.b++;
+      qe('kill_'+(e.boss?'boss':ETYPE.get(e.T)));
       if(e.boss||e.coin&&Math.random()<st.coinChance)coins+=pay(cv*e.coin*midas()*(Math.random()<st.jackpot?3:1));
       ck+=coins-c0;};   // the x3 jackpot can hit a boss too (game killEnemy)
     // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
@@ -149,7 +154,7 @@ function run0(tier,maxW,o){
     const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
     const contact=(e,mul)=>{
       let taken=0,back=3.5;   // how hard it is pushed back: a dodged enemy less (game contactHit)
-      if(Math.random()<st.dodge){back=2;}
+      if(Math.random()<st.dodge){back=2;qe('dodge');}
       else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;
       else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;tdmg+=taken;tdAll+=taken;}
       tcontacts++;
@@ -160,14 +165,15 @@ function run0(tier,maxW,o){
     // one bullet / pellet hit on e (a crit roll per hit like the game: an average would hide the damage a crit wastes on overkill; armor, shield, reaper, knockback, slow)
     const bulletHit=(e,m)=>{
       const dn=st.dmg*m*(e.boss?st.bossDmg:1)*(e.hp<e.max*ECO.executeAt?st.execute:1)*(e.slow>0||e.frz>0?st.frostVuln:1);
-      let d=dn*(Math.random()<st.crit?st.critM:1);const before=e.sh>0?Infinity:e.hp;
+      const cr=Math.random()<st.crit;if(cr)qe('crit');
+      let d=dn*(cr?st.critM:1);const before=e.sh>0?Infinity:e.hp;
       if(e.ar)d*=Math.min(1,d/(e.max*e.ar));
       if(e.sh>0){e.sh-=d*.5;tdealt+=d;}else hit(e,d);
       HN.n++;HN.d+=d;
       hp=Math.min(st.maxHp,hp+d*st.ls);   // lifesteal: bullets only (and the capped thorns refund in contact())
       if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
-      if(!e.boss&&Math.random()<st.kbChance)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);
-      if(st.slowAmt>0&&Math.random()<st.slowChance)e.slow=ECO.slowTime;
+      if(!e.boss&&Math.random()<st.kbChance){e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);qe('knockback');}
+      if(st.slowAmt>0&&Math.random()<st.slowChance){if(!(e.slow>0))qe('slow');e.slow=ECO.slowTime;}
       const carry=e.hp<=0&&d>before?1-before/d:0;   // share of the damage left over after a kill (a BURST pellet flies on with it)
       if(e.hp<=0)dead(e);
       return carry;
@@ -190,7 +196,7 @@ function run0(tier,maxW,o){
     const follow=(e,m,ox,oy,hits,bounces)=>{
       for(;;){
         bulletHit(e,m);hits.add(e);
-        if(Math.random()<st.pierce){const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
+        if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
           if(nx&&!nx.ph){bounces++;ox=e.x;oy=e.y;e=nx;continue;}}
         return;
@@ -201,7 +207,8 @@ function run0(tier,maxW,o){
     // game's bullets (a one-shot straight-line test at fire time hit less: enemies walk into the pellets while they fly).
     // A pellet that kills flies on with the damage it had left.
     const burstSalvo=vis=>{
-      const tg=vis[0],n=st.pellets*(Math.random()<st.multiChance?2:1),S=BU.spread,base=Math.atan2(tg.y-BY,tg.x-triX);
+      const mu=Math.random()<st.multiChance;if(mu)qe('multishot');
+      const tg=vis[0],n=st.pellets*(mu?2:1),S=BU.spread,base=Math.atan2(tg.y-BY,tg.x-triX);
       for(let k=0;k<n;k++){const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
         P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:(BY-st.rangeY)*BU.reach,m:st.pellet,hits:new Set(),tg});PEL.n++;BUL.n++;}
     };
@@ -220,7 +227,7 @@ function run0(tier,maxW,o){
             if(!p.hit){p.hit=1;PEL.h++;if(e===p.tg)PEL.f++;}
             const carry=bulletHit(e,p.m);p.hits.add(e);
             if(carry>0){p.m*=carry;continue;}
-            if(Math.random()<st.pierce)continue;
+            if(Math.random()<st.pierce){qe('pierce');continue;}
             if(st.chain>0&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||p.hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
               if(nx&&!nx.ph)follow(nx,p.m,e.x,e.y,p.hits,1);}
             gone=true;break;}
@@ -318,7 +325,7 @@ function run0(tier,maxW,o){
         // main bullet, multishot extras and twin go to the next enemies in line
         const B=BU?[]:[[0,1]];
         if(BU)burstSalvo(vis);
-        else if(Math.random()<st.multiChance)for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);
+        else if(Math.random()<st.multiChance){qe('multishot');for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);}
         if(st.twin)B.push([vis[1]?1:0,st.twin*st.pellet]);
         // flight: 0.95 screen heights a second from just above the triangle, the enemy walking into it
         for(const [i0,m] of B){const e=vis[i0];Q.push({e,m,ox:triX,t0:t,at:t+Math.max(0,Math.hypot(e.x-triX,BY-e.y)-e.h*.55)/(.95+e.sp)});BUL.n++;}
@@ -367,6 +374,7 @@ function run0(tier,maxW,o){
       sh:bk==='bulwark'?bh*(ECO.bossShield||0):0,heal:bk==='regen'?(ECO.bossRegen||0):0,ht:1,ar:0});}
     left=dur;spawnT=0;let r;
     while(left>0)if(r=tick(true))return r;
+    QE.wave=w;   // game qReach('wave',waveNum) when the wave timer runs out
     hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
     if(TRACE)console.log('wave '+String(w).padStart(3)+' (eff '+String(ew).padStart(3)+')  hp '+String(Math.round(hp/st.maxHp*100)).padStart(3)+'%  kills '+String(tkills).padStart(4)+'  contacts '+String(tcontacts).padStart(4)+'  dmg taken '+(tdmg/st.maxHp*100).toFixed(1)+'% of maxHp  (atk/contact '+(tcontacts?(tdmg/tcontacts/st.maxHp*100).toFixed(2):'0')+'% of maxHp)  dealt '+fmtN(tdealt)+'  coins '+fmtN(coins-tc0)+'  left on field '+E.length+(E.some(e=>e.boss)?' +boss':'')+' ('+E.filter(e=>e.T===ENEMY_TYPES.mini).length+' shards)  bullets '+BUL.n+', '+Math.round(BUL.m/Math.max(1,BUL.n)*100)+'% missed');BUL.N+=BUL.n;BUL.M+=BUL.m;BUL.n=BUL.m=0;
     TOT.k+=tkills;TOT.d+=tdealt;tkills=0;tdmg=0;tcontacts=0;tdealt=0;tc0=coins;
@@ -600,12 +608,11 @@ const spendGems=()=>{
   }
   equipBest();};
 // quests sit on the board (game: refreshQuests) until the runs fill them (game: qEvent / qReach); AUTO RETRY and weekly runs count too.
-// The sim counts kills, bosses, bombs, drops, coins and waves; the other kinds are a share of the kills (a guess: the sim does not
-// count crits, knockbacks etc.). A finished quest is claimed at once.
-const QSHARE={kill_basic:.4,kill_runner:.1,kill_tank:.05,kill_splitter:.08,knockback:.3,crit:.3,slow:.3,multishot:.3,pierce:.3,dodge:.01};
+// Every kind is counted in run() where the game counts it (r.qe); kills, bombs, drops and coins come from the run's totals.
+// A finished quest is claimed at once.
 const questProg=r=>{for(const q of save.quests){
-    const v=q.k==='kill'?r.kills:q.k==='kill_boss'?r.bosses:q.k==='bomb'?r.bombs:q.k==='drop'?r.taps:q.k==='coins'?r.coins:q.k==='wave'?0:(r.kills||0)*(QSHARE[q.k]||0);
-    if(q.k==='wave'){if(r.w>q.prog)q.prog=Math.min(q.target,r.w);}else q.prog=Math.min(q.target,q.prog+Math.floor(v||0));}
+    const v=q.k==='kill'?r.kills:q.k==='bomb'?r.bombs:q.k==='drop'?r.taps:q.k==='coins'?r.coins:r.qe[q.k];
+    if(q.k==='wave'){if(v>q.prog)q.prog=Math.min(q.target,v);}else q.prog=Math.min(q.target,q.prog+Math.floor(v||0));}
   for(const q of save.quests.filter(q=>q.prog>=q.target)){const W=q.kind==='weekly';save.gems+=q.gems;GEM[W?'qweek':'qday']+=q.gems;QN[W?'wDone':'dDone']++;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;}
   save.quests=save.quests.filter(q=>q.prog<q.target);};
 // SIM_DAYS: the state at the start of every day (entry d = after d days): effective wave, highest open tier, slots, tattoos owned, gems earned,

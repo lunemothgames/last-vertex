@@ -3,7 +3,7 @@
 // Every player type (tools/sim.js PTYPES) plays `days` calendar days from a new save (SIM_TYPE + SIM_DAYS, as tools/sim-types.js);
 // `noads` = the normal type without ads (what ads add). Sources: field = gem drops tapped in runs (active play), qday / qweek = daily /
 // weekly quests, daily = the 7-day daily reward, weekly = the weekly op, ach = achievements, ads = rewarded ads (the first ad of a day
-// doubles the idle income instead, as in the game). Quest progress for kinds the sim does not count is a guess (QSHARE in sim.js).
+// doubles the idle income instead, as in the game). Every quest kind is counted in the runs where the game counts it (r.qe in sim.js).
 // Raw results are saved to <tmp>/gemcard_raw.json; SIM_CARD_RAW=<file> grades those again without running (to tune the thresholds).
 // Alarms (thresholds in ALARM below, change with SIM_ALARM='{"dom":0.5}'):
 //   ACTIVE   field gems outweigh quests + weekly op + ads together in a stretch (rule: active-play rewards must not outweigh them)

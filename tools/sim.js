@@ -548,7 +548,7 @@ if(process.argv[2]==='value'){
 //   One "day" = SIM_DAYH play hours (default 2, or SIM_TYPE below), SIM_ADS rewarded ads a day (default 0; the first one doubles
 //   the idle income), SIM_AFKH hours a day left on AUTO RETRY with nobody watching (default 0, from Tier 3), SIM_SESS sessions a day
 //   (only limits the ads: one per 15 min), SIM_GEMPLAN=slot (save gems for the next slot, default) or ink. Quests wait on the board
-//   until the runs finish them; the weekly op is played once a week. Not modelled: themes (gems spent on looks), paid gems.
+//   until the runs finish them; the weekly op is tried once a day until its three rewards are got. Not modelled: themes (gems spent on looks), paid gems.
 // SIM_TYPE=short|normal|keen|afk (overhaul step A3, agreed with Ahmet 2026-10-30): a player type sets SIM_ECON=1 and the day
 //   (play hours, ads, AUTO RETRY hours, sessions); a SIM_DAYH/SIM_ADS/SIM_AFKH set by hand still wins. Balance aims at normal,
 //   the others only check that nobody is stuck for days and nobody finishes the content in a week. Placeholders until real data.
@@ -572,7 +572,9 @@ const buyBoosts=()=>{save.temp={};const e=effNow();for(const id of BOOST){const 
 const ranRun=r=>{const c=(r.coins-(r.drops||0))/r.t;if(r.t>=120)idleCps=idleCps?idleCps*.7+c*.3:c;save.temp={};};
 
 // ── the economy outside the runs (SIM_ECON=1) ──
-const GEM={drop:0,quest:0,daily:0,weekly:0,ach:0,ad:0},SPENT={slot:0,ink:0},CX={runs:0,idle:0,daily:0,quest:0,ach:0,afk:0,weekly:0};
+// gems by source (qday / qweek = daily / weekly quests); QN = quests offered and claimed (offered = what arrives, the board cap aside)
+const GEM={drop:0,qday:0,qweek:0,daily:0,weekly:0,ach:0,ad:0},SPENT={slot:0,ink:0},CX={runs:0,idle:0,daily:0,quest:0,ach:0,afk:0,weekly:0};
+const QN={dOff:0,dDone:0,wOff:0,wDone:0};
 // ads: the daily cap, and one every adCooldown (15 min) inside a session (nobody watches ads during AUTO RETRY)
 const ADS_FIT=SESS*(Math.floor(DAYH*3600/SESS/ECO.adCooldown)+1),ADS=Math.min(ECO.adDailyCap,ADS_FIT,env('SIM_ADS',PT?PT.ads:0)),PLAN=process.env.SIM_GEMPLAN||'slot';
 let day=0,afkClock=0;
@@ -604,10 +606,12 @@ const QSHARE={kill_basic:.4,kill_runner:.1,kill_tank:.05,kill_splitter:.08,knock
 const questProg=r=>{for(const q of save.quests){
     const v=q.k==='kill'?r.kills:q.k==='kill_boss'?r.bosses:q.k==='bomb'?r.bombs:q.k==='drop'?r.taps:q.k==='coins'?r.coins:q.k==='wave'?0:(r.kills||0)*(QSHARE[q.k]||0);
     if(q.k==='wave'){if(r.w>q.prog)q.prog=Math.min(q.target,r.w);}else q.prog=Math.min(q.target,q.prog+Math.floor(v||0));}
-  for(const q of save.quests.filter(q=>q.prog>=q.target)){save.gems+=q.gems;GEM.quest+=q.gems;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;}
+  for(const q of save.quests.filter(q=>q.prog>=q.target)){const W=q.kind==='weekly';save.gems+=q.gems;GEM[W?'qweek':'qday']+=q.gems;QN[W?'wDone':'dDone']++;bank+=q.coins;CX.quest+=q.coins;save.life.quests++;}
   save.quests=save.quests.filter(q=>q.prog<q.target);};
-// SIM_DAYS: the state at the start of every day (entry d = after d days): effective wave, highest open tier, slots, tattoos owned, gems earned
-const dayLog=[],logDay=()=>dayLog.push({e:effNow(),t:G.maxUnlockedTier(),s:save.tatSlots,o:owned().length,g:Object.values(GEM).reduce((a,x)=>a+x,0)});
+// SIM_DAYS: the state at the start of every day (entry d = after d days): effective wave, highest open tier, slots, tattoos owned, gems earned,
+// and for tools/sim-gemcard.js the running totals: gems by source, quests offered / claimed, hours played (watched) and on AUTO RETRY
+const dayLog=[],logDay=()=>dayLog.push({e:effNow(),t:G.maxUnlockedTier(),s:save.tatSlots,o:owned().length,g:Object.values(GEM).reduce((a,x)=>a+x,0),
+  gs:{...GEM},q:{...QN},h:+(clock/3600).toFixed(2),a:+(afkClock/3600).toFixed(2)});
 const claimAch=()=>{for(const a of G.ACHS)if(!save.achClaimed.includes(a.id)&&G.achDone(a)){save.achClaimed.push(a.id);save.gems+=a.gems;GEM.ach+=a.gems;bank+=a.coins||0;CX.ach+=a.coins||0;}};
 // after every run: lifetime counts (achievements read them), field gems, the LOGIC BOMB gift (Tier 1 wave 20), achievements, gems
 const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kills||0;L.dmg+=r.dealt||0;L.bosses+=r.bosses||0;L.bombs+=r.bombs||0;L.drops+=r.taps||0;
@@ -615,31 +619,39 @@ const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kil
   if((tierBest[1]||0)>=20&&!G.tatOf('logic_bomb').lv)G.addTatCopy('logic_bomb');
   claimAch();spendGems();};
 const shopL=b=>{const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
-// once a week: the weekly op, one tier below the highest, this week's two mutators; gems at waves 10/20/30 (not a tier record, not idle income)
-let wk=0;
-const weeklyOp=()=>{if(!G.MUTATORS)return;const T=Math.max(1,G.maxUnlockedTier()-1),r=run(T,1e9,{mods:G.combineMods(G.weeklyKeys(wk++))});
-  clock+=r.t+3;bank+=r.coins;afterRun(r,'weekly');for(const [w,g] of G.WEEKLY_REWARDS)if(r.w>=w){save.gems+=g;GEM.weekly+=g;}};
+// the weekly op, one tier below the highest, this week's two mutators; gems at waves 10/20/30 once a week (not a tier record, not idle income).
+// The game lets it be played again and again all week (its menu dot stays while a reward is left): one try a day until all three are got.
+const WK={got:[]};
+const weeklyOp=()=>{if(!G.MUTATORS)return;const T=Math.max(1,G.maxUnlockedTier()-1),r=run(T,1e9,{mods:G.combineMods(G.weeklyKeys(Math.floor(day/7)))});
+  clock+=r.t+3;bank+=r.coins;afterRun(r,'weekly');for(const [w,g] of G.WEEKLY_REWARDS)if(r.w>=w&&!WK.got.includes(w)){WK.got.push(w);save.gems+=g;GEM.weekly+=g;}};
+// The field-drop cooldowns run on the real clock (game gameNow), so they also run out while the player is away: the time between
+// sessions (the day minus play and AUTO RETRY, split evenly before the SIM_SESS sessions) moves DROP.t on (AUTO RETRY runs move it themselves)
+let GAP=0,sessN=0;
 // a new day: last night's idle income, ads, the daily reward, 8 daily quests (one every 3 h), and on every 7th day 4 weekly quests + the weekly op
 const newDay=()=>{
-  if(day>0){
-    if(AFKH>0&&G.maxUnlockedTier()>=G.AUTO_RETRY.tier){let s=0;   // AUTO RETRY left on: the same tier again and again, 2+5 s between runs
+  if(day>0){let s=0;
+    if(AFKH>0&&G.maxUnlockedTier()>=G.AUTO_RETRY.tier){   // AUTO RETRY left on: the same tier again and again, 2+5 s between runs
       while(s<AFKH*3600){const r=run(tier,1e9,{auto:true});s+=r.t+2+G.AUTO_RETRY.wait;afkClock+=r.t;bank+=r.coins;afterRun(r,'afk');tierBest[tier]=Math.max(tierBest[tier]||0,r.w);}}
+    GAP=Math.max(0,(24-DAYH)*3600-s)/SESS;DROP.t+=GAP;
     const away=Math.max(0,24-DAYH-AFKH)*3600,secs=Math.min(ECO.offlineDayH*3600,away);
     if(away>=ECO.offlineMinSec&&idleCps>0){const c=idleCps*G.permVal('offline')*secs*(ADS>0?2:1);bank+=c;CX.idle+=c;}
     const g=Math.max(0,ADS-(idleCps>0?1:0))*ECO.adGems;save.gems+=g;GEM.ad+=g;
   }
+  if(DAYS)logDay();   // after last night (AUTO RETRY, idle income, ads), before this day's rewards
   save.idleCps=idleCps;
   const d=G.DAILY[save.daily.n%G.DAILY.length];save.daily.n++;
   if(d.g){save.gems+=d.g;GEM.daily+=d.g;}if(d.c){const c=G.dailyCoins(d.c);bank+=c;CX.daily+=c;}
+  QN.dOff+=24/G.QUEST.dailyEveryH;if(day%7===0)QN.wOff+=G.QUEST.weeklyCount;
   for(let i=0;i<24/G.QUEST.dailyEveryH;i++)if(save.quests.filter(q=>q.kind==='daily').length<G.QUEST.cap)save.quests.push(G.makeQuest('daily'));
   if(day%7===0){save.quests=save.quests.filter(q=>q.kind!=='weekly');   // last week's unfinished ones expire (finished ones were claimed)
-    for(let i=0;i<G.QUEST.weeklyCount;i++)save.quests.push(G.makeQuest('weekly'));weeklyOp();}
-  if(DAYS)logDay();
+    for(let i=0;i<G.QUEST.weeklyCount;i++)save.quests.push(G.makeQuest('weekly'));WK.got=[];}
+  if(G.WEEKLY_REWARDS&&WK.got.length<G.WEEKLY_REWARDS.length)weeklyOp();
   day++;claimAch();spendGems();
 };
 
 while(clock<HOURS*3600){
   if(EC)while(clock>=day*DAYH*3600)newDay();
+  if(EC)while(clock>=(sessN+1)*DAYH*3600/SESS){sessN++;if(sessN%SESS)DROP.t+=GAP;}   // a later session of the same day
   // every 10th run goes back to farm mastery stars in the highest tier (3+ below) that still misses one
   const farm=runs%10===9?[...Array(Math.max(0,tier-3)).keys()].map(i=>tier-3-i).find(t=>(tierBest[t]||0)<G.MASTERY[2]):0;
   if(farm){buyBoosts();const r=run(farm);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);afterRun(r,'runs');bank=shopL(bank);continue;}

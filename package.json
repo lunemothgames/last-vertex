@@ -16,6 +16,7 @@
     "card": "node tools/sim-card.js",
     "shopcard": "node tools/sim-shopcard.js",
     "types": "node tools/sim-types.js",
+    "gemcard": "node tools/sim-gemcard.js",
     "exp": "node tools/sim-exp.js",
     "referee": "node tools/referee.js"
   },

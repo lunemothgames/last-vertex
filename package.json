@@ -20,7 +20,8 @@
     "exp": "node tools/sim-exp.js",
     "referee": "node tools/referee.js",
     "diff": "node tools/sim-diff.js pace",
-    "wall": "node tools/sim-diff.js wall"
+    "wall": "node tools/sim-diff.js wall",
+    "map": "node tools/wave-map.js"
   },
   "engines": {
     "node": ">=18"

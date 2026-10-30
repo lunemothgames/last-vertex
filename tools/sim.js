@@ -656,18 +656,27 @@ const newDay=()=>{
   day++;claimAch();spendGems();
 };
 
+// SIM_TRACE=1: one TRACE line per climbing run (not mastery farm), for tools/wave-map.js: tier, wave reached, best effective wave,
+// coins of the run, hours played, a rough damage-per-second figure (bullet damage x rate x crit x multishot, after shopping), max HP,
+// and what the next DAMAGE / FIRE RATE level costs in runs of this size
+const TRACE=process.env.SIM_TRACE==='1';
+const trace=r=>{setTier(tier);const st=stats(),nx=id=>upCost(PU[id],save.perm[id]||0)/Math.max(1,r.coins);
+  const dps=st.hitDmg*st.pellets*st.rate*(1+st.crit*(st.critM-1))*(1+st.multiChance*ECO.multiExtra);
+  console.log('TRACE '+JSON.stringify({t:r.tier||tier,w:r.w,e:effNow(),c:Math.round(r.coins),h:+(clock/3600).toFixed(2),d:day,dps:+dps.toPrecision(4),hp:Math.round(st.maxHp),
+    nd:+nx('damage').toFixed(2),nf:+nx('fireRate').toFixed(2),o:owned().length,s:save.tatSlots}));};
 while(clock<HOURS*3600){
   if(EC)while(clock>=day*DAYH*3600)newDay();
   if(EC)while(clock>=(sessN+1)*DAYH*3600/SESS){sessN++;if(sessN%SESS)DROP.t+=GAP;}   // a later session of the same day
   // every 10th run goes back to farm mastery stars in the highest tier (3+ below) that still misses one
   const farm=runs%10===9?[...Array(Math.max(0,tier-3)).keys()].map(i=>tier-3-i).find(t=>(tierBest[t]||0)<G.MASTERY[2]):0;
   if(farm){buyBoosts();const r=run(farm);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;tierBest[farm]=Math.max(tierBest[farm]||0,r.w);afterRun(r,'runs');bank=shopL(bank);continue;}
-  buyBoosts();const r=run(tier);ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;
+  buyBoosts();const r=run(tier);r.tier=tier;ranRun(r);runs++;clock+=r.t+3;bank+=r.coins;
   tierBest[tier]=Math.max(tierBest[tier]||0,r.w);
   if(tierBest[tier]>=TIERS.unlockWave&&tier<TIERS.max){tier++;tierBest[tier]=tierBest[tier]||0;}
   else if(r.w<6&&tier>1)tier--;
   afterRun(r,'runs');
   bank=shopL(bank);
+  if(TRACE)trace(r);
   if(PACE){const e=effNow();for(const m of MILES)if(e>=m&&hit[m]===undefined)hit[m]=+(clock/3600).toFixed(1);for(const h of AT)if(clock>=h*3600&&atH[h]===undefined)atH[h]=e;if(hit[MILES[MILES.length-1]]!==undefined)break;continue;}
   while(li<LOG.length&&clock>=LOG[li]*3600){
     const mt=Object.keys(tierBest).map(Number).filter(t=>tierBest[t]>0).reduce((a,b)=>Math.max(a,b),1);

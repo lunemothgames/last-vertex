@@ -14,6 +14,7 @@
     "check-listing": "node tools/check-listing.js",
     "pace": "node tools/sim-pace.js",
     "card": "node tools/sim-card.js",
+    "shopcard": "node tools/sim-shopcard.js",
     "types": "node tools/sim-types.js",
     "exp": "node tools/sim-exp.js",
     "referee": "node tools/referee.js"

@@ -484,6 +484,40 @@ if(process.argv[2]==='tattoocard'){
   process.exit(0);
 }
 
+// player types (SIM_TYPE, see the long-term progression below); up here because `shopcard` reads the normal one
+const PTYPES={short:{dayH:.25,ads:1,afkH:0,sess:1},normal:{dayH:.75,ads:4,afkH:1,sess:2},keen:{dayH:2,ads:10,afkH:3,sess:3},afk:{dayH:1/3,ads:2,afkH:6,sess:1}};
+// shopcard: one shop upgrade against the normal mix, same 9 cases as `tattoocard` (3 shop styles x 3 budgets, no tattoos).
+//   node tools/sim.js shopcard <id|mix>   → one SHOP line of JSON; tools/sim-shopcard.js runs it for every upgrade and grades them
+// From each style's normal shopping at budget B (as a real player: GAME SPEED and IDLE INCOME included), SIM_EXTRA x B more (default 1 =
+// doubling) goes into that one upgrade only (`mix` = the style's normal way, the yardstick; `a+b` = two upgrades that only work together,
+// cheapest level first). Measured in ONE fixed tier per case (the first one the base shopping cannot clear), SIM_N runs (default 24) with
+// the same random numbers for base, mix and upgrade, so the difference is the upgrade and not luck: mean wave (w) and coins per hour (c),
+// plus what was really spent (x B). IDLE INCOME pays nothing inside a run, so its c is the day's income of a `normal` player type (play
+// hours + idle hours away, doubled by an ad) instead.
+if(process.argv[2]==='shopcard'){
+  const id=process.argv[3],BUD=(process.env.SIM_BUDGETS||'1e5,3e6,3e8').split(',').map(Number),STY=['offense','swarm','tank'],X=+process.env.SIM_EXTRA||1;
+  const N=+process.env.SIM_N||24,parts=id==='mix'?[]:id.split('+');for(const p of parts)if(!PU[p])throw new Error('unknown upgrade '+p);
+  const SEED=+process.env.SIM_SEED||1,fresh=()=>{_seed=SEED;DROP.t=DROP.coin=DROP.gem=0;};   // drops use random numbers too, so they restart as well
+  const measure=T=>{fresh();let w=0,c=0,t=0;for(let i=0;i<N;i++){const r=run(T,60);w+=r.w;c+=r.coins;t+=r.t;}return{w:w/N,c:c/t*3600};};
+  const P=PTYPES.normal,dayInc=v=>P.dayH+v*ECO.offlineDayH*(P.ads>0?2:1);   // normal player's day in hours of run income
+  for(const st of STY)BUILDS[st].shop={...BUILDS[st].shop,offline:BUILDS[st].shop.offline||1};
+  const put=(st,B)=>{save.perm={};shop(st,B);save.tatCol={};save.equipped=[];};
+  const lvs=()=>parts.reduce((a,p)=>a+(save.perm[p]||0),0);
+  const out={id,cat:parts.length?PU[parts[0]].cat:'mix',cases:{}};
+  for(const st of STY)for(const B of BUD){
+    put(st,B);fresh();let T=1;for(;T<40;T++){let m=0;for(let k=0;k<6;k++)m+=run(T,TIERS.unlockWave).w;if(m/6<TIERS.unlockWave)break;}
+    const b=measure(T),l0=lvs(),v0=G.permVal('offline');let bank=B*X;
+    if(id==='mix')bank=shop(st,bank);
+    else for(;;){let best=null;for(const p of parts){const l=save.perm[p]||0;if(l<PU[p].max){const c=upCost(PU[p],l);if(!best||c<best[1])best=[p,c];}}
+      if(!best||best[1]>bank)break;bank-=best[1];save.perm[best[0]]=(save.perm[best[0]]||0)+1;}
+    const spent=(B*X-bank)/B,r={T,lv0:l0,lv:lvs(),spent,w0:b.w,w:b.w,c:1};
+    if(spent>0){if(id==='offline')r.c=dayInc(G.permVal('offline'))/dayInc(v0);else{const m=measure(T);r.w=m.w;
+      r.c=m.c/b.c*(id==='mix'?dayInc(G.permVal('offline'))/dayInc(v0):1);}}   // the mix may raise IDLE INCOME too
+    out.cases[st+' '+B]=r;}
+  console.log('SHOP '+JSON.stringify(out));
+  process.exit(0);
+}
+
 // value: from the same starting point, put an extra 25% of the budget into ONE upgrade and measure
 // how many waves it adds (combat) or how much coins/hour (economy). Shows over/under-priced upgrades.
 if(process.argv[2]==='value'){
@@ -519,7 +553,6 @@ if(process.argv[2]==='value'){
 //   (play hours, ads, AUTO RETRY hours, sessions); a SIM_DAYH/SIM_ADS/SIM_AFKH set by hand still wins. Balance aims at normal,
 //   the others only check that nobody is stuck for days and nobody finishes the content in a week. Placeholders until real data.
 //   SIM_DAYS=n: play n calendar days (the hours argument is ignored then) and print one DAYS line (tools/sim-types.js reads it).
-const PTYPES={short:{dayH:.25,ads:1,afkH:0,sess:1},normal:{dayH:.75,ads:4,afkH:1,sess:2},keen:{dayH:2,ads:10,afkH:3,sess:3},afk:{dayH:1/3,ads:2,afkH:6,sess:1}};
 const PT=process.env.SIM_TYPE?PTYPES[process.env.SIM_TYPE]:null;if(process.env.SIM_TYPE&&!PT)throw new Error('unknown player type '+process.env.SIM_TYPE);
 const env=(k,d)=>process.env[k]!==undefined&&process.env[k]!==''?+eval(process.env[k]):d;
 const DAYH=env('SIM_DAYH',PT?PT.dayH:2),AFKH=env('SIM_AFKH',PT?PT.afkH:0),SESS=env('SIM_SESS',PT?PT.sess:1),DAYS=env('SIM_DAYS',0);

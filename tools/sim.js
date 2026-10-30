@@ -466,6 +466,24 @@ if(process.argv[2]==='tattoos'){
   process.exit(0);
 }
 
+// tattoocard: one tattoo at several levels against no tattoo, same 9 cases as `tattoos` (3 shop styles x 3 budgets).
+//   node tools/sim.js tattoocard <id> [levels=2,7]   → one CARD line of JSON; tools/sim-card.js runs it for every tattoo and grades them
+if(process.argv[2]==='tattoocard'){
+  const id=process.argv[3],LVS=(process.argv[4]||'2,7').split(',').map(Number),BUD=(process.env.SIM_BUDGETS||'3e4,3e6,3e8').split(',').map(Number),STY=['offense','swarm','tank'];
+  const N=+process.env.SIM_N||3;
+  const mean=()=>{let w=0,c=0;for(let i=0;i<N;i++){const d=depth();w+=d.eff;c+=d.cph;}return{w:w/N,c:c/N};};
+  const put=(st,B,tat,lv)=>{save.perm={};shop(st,B,{gameSpeed:1});save.tatCol=tat?{[tat]:{lv,copies:0}}:{};save.equipped=tat?[tat]:[];};
+  const base={};for(const st of STY)for(const B of BUD){put(st,B);base[st+B]=mean();}
+  // e = how fast depth grows with budget (waves x per budget x, between 3e6 and 3e8); lets the card turn a depth gain into "as good as N x budget"
+  let e=0;for(const st of STY)e+=Math.log(base[st+BUD[BUD.length-1]].w/base[st+BUD[BUD.length-2]].w)/Math.log(BUD[BUD.length-1]/BUD[BUD.length-2])/STY.length;
+  const out={id,rar:G.TAT_TYPES.find(t=>t.id===id).rar,e,lv:{}};
+  for(const lv of LVS){let rw=0,rc=0,n=0;
+    for(const st of STY)for(const B of BUD){put(st,B,id,lv);const m=mean(),b=base[st+B];rw+=m.w/b.w;rc+=m.c/b.c;n++;}
+    out.lv[lv]={w:rw/n,c:rc/n};}
+  console.log('CARD '+JSON.stringify(out));
+  process.exit(0);
+}
+
 // value: from the same starting point, put an extra 25% of the budget into ONE upgrade and measure
 // how many waves it adds (combat) or how much coins/hour (economy). Shows over/under-priced upgrades.
 if(process.argv[2]==='value'){

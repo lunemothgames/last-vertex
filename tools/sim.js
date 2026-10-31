@@ -19,6 +19,9 @@ Math.random=rand;   // the game's own copied-in code (via `new Function`) also c
 // SIM_SRC=<file> measures another copy of the game (e.g. an older version) with the same builds
 const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
+// enemies per spawn and seconds between spawns: the game's own expressions (a smoothed or older rule is measured as written), fractional values rounded by chance as in the game
+const PERSPAWN=new Function('waveNum','runMods','return '+src.match(/const perSpawn=([^;]+);/)[1]);
+const INTERVAL=new Function('waveNum','return '+src.match(/const interval=([^;]+);/)[1]);
 const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an older game (SIM_SRC) may not have
 // the economy outside the runs (SIM_ECON=1): inks, quests, achievements and the daily reward, taken from the game itself
 const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
@@ -245,7 +248,7 @@ function run0(tier,maxW,o){
     // one time step; `active` = the wave timer is running (enemies spawn), false = the short break before the next wave
     var tick=active=>{
       t+=dt;aegis=Math.max(0,aegis-dt);shock=Math.max(0,shock-dt);
-      if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0;i<per;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
+      if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0,n=Math.floor(per)+(Math.random()<per%1?1:0);i<n;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
       hp=Math.min(st.maxHp,hp+st.regen*dt);cd-=dt;
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
@@ -367,7 +370,7 @@ function run0(tier,maxW,o){
     pool=Object.values(ENEMY_TYPES).filter(x=>x.w>0&&ew>=x.from);tw=pool.reduce((s,x)=>s+x.w,0);cv=coinValueAt(ew)*st.mult;
     if(w>1){const b=pay(cv*st.bounty*mid());coins+=b;cb+=b;}   // MIDAS counts: it is part of the game's coin multiplier   // game: WAVE BOUNTY is paid as each new wave starts (from wave 2)
     if(w>maxW){DROP.t+=t/st.speed;summary();return{w:w-1,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp,...fin()};}
-    dur=Math.min(45,18+w*.5)*(+process.env.SIM_WAVEK||1);iv=Math.max(.5,2.2-w*.04)*(M.ival||1);per=Math.max(1,Math.round(Math.floor(1+w/20)*(M.spawn||1)));
+    dur=Math.min(45,18+w*.5)*(+process.env.SIM_WAVEK||1);iv=INTERVAL(w)*(M.ival||1);per=PERSPAWN(w,{spawn:M.spawn||1});
     // game spawnWave(): a first group queued above the entry line, then the boss in the middle
     for(let i=0,n=Math.min(3+Math.floor(ew/8),8);i<n;i++){const T=pick();E.push(mk(T,.1-T.sz*GWH/2-i*(.07+Math.random()*.04)));}
     if(boss){const bh=hpB*ECO.bossHpMul*(M.ehp||1),h=.13*GWH*(M.esz||1);E.push({x:GWH/2,y:.1-h/2,sc:.1,wv:w,h,w:h*1.1,hp:bh,max:bh,atk:atkB*ECO.bossAtkMul,sp:spB*.5*(M.espd||1),coin:ECO.bossCoins*(M.ecoin||1),kb:0,slow:0,frz:0,boss:true,summon:ECO.bossSummonEvery,pt:ECO.bossPulseFirst||0,enr:false,kind:bk,

@@ -15,8 +15,8 @@ const LANGS=process.argv.slice(2).length?process.argv.slice(2):Object.keys(TEXT)
 const FONT_CSS=(fs.readFileSync(path.join(root,'index.html'),'utf8').match(/@font-face\{[^}]+\}/g)||[]).join('\n');
 const HINTS={menu:1,start:1,breach:1,drops:1,hud:1,shop:1,tattoo:1,quests:1,tier:1,target:1,active:1};
 // a mid-game player: a few tiers in, some tattoos, an active build
-const SAVE={coins:4.2e7,gems:340,tier:6,tierBest:{1:78,2:62,3:51,4:44,5:36,6:21},tatSlots:4,themesOwned:['ice'],
-  perm:{damage:520,fireRate:70,maxHp:480,regen:380,defense:180,thorns:90,critChance:90,critMult:60,multishot:70,bounce:40,range:35,
+const SAVE={coins:4.2e7,gems:340,tier:3,tierBest:{1:80,2:66,3:38},tatSlots:4,themesOwned:['ice'],
+  perm:{damage:520,fireRate:70,maxHp:480,regen:380,defense:180,thorns:90,critChance:90,critMult:60,multishot:70,bounce:40,cooldown:30,
     pierce:20,coinMult:150,lootChance:60,bounty:40,gameSpeed:8,offline:10},
   tatCol:{attack_power:{lv:5,copies:2},twin:{lv:3,copies:1},nova:{lv:4,copies:0},arc:{lv:2,copies:3},crit_mult:{lv:4,copies:1},
     max_hp:{lv:5,copies:0},regen:{lv:3,copies:2},coin_mult:{lv:4,copies:1},frost:{lv:2,copies:0},aegis:{lv:1,copies:0},thorns:{lv:3,copies:0}},
@@ -50,9 +50,9 @@ const THEME_FAN=['amber','green','pink'];   // left, centre, right on the themes
     await seed();await p.click('#mPlay');await clean();await p.evaluate(()=>{waveNum=24;waveTimer=.01;});
     await sleep(6000);await waitField(14,15000);await clean();await sleep(350);await shot('run');
     await p.evaluate(()=>{waveNum=29;waveTimer=.01;});
-    await p.evaluate(()=>new Promise(r=>{const t0=Date.now(),f=()=>{pickups=[];const bo=enemies.find(e=>e.boss);if((bo&&bo.y>GH*.3)||Date.now()-t0>20000)r();else setTimeout(f,100);};f();}));
+    await p.evaluate(()=>new Promise(r=>{const t0=Date.now(),f=()=>{pickups=[];const bo=enemies.find(e=>e.boss);if(bo){bo.hp=bo.maxHp;waveTimer=Math.max(waveTimer,10);}if((bo&&bo.y>GH*.3)||Date.now()-t0>20000)r();else setTimeout(f,100);};f();}));
     // the boss at half health, caught in a NOVA blast
-    await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo){bo.hp=bo.maxHp*.45;}actCD={};});await sleep(700);await clean();
+    await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo){bo.hp=bo.maxHp*100;}actCD={};waveTimer=Math.max(waveTimer,10);});await sleep(700);await clean();
     // the blast must not kill the boss: put its health back right after
     await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo)bo.hp=bo.maxHp*100;useActive('nova');if(bo)bo.hp=bo.maxHp*.45;textParticles=textParticles.slice(-1);});
     await p.evaluate(()=>{const t=$('toast');t.className='';$('hint').classList.remove('show');});

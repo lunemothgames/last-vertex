@@ -29,7 +29,7 @@ Idle tower defense on a retro CRT terminal: you are the last vertex, one glowing
 Your triangle aims and fires on its own; you decide how it grows. Play actively or put the phone down and let it run.
 
 ▸ BUILD IT YOUR WAY
-Pour coins into permanent upgrades: damage, fire rate, crits, multishot, ricochet, pierce, armor, thorns, regen, dodge, slow, knockback and more. A wall of thorns and armor, a crit cannon, a swarm of bouncing bullets — every build is viable.
+Pour coins into permanent upgrades: damage, fire rate, crits, multishot, ricochet, pierce, armor, thorns, regen, parry, slow, knockback and more. A wall of thorns and armor, a crit cannon, a swarm of bouncing bullets — every build is viable.
 
 ▸ TATTOOS
 Ink 31 tattoos across four rarities and fuse duplicates up to level 7. Passive tattoos shape your build; active ones add a button to the battle: freeze the field, blast every enemy, overdrive your fire rate, turn kills into gold or throw bombs (logic, goo, virus) exactly where you tap; others shatter frozen enemies into chain reactions. The odds are shown on screen and an epic is guaranteed within 50 summons.
@@ -41,7 +41,7 @@ Fight through 30 tiers of rising danger: runners, tanks, splitters, shielded war
 Every week brings two new rule-changing mutators — horde, glass cannon, boss rush, titans and more — with gem rewards for the waves you reach.
 
 ▸ PLAY ACTIVE OR IDLE
-Choose your target priority, speed up the game, time your abilities — or walk away. Idle income keeps earning while you're away, quests refresh through the day and achievements reward every milestone.
+Speed up the game, time your abilities — or switch on AUTO RETRY and walk away. Idle income keeps earning while you're away, quests refresh through the day and achievements reward every milestone.
 
 ▸ RETRO TERMINAL LOOK
 Scanlines, phosphor glow and 12 color themes, from ice blue to amber, green P1 and hot pink. Runs smoothly on older phones with three graphics levels, and works offline.
@@ -70,7 +70,7 @@ Retro bir CRT terminalinde idle kule savunma: sen son köşesin, ekranın altın
 Üçgenin kendi kendine nişan alıp ateş eder; nasıl güçleneceğine sen karar verirsin. İster aktif oyna, ister telefonu bırak, oyun kendi aksın.
 
 ▸ TARZINI SEN SEÇ
-Altınlarını kalıcı geliştirmelere yatır: hasar, atış hızı, kritik, çoklu atış, sekme, delme, zırh, diken, can yenileme, kaçınma, yavaşlatma, geri itme ve fazlası. Diken ve zırhtan bir duvar, bir kritik topu, seken mermi sürüsü — her build işe yarar.
+Altınlarını kalıcı geliştirmelere yatır: hasar, atış hızı, kritik, çoklu atış, sekme, delme, zırh, diken, can yenileme, savuşturma, yavaşlatma, geri itme ve fazlası. Diken ve zırhtan bir duvar, bir kritik topu, seken mermi sürüsü — her build işe yarar.
 
 ▸ DÖVMELER
 Dört nadirlikte 31 dövme çağır, kopyaları birleştirip 7. seviyeye kadar yükselt. Pasif dövmeler build'ini şekillendirir; aktif olanlar savaşa bir buton ekler: sahayı dondur, tüm düşmanları patlat, atış hızını uçur, öldürmeleri altına çevir ya da dokunduğun yere bomba at (mantık, çamur, virüs). Bazıları donmuş düşmanları zincirleme patlamalarla parçalar. Oranlar ekranda yazar ve 50 çağırma içinde bir epik garantidir.
@@ -82,7 +82,7 @@ Giderek zorlaşan 30 tier boyunca savaş: koşucular, tanklar, bölünenler, kal
 Her hafta kuralları değiştiren iki yeni mod gelir — sürü, cam top, boss akını, devler ve fazlası — ulaştığın dalgalara göre elmas ödülleriyle.
 
 ▸ AKTİF YA DA IDLE
-Hedef önceliğini seç, oyunu hızlandır, yeteneklerini zamanla — ya da bırak gitsin. Sen yokken idle gelir birikmeye devam eder, görevler gün boyunca yenilenir, başarımlar her adımı ödüllendirir.
+Oyunu hızlandır, yeteneklerini zamanla — ya da OTO TEKRAR'ı aç ve bırak gitsin. Sen yokken idle gelir birikmeye devam eder, görevler gün boyunca yenilenir, başarımlar her adımı ödüllendirir.
 
 ▸ RETRO TERMİNAL GÖRÜNÜMÜ
 Tarama çizgileri, fosfor parıltısı ve buz mavisinden kehribara, yeşil P1'den neon pembeye 12 renk teması. Üç grafik seviyesiyle eski telefonlarda da akıcı çalışır, internetsiz oynanır.
@@ -111,7 +111,7 @@ Defensa de torres idle en una terminal CRT retro: eres el último vértice, un t
 Tu triángulo apunta y dispara solo; tú decides cómo crece. Juega de forma activa o deja el móvil y que siga solo.
 
 ▸ CREA TU BUILD
-Invierte monedas en mejoras permanentes: daño, cadencia, críticos, disparo múltiple, rebote, perforación, blindaje, espinas, regeneración, esquiva, ralentización, empuje y más. Un muro de espinas y blindaje, un cañón de críticos, un enjambre de balas que rebotan: todo build funciona.
+Invierte monedas en mejoras permanentes: daño, cadencia, críticos, disparo múltiple, rebote, perforación, blindaje, espinas, regeneración, parada, ralentización, empuje y más. Un muro de espinas y blindaje, un cañón de críticos, un enjambre de balas que rebotan: todo build funciona.
 
 ▸ TATUAJES
 Invoca 31 tatuajes de cuatro rarezas y fusiona duplicados hasta el nivel 7. Los pasivos dan forma a tu build; los activos añaden un botón a la batalla: congela el campo, revienta a todos los enemigos, dispara a toda velocidad, convierte las bajas en oro o lanza bombas (lógica, viscosa, virus) justo donde toques. Otros hacen estallar a los enemigos congelados en reacciones en cadena. Las probabilidades se muestran en pantalla y hay un épico garantizado en 50 invocaciones.
@@ -123,7 +123,7 @@ Lucha a través de 30 tiers cada vez más peligrosos: corredores, tanques, divis
 Cada semana llegan dos mutadores nuevos que cambian las reglas — horda, cañón de cristal, oleada de jefes, titanes y más — con premios en gemas según la oleada que alcances.
 
 ▸ ACTIVO O IDLE
-Elige la prioridad de objetivo, acelera el juego, usa tus habilidades en el momento justo — o vete. Los ingresos idle siguen sumando mientras no estás, las misiones se renuevan durante el día y los logros premian cada hito.
+Acelera el juego, usa tus habilidades en el momento justo — o activa REINTENTO AUTO y vete. Los ingresos idle siguen sumando mientras no estás, las misiones se renuevan durante el día y los logros premian cada hito.
 
 ▸ ESTILO DE TERMINAL RETRO
 Scanlines, brillo de fósforo y 12 temas de color, del azul hielo al ámbar, el verde P1 y el rosa neón. Funciona fluido en móviles antiguos con tres niveles gráficos y se juega sin conexión.
@@ -152,7 +152,7 @@ Defesa de torre idle num terminal CRT retrô: você é o último vértice, um tr
 Seu triângulo mira e atira sozinho; você decide como ele cresce. Jogue de forma ativa ou largue o celular e deixe rolar.
 
 ▸ MONTE SUA BUILD
-Invista moedas em melhorias permanentes: dano, cadência, críticos, tiro múltiplo, ricochete, perfuração, armadura, espinhos, regeneração, esquiva, lentidão, empurrão e mais. Um muro de espinhos e armadura, um canhão de críticos, um enxame de balas quicando: toda build funciona.
+Invista moedas em melhorias permanentes: dano, cadência, críticos, tiro múltiplo, ricochete, perfuração, armadura, espinhos, regeneração, aparo, lentidão, empurrão e mais. Um muro de espinhos e armadura, um canhão de críticos, um enxame de balas quicando: toda build funciona.
 
 ▸ TATUAGENS
 Invoque 31 tatuagens de quatro raridades e funda duplicatas até o nível 7. As passivas moldam sua build; as ativas colocam um botão na batalha: congele o campo, exploda todos os inimigos, acelere seus disparos, transforme abates em ouro ou lance bombas (lógica, viscosa, vírus) bem onde você tocar. Outras estilhaçam inimigos congelados em reações em cadeia. As chances aparecem na tela e uma épica é garantida em até 50 invocações.
@@ -164,7 +164,7 @@ Lute por 30 tiers cada vez mais perigosos: corredores, tanques, divisores, guard
 Toda semana chegam dois mutadores novos que mudam as regras — horda, canhão de vidro, rush de chefes, titãs e mais — com prêmios em gemas pelas ondas que você alcançar.
 
 ▸ ATIVO OU IDLE
-Escolha a prioridade de alvo, acelere o jogo, use suas habilidades na hora certa — ou saia. A renda idle continua rendendo enquanto você está fora, as missões se renovam ao longo do dia e as conquistas recompensam cada marco.
+Acelere o jogo, use suas habilidades na hora certa — ou ative REPETIR AUTO e saia. A renda idle continua rendendo enquanto você está fora, as missões se renovam ao longo do dia e as conquistas recompensam cada marco.
 
 ▸ VISUAL DE TERMINAL RETRÔ
 Scanlines, brilho de fósforo e 12 temas de cor, do azul gelo ao âmbar, verde P1 e rosa neon. Roda liso em celulares antigos com três níveis gráficos e funciona offline.

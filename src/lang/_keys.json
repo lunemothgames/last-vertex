@@ -18,6 +18,7 @@
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health",
  "+{0}% AT LV{1}",
  "+{0}% BONUS EVERY {1} LEVELS (UNTIL {2})",
+ "-{0} PER HIT",
  "-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts)",
  "// ECO",
  "> ACTIVE TATTOOS GIVE YOU A BUTTON ABOVE THE PERIMETER. TAP IT WHEN IT GLOWS (KEYS 1-5).",

@@ -688,5 +688,6 @@
  "You have a BOMB tattoo. Put it in a slot to throw it in your runs.": "Você tem uma tatuagem de BOMBA. Coloque-a num espaço para lançá-la nas partidas.",
  "HOLD the bomb to put it in a slot. In a run, tap its button, then tap where it should land.": "SEGURE a bomba para colocá-la num espaço. Na partida, toque no botão dela e depois onde ela deve cair.",
  "The target button is gone (it always shoots the enemy in front now); in its place an AUTO button switches AUTO RETRY on and off during a run. END RUN no longer starts the AUTO RETRY countdown.": "O botão de alvo saiu (agora sempre atira no inimigo da frente); no lugar dele, um botão AUTO liga e desliga o REPETIR AUTO durante a partida. ENCERRAR PARTIDA não inicia mais a contagem do REPETIR AUTO.",
- "The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.": "A tela final agora mostra o que te derrubou e quais fontes causaram mais dano. Depois de uma longa sessão de REPETIR AUTO, um breve resumo te recebe na volta."
+ "The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.": "A tela final agora mostra o que te derrubou e quais fontes causaram mais dano. Depois de uma longa sessão de REPETIR AUTO, um breve resumo te recebe na volta.",
+ "-{0} PER HIT": "-{0}/GOLPE"
 }

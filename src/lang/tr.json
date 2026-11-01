@@ -688,5 +688,6 @@
  "You have a BOMB tattoo. Put it in a slot to throw it in your runs.": "Bir BOMBA dövmen var. Turlarda atabilmek için onu bir yuvaya tak.",
  "HOLD the bomb to put it in a slot. In a run, tap its button, then tap where it should land.": "Yuvaya takmak için bombaya BASILI TUT. Turda önce tuşuna, sonra düşeceği yere dokun.",
  "The target button is gone (it always shoots the enemy in front now); in its place an AUTO button switches AUTO RETRY on and off during a run. END RUN no longer starts the AUTO RETRY countdown.": "Hedef tuşu kalktı (artık hep öndeki düşmana ateş ediyor); yerine gelen OTO tuşu, tur sırasında OTO TEKRAR'ı açıp kapatır. TURU BİTİR artık OTO TEKRAR geri sayımını başlatmaz.",
- "The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.": "Tur sonu ekranı artık seni neyin yıktığını ve en çok hasarın nereden geldiğini gösteriyor. Uzun bir OTO TEKRAR sonrası döndüğünde kısa bir özet seni karşılar."
+ "The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.": "Tur sonu ekranı artık seni neyin yıktığını ve en çok hasarın nereden geldiğini gösteriyor. Uzun bir OTO TEKRAR sonrası döndüğünde kısa bir özet seni karşılar.",
+ "-{0} PER HIT": "-{0}/VURUŞ"
 }

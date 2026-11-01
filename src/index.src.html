@@ -385,7 +385,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
   font:13px 'IBM Plex Mono',monospace;padding:0 10px;margin-bottom:10px;user-select:text;-webkit-user-select:text}
 .mbox input.show{display:block}
 .icon-btn .dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--hot);box-shadow:0 0 8px var(--hot)}
-.inbox{max-height:58vh;overflow-y:auto;margin:6px 0 12px}
+.inbox{flex:1 1 auto;min-height:0;overflow-y:auto;margin:6px 0 12px;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
+.inbox::-webkit-scrollbar{width:4px}
+.inbox::-webkit-scrollbar-track{background:transparent}
+.inbox::-webkit-scrollbar-thumb{background:var(--dim)}
+#inboxUI .mbox{display:flex;flex-direction:column;max-height:100%}   /* long notes scroll inside, CLOSE always stays on screen */
 .ibm{border:1px solid var(--dim);padding:8px 10px;margin-bottom:8px}
 .ibm.new{border-color:var(--a)}
 .ibm b{display:block;font-family:'VT323',monospace;font-weight:400;font-size:21px;letter-spacing:.06em;color:var(--a)}
@@ -440,11 +444,10 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #coachTip::before{content:'> ';color:var(--mute)}
 /* ── in-run controls: active tattoo abilities + target priority ── */
 #playUI{pointer-events:none!important;animation:none!important}
-#abil{position:absolute;left:0;right:0;bottom:calc(17% + 8px);display:flex;justify-content:center;gap:6px}
-#abil.hi{bottom:calc(17% + 46px)}   /* 4-5 slots would run into the ad button on the right, so the row sits above it */
+#abil{position:absolute;left:3%;right:3%;bottom:18.2%;display:flex;justify-content:flex-end;gap:6px}   /* just above the perimeter, left of the ad button (renderPlayUI sets right) */
 .abx{pointer-events:none}
 #playUI.armed #abil,#playUI.armed #hAuto,#playUI.armed #spdCtl{visibility:hidden}
-.ab,.abx{width:46px;height:46px}
+.ab,.abx{width:var(--ab,46px);height:var(--ab,46px)}
 .ab{position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
   background:rgba(var(--bg1-rgb),0.7);pointer-events:auto}
 .ab svg.i{width:26px;height:26px}
@@ -3144,7 +3147,10 @@ function syncUI(){
 function renderPlayUI(){
   renderAutoRetry();
   const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
-  $('abil').classList.toggle('hi',IS_APP&&save.tatSlots>=4);
+  // the row ends left of the ad button (its space is kept in the app even while the ad is hidden, so buttons never move); a narrow screen shrinks the buttons
+  const ab=$('abil'),ar=IS_APP?adRect():null,rightPx=ar?GW-ar.x+6:GW*.03,n=save.tatSlots;
+  ab.style.right=(rightPx/GW*100).toFixed(2)+'%';
+  ab.style.setProperty('--ab',Math.max(34,Math.min(46,Math.floor((GW-rightPx-GW*.03-(n-1)*6)/n)))+'px');
   // one fixed cell per tattoo slot, so a button never moves when another slot changes
   $('abil').innerHTML=activeIds().length?Array.from({length:save.tatSlots},(_,i)=>{const id=save.equipped[i];
     return isAct(id)?`<button class="ab" data-act="${id}" aria-label="${TT[id].name} (${i+1})">${I(TT[id].icon)}<i></i><b></b></button>`:'<span class="abx"></span>';}).join(''):'';
@@ -3437,6 +3443,8 @@ $('mBoosts').addEventListener('click',e=>{
 });
 
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
+// ARMOR's flat part at this level with your max health now (the shop row shows it, stats().block uses the same formula)
+const armorFlat=lv=>{const f=stats().maxHp*ECO.blockK*armorRed(uVal(PU.defense,lv));return f<10?f.toFixed(1):fmtN(f);};
 function openShop(tab){if(tab)shopTab=tab;pendingTheme=null;snd('click');renderShop();$('shopPanel').classList.add('open');$('shopPanel').querySelector('.scroll').scrollTop=0;}
 function closeShop(){snd('click');$('shopPanel').classList.remove('open');renderMenu();}
 $('shopBack').addEventListener('click',closeShop);
@@ -3496,7 +3504,7 @@ function renderShop(){
         pips=`<div class="pips">${'<i class="on"></i>'.repeat(20)}</div><em>LV${fmtN(lv)} · ${T('NO LEVEL CAP')}</em>`;
       }else{
         const np=Math.min(u.max,20),on=Math.floor(lv/u.max*np);
-        pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} / ${u.max}</em>`;
+        pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv}${u.id==='defense'?' · '+T('-{0} PER HIT',armorFlat(lv)):' / '+u.max}</em>`;
       }
       const btn=maxed?T('MAX'):n>0?`<span>${I('coin')}${fmtP(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtP(upCost(u,lv))}</span>`;
       const cls=maxed?' max':n>0?'':' no';
@@ -4527,7 +4535,7 @@ if(!Array.isArray(save.inboxSeen))save.inboxSeen=(save.life&&save.life.runs)?[]:
 const inboxUnread=()=>INBOX.filter(m=>!save.inboxSeen.includes(m.id)).length;
 function renderInboxDot(){$('mInboxDot').style.display=inboxUnread()?'':'none';}
 function openInbox(){
-  $('ibList').innerHTML=INBOX.map(m=>`<div class="ibm${save.inboxSeen.includes(m.id)?'':' new'}"><b>${T(m.name)}</b><i>${m.date}</i><ul>${m.lines.map(l=>'<li>'+T(l.text)+'</li>').join('')}</ul></div>`).join('');
+  $('ibList').innerHTML=INBOX.map(m=>`<div class="ibm${save.inboxSeen.includes(m.id)?'':' new'}"><b>${T(m.name)}</b><i>${m.date.split('-').reverse().join('/')}</i><ul>${m.lines.map(l=>'<li>'+T(l.text)+'</li>').join('')}</ul></div>`).join('');
   $('inboxUI').classList.add('show');$('ibList').scrollTop=0;snd('click');
   save.inboxSeen=INBOX.map(m=>m.id);persist();renderInboxDot();track('inbox_open');
 }

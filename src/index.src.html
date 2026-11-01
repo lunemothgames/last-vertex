@@ -158,6 +158,9 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 
 /* ── dead ── */
 #deadUI{justify-content:center;padding:0 22px;background:rgba(var(--bg1-rgb),0.82)}
+.d-title{font-family:'VT323',monospace;font-size:60px;color:var(--hot);text-shadow:0 0 16px var(--hot);text-align:center;letter-spacing:.06em;line-height:.85;margin-bottom:12px;white-space:nowrap}
+.d-title span{animation:blink 1s steps(1) infinite}
+@media (max-height:660px){.d-title{font-size:48px}}   /* short screens: room for all result rows */
 .d-best{text-align:center;font-family:'VT323',monospace;font-size:24px;color:var(--a2);margin-bottom:10px;display:none;animation:blink 1.2s steps(1) infinite}
 .d-best.show{display:block}
 .dstats{border:1px dashed var(--dim);padding:8px 12px;margin-bottom:22px}
@@ -518,7 +521,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .tlv{width:100%;border-collapse:collapse;margin-top:10px;font-family:'VT323',monospace;font-size:17px;line-height:1}
 .tlv th{font-weight:400;font-size:13px;letter-spacing:.06em;color:var(--mute);text-align:right;padding:0 4px 5px;border-bottom:1px solid var(--dim);text-shadow:none}
 .tlv th:first-child,.tlv td:first-child{text-align:left}
-.tlv td{text-align:right;padding:3px 4px;color:var(--a)}
+.tlv td{text-align:right;padding:3px 4px;color:var(--a);white-space:nowrap}
 .tlv td.cp{color:var(--mute);font-size:14px;text-shadow:none}
 .tlv tr.past td{color:var(--mute);text-shadow:none}
 .tlv tr.now td{background:rgba(var(--rc-rgb,var(--a-rgb)),0.18);color:var(--a2);text-shadow:0 0 6px var(--glow)}
@@ -589,7 +592,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
 <symbol id="i-burst" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 6l-3.4 5.3L22 14l-6.2.6L17 21l-5-3.8L7 21l1.2-6.4L2 14l5.4-2.7L4 6l6.2 2.2z"/></symbol>
 <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h6"/></symbol>
-<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3c4 5 6 8.5 6 11.5a6 6 0 0 1-12 0C6 11.5 8 8 12 3z"/></symbol>
+<symbol id="i-salvage" viewBox="0 0 24 24"><path d="M19.5 9A8 8 0 0 0 5 6.5"/><path d="M5 2.5v4h4"/><path d="M4.5 15A8 8 0 0 0 19 17.5"/><path d="M19 21.5v-4h-4"/><path d="M12 9v6M9 12h6"/></symbol>
 <symbol id="i-multi" viewBox="0 0 24 24"><path d="M12 21V4M9 7l3-3 3 3"/><path d="M6 21L4 8M2.5 11L4 8l2.8 2.4"/><path d="M18 21l2-13M17.2 10.4L20 8l1.5 3"/></symbol>
 <symbol id="i-spiral" viewBox="0 0 24 24"><path d="M12 12A1.5 1.5 0 0 1 15 12A3 3 0 0 1 9 12A4.5 4.5 0 0 1 18 12A6 6 0 0 1 6 12A7.5 7.5 0 0 1 21 12"/></symbol>
 <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="4"/><path d="M12 12l6-6"/></symbol>
@@ -727,6 +730,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 
   <!-- DEAD -->
   <div class="layer" id="deadUI">
+    <div class="d-title">SIGNAL<br>LOST<span>_</span></div>
     <div class="d-best" id="dBest">★ NEW BEST WAVE ★</div>
     <div class="dstats" id="dStats"></div>
     <div class="row2">
@@ -1426,7 +1430,7 @@ const PERM_UPGRADES=[
    info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
   {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:167,  start:0,  step:.03,  fx:v=>'+'+pc(v),
    info:'Extra damage against bosses (every 10th wave), and half as much against elites and big enemies (TANK, ARMORED), from bullets, lightning and blasts.'},
-  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:100,  start:0,  step:.04,  fx:v=>'+'+pc(v),
+  {id:'execute',   cat:'atk', name:'REAPER',     icon:'skull', base:250, g:1.05, max:100,  start:0,  step:.04,  fx:v=>'+'+pc(v),
    info:'Extra bullet damage against enemies below half of their health, to finish off wounded enemies faster.'},
   {id:'cooldown',  cat:'atk', name:'COOLDOWN',   icon:'clock', base:400, g:1.09, max:100,  start:0,  step:.0025,fx:v=>'-'+pc(v),
    info:'Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.'},
@@ -1441,7 +1445,7 @@ const PERM_UPGRADES=[
    info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'wind',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
    info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo.'},
-  {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'drop',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
+  {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'salvage',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
    info:'Every enemy that dies close to the perimeter (from thorns, bullets or anything else) heals you this share of your max health. A boss heals 10 times as much.'},
   {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
@@ -1495,10 +1499,10 @@ const TAT_TYPES=[
   {id:'mend',        name:'RAMPART',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],guard:[6,12],cd:[45,28]},
    desc:x=>T('ACTIVE · heals {0} of your max health at once, then for {1}s every enemy that touches the perimeter is destroyed (bosses still hit)',pc(x.heal),x.guard.toFixed(1))+cdTxt(x)},
   {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:1,w:5,  v:{p:[.1,.3],n:[2,5]},   desc:x=>T('{0} of your bullets are piercing rounds: they go straight through the first {1} enemies they hit and fly on',pc(x.p),Math.round(x.n))},
-  {id:'reaper',      name:'REAPER',   icon:'skull', rar:1,w:5,  v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
+  {id:'reaper',      name:'EXECUTE',  icon:'exec',  rar:1,w:5,  v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
   {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:1,w:5,  v:{cd:[6,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely: that enemy is destroyed (a boss is pushed back) and the ones next to it are pushed back · recharges in {0}s',x.cd.toFixed(1))},
   {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:1,w:5,  v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses, elites and big enemies (TANK, ARMORED)',pc(x.b))},
-  {id:'lifesteal',   name:'SALVAGE',  icon:'drop',  rar:1,w:5,  v:{l:[.012,.06]},          desc:x=>T('+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health',pc2(x.l))},
+  {id:'lifesteal',   name:'SALVAGE',  icon:'salvage',  rar:1,w:5,  v:{l:[.012,.06]},          desc:x=>T('+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health',pc2(x.l))},
   {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:1,w:5,  v:{p:[.05,.12]},
    desc:x=>T('a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p))},
   // ── epic: build cores + offensive actives
@@ -3661,7 +3665,7 @@ function tatCell(v,f){
   const p=v*100,pct=(p<10&&p%1?p.toFixed(1):Math.round(p))+'%';
   return f==='+%'?'+'+pct:f==='-%'?'-'+pct:f==='%'?pct:f==='%2'?p.toFixed(2)+'%':f==='+x'?'+x'+v.toFixed(2)
     :f==='x2'?'x'+v.toFixed(2):f==='x'?'x'+(v<10?v.toFixed(1):Math.round(v)):f==='s'?v.toFixed(1)+'s':f==='n'?String(Math.round(v))
-    :f==='1/n'?'1 / '+Math.round(v):f==='+r'?'+'+(v*100).toFixed(1):String(v);
+    :f==='1/n'?'1/'+Math.round(v):f==='+r'?'+'+(v*100).toFixed(1):String(v);
 }
 // chart: every level's values; passed levels dim, current highlighted, copies needed on the right
 function tatChart(t,lv){
@@ -3679,7 +3683,7 @@ function tatInfo(t){
   const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('INK CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
   if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Ink to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
   const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE INK POOL');
-  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('equipped')})</b>`:'')+odds+tatChart(t,c.lv);
+  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('EQUIPPED')})</b>`:'')+odds+tatChart(t,c.lv);
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):''} · ${status}`,true);
 }
 function toggleEquip(t){
@@ -4195,7 +4199,7 @@ $('helpList').addEventListener('click',e=>{
 
 // ── FIT TEXT ──
 // Translations can be longer than the English: headers and buttons shrink their font until the text fits.
-const FIT_SEL='.adbtn span,.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#hAuto span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.p-title,.logo';
+const FIT_SEL='.adbtn span,.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#hAuto span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.d-title,.p-title,.logo';
 function fitText(){
   for(const el of document.querySelectorAll(FIT_SEL)){
     if(!el.offsetParent)continue;
@@ -4512,8 +4516,9 @@ const INBOX=[
     {text:'AEGIS now destroys the enemy it blocks, SLAYER also hits elites and big enemies, REGEN heals faster when your health is low, and PARRY, RICOCHET and MIDAS got better numbers.'},
     {text:'Tattoo rarities have new names: COMMON, RARE, EPIC and MYTHIC (old UNCOMMON is now RARE, old RARE is EPIC, old EPIC is MYTHIC). Several tattoos also moved to the rarity that fits their strength.'},
     {text:'PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.'},
-    {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), EXECUTE works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
+    {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), REAPER (was EXECUTE) works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
     {text:'Quests now pay far more coins: a round amount set by your best wave.'},
+    {text:'Two names swapped to fit what they do: the shop upgrade EXECUTE is now REAPER, and the REAPER tattoo (instant kills) is now EXECUTE.'},
     {text:'STASIS freezes enemies longer and recharges faster.'},
     {text:'BURST is now a brawler: pellets hit harder the closer the enemy is, go through armor and shields, and every kill close to the perimeter heals you a little.'},
     {text:'RANGE is gone from the shop: the new COOLDOWN upgrade takes its place and shortens the cooldown of every active tattoo and bomb (up to -25%). Coins spent on RANGE were refunded.'},

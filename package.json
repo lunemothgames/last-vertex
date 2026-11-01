@@ -1,6 +1,6 @@
 {
   "name": "last-vertex",
-  "version": "0.6.9",
+  "version": "0.7.0",
   "private": true,
   "description": "Last Vertex: Idle Defense — retro terminal idle defense PWA",
   "scripts": {

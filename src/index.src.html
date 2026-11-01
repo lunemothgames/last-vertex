@@ -1301,7 +1301,7 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
 // The brawler (2026-11-01): point-blank = a pellet hits x near at the muzzle, falling to x far at the end of its way · heal = share of
 // max health healed by every kill close above the perimeter (SALVAGE's zone, adds to SALVAGE) · bare = pellets go through armor and shields.
-// AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
+// AUTO RETRY (sold in the shop from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
 const AUTO_RETRY={tier:2,share:.35,wait:5,saveMs:50,summaryMs:300000},ECO_WAKE=15;   // summaryMs: no touch for 5 min = "away"
 const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2,near:1.8,far:.6,heal:.02,bare:true};
 // point-blank factor of a pellet that has flown d of its whole way len
@@ -1451,7 +1451,7 @@ const PERM_UPGRADES=[
   {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
   {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
-   info:'Chance that a bullet slows the enemy it hits for 3 seconds. How much it slows is set by SLOW POWER. Max 80%.'},
+   info:'Chance that a bullet slows the enemy it hits for 4 seconds. How much it slows is set by SLOW POWER. Max 80%.'},
   {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:83,  start:0,  step:.006, fx:v=>pc(v),
    info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage.'},
   // ── utility
@@ -1462,11 +1462,11 @@ const PERM_UPGRADES=[
   {id:'bounty',    cat:'util',name:'WAVE BOUNTY',icon:'flag',  base:200, g:1.08, max:100,  start:0,  step:.1,   fx:v=>'x'+v.toFixed(1),
    info:'A reward for surviving: each time a new wave starts you get coins worth this many basic enemies of that wave.'},
   {id:'gameSpeed', cat:'util',name:'GAME SPEED', icon:'ff', base:2500,g:1.7,  max:40,   start:1,  step:.1,   fx:v=>'x'+v.toFixed(1),
-   info:'Makes the whole game run faster (enemies, bullets, wave timers), so you earn more per minute. In a run, the speed button switches between x1.0 and the speed you\'ve bought. Max x5.'},
+   info:'Makes the whole game run faster (enemies, bullets, wave timers), so you earn more per minute. In a run, every tap of the speed button goes 0.5 faster, up to the speed you\'ve bought, then back to x1.0. Max x5.'},
   {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),
    info:'While the game is closed you earn this share of your average coins per second from recent runs. Up to 8 hours count per day; collect it when you come back.'},
   {id:'autoRetry', cat:'util',name:'AUTO RETRY', icon:'retry', base:25000,g:1,  max:1,    start:0,  step:1,    from:2, fx:v=>v>=1?T('ON'):T('OFF'),
-   info:'Bought once, kept forever. Switch it on in the pause menu, on the result screen or with the AUTO button in a run: after a death the same tier starts again by itself. Runs started this way pay a third of the coins. Choose how the screen looks while it runs: FULL, ECO (cooler) or ECO+ (black screen). Sold from Tier 2.'},
+   info:'Bought once, kept forever. Switch it on in the pause menu, on the result screen or with the AUTO button in a run: after a death the same tier starts again by itself. Runs started this way pay 35% of the coins and find fewer gems. Choose how the screen looks while it runs: FULL, ECO (cooler) or ECO+ (black screen). Sold from Tier 2.'},
 ];
 const PU=Object.fromEntries(PERM_UPGRADES.map(u=>[u.id,u]));
 const permVal=id=>{const u=PU[id];return uVal(u,Math.min(u.max,save.perm[id]||0));};
@@ -2124,7 +2124,7 @@ function spawnWave(){
 function hurt(e,dmg,quiet,src){dmgBy(src,Math.min(dmg,Math.max(0,e.hp)));e.hp-=dmg;runDmgDealt+=dmg;if(quiet)return;e.hitFlash=.18;dmgText(e,dmg,false);}
 // blast push (NOVA, SHOCKWAVE, LOGIC BOMB): bosses are not pushed, a stronger push already running is kept
 const knock=(e,m)=>{if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*m);};
-// extra damage against bosses (BOSS HUNTER + SLAYER) and against elites and big types (SLAYER only)
+// extra damage against bosses (BOSS HUNTER + SLAYER) and against elites and big types (SLAYER, BOSS HUNTER at half)
 const vsDmg=(e,st)=>e.boss?st.bossDmg:e.big?st.bigDmg:1;
 // inside a blast circle of radius R around (x,y), counting the enemy's own size
 const inBlast=(o,x,y,R)=>{const dx=o.x-x,dy=o.y-y,r=R+o.sz*.5;return dx*dx+dy*dy<=r*r;};
@@ -4129,6 +4129,11 @@ function enemyRow(key,col,name,text){
   const dash=key==='elite'?' stroke-dasharray="3 2"':'';
   return `<svg viewBox="0 0 24 24" style="stroke:${col}"><path d="${HELP_SHAPES[key]}"${dash}/></svg><div><b>${name}</b><br>${text}</div>`;
 }
+// where a late enemy type first shows up on the normal way up: the tier where it comes before the next tier opens
+function firstMeet(k){
+  const f=ENEMY_TYPES[k].from;let t=1;while(f-(t-1)*TIERS.offset>TIERS.unlockWave)t++;
+  return T('From tier {0}, wave {1}.',t,Math.max(1,f-(t-1)*TIERS.offset))+' ';
+}
 // odds shown to the player come from the live pool, so they stay true once tattoos max out and leave it
 function oddsGrid(){
   const pool=tatPool(),tot=pool.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];pool.forEach(t=>by[t.rar]+=t.w);
@@ -4149,7 +4154,7 @@ const HELP_TOPICS=[
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight and hit harder the closer the enemy is (x{0} at the triangle, x{1} at the end of their way). They go through armor and shields, and one that kills flies on with the damage it has left. Every kill close to the perimeter heals you {2} of your max health (on top of SALVAGE). MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.',BURST.near,BURST.far,pc(BURST.heal))}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 50 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
-    <p>${T('AUTO RETRY (in the shop from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
+    <p>${T('AUTO RETRY (in the shop from Tier {0}): switch it on in the pause menu, on the result screen or with the AUTO button in a run, and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],
@@ -4161,9 +4166,9 @@ const HELP_TOPICS=[
     enemyRow('splitter',r[2],T('SPLITTER'),T('Breaks into two small SHARDS when it dies.')),
     enemyRow('armored',r[3],T('ARMORED'),T('Bullets weaker than a tenth of its health are cut in proportion. Strong hits, blasts and BURST pellets get through.')),
     enemyRow('ghost',r[1],T('GHOST'),T('Fades out for a moment: bullets pass through it. Blasts and thorns still hit.')),
-    enemyRow('warden',r[2],T('WARDEN'),T('From tier 3. A strong shield soaks bullets until it breaks; thorns, blasts and BURST pellets go around it.')),
-    enemyRow('mender',r[1],T('MENDER'),T('From tier 8. Heals the enemies around it, so take it out first.')),
-    enemyRow('blinker',r[3],T('BLINKER'),T('From tier 11. Jumps forward every few seconds.')),
+    enemyRow('warden',r[2],T('WARDEN'),firstMeet('warden')+T('A strong shield soaks bullets until it breaks; thorns, blasts and BURST pellets go around it.')),
+    enemyRow('mender',r[1],T('MENDER'),firstMeet('mender')+T('Heals the enemies around it, so take it out first.')),
+    enemyRow('blinker',r[3],T('BLINKER'),firstMeet('blinker')+T('Jumps forward every few seconds.')),
     enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),
     enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, parry and AEGIS reduce them.')),
   ].join('')+`</div>`;}],

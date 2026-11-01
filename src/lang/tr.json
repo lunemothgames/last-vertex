@@ -217,7 +217,7 @@
  "Equip or unequip it": "Tak ya da çıkar",
  "Event waves pay about the same coins as normal ones; they only change how the fight plays out.": "Olay dalgaları normal dalgalarla aşağı yukarı aynı parayı verir; sadece savaşın gidişatını değiştirir.",
  "Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, parry and AEGIS reduce them.": "Her 10. dalga, sırayla dört türden biri: şard çağırır, kalkan taşır (BULWARK), koşucu çağırır (SWARMLORD) ya da iyileşir (REGENERATOR). Can yarının altında öfkelenir. Şok dalgaları sana doğrudan zarar verir; zırh, savuşturma ve AEGIS bunları azaltır.",
- "Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.": "Bir düşman sınıra her vurduğunda (savuştursan bile) MAKSİMUM canının bu kadarını kaybeder. Bosslar dörtte birini alır. Mağazadan en fazla %50; THORNS dövmesiyle %100'e kadar, yani tek dokunuşta ölür.",
+ "Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).": "Bir düşman sınıra her vurduğunda (savuştursan bile) MAKSİMUM canının bu kadarını kaybeder. Mağazadan en fazla %50; THORNS dövmesiyle %122'ye kadar. %100 tek dokunuşta öldürür. Bosslar dörtte birini, artı %100'ün üstündekinin yarısını alır (en fazla %36: 3 dokunuş).",
  "Extra copies level it up by themselves, up to LV7": "Ek kopyalar onu kendiliğinden yükseltir, LV7'ye kadar",
  "FIRE RATE": "ATIŞ HIZI",
  "FIRST HUNDRED": "İLK YÜZ",
@@ -403,7 +403,6 @@
  "REACH WAVE {0}": "{0}. DALGAYA ULAŞ",
  "REACH WAVE {0} IN TIER {1}": "TIER {1}'DE {0}. DALGAYA ULAŞ",
  "READY IN {0}": "{0} SONRA HAZIR",
- "REAP": "BİÇİLDİ",
  "REAPER": "BİÇER",
  "RECHARGE": "DOLUM",
  "RED ALERT": "KIRMIZI ALARM",
@@ -693,5 +692,6 @@
  "-{0} PER HIT": "-{0}/VURUŞ",
  "PIERCES": "DELME",
  "SIGNAL": "SİNYAL",
- "LOST": "KAYBOLDU"
+ "LOST": "KAYBOLDU",
+ "EXECUTED": "İNFAZ EDİLDİ"
 }

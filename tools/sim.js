@@ -173,7 +173,7 @@ function run0(tier,maxW,o){
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
       else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0));hp-=taken;tdmg+=taken;tdAll+=taken;}
       tcontacts++;
-      const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;tdealt+=th;
+      const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;
       // B6-2 test: ECO.contactDie = share of its max health an enemy loses per perimeter hit (like free thorns, pays coins); 1 = it is spent
       // (no coins, no shards) unless ECO.contactPay
       if(ECO.contactDie>=1&&!ECO.contactPay&&!e.boss){e.coin=0;e.hp=0;e.cx=1;}else if(ECO.contactDie&&!e.boss){const d=Math.min(e.hp,e.max*ECO.contactDie);e.hp-=d;tdealt+=d;}

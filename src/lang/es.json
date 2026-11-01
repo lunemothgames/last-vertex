@@ -217,7 +217,7 @@
  "Equip or unequip it": "Equípalo o quítalo",
  "Event waves pay about the same coins as normal ones; they only change how the fight plays out.": "Las oleadas con evento pagan casi las mismas monedas que las normales; solo cambian cómo se desarrolla el combate.",
  "Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, parry and AEGIS reduce them.": "Cada 10.ª oleada, en cuatro tipos que se turnan: llama fragmentos, lleva escudo (BULWARK), llama corredores (SWARMLORD) o se cura (REGENERATOR). Se enfurece por debajo de la mitad de vida. Sus ondas de choque te dañan directamente; armadura, parada y AEGIS las reducen.",
- "Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.": "Cada vez que un enemigo golpea el perímetro (aunque pares el golpe) pierde esta parte de su vida MÁXIMA. Los jefes reciben un cuarto. Máx. 50% desde la tienda; con el tatuaje THORNS hasta el 100%, así que un toque lo mata.",
+ "Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).": "Cada vez que un enemigo golpea el perímetro (aunque pares el golpe) pierde esta parte de su vida MÁXIMA. Máx. 50% desde la tienda; con el tatuaje THORNS hasta el 122%. El 100% mata de un toque. Los jefes reciben un cuarto, más la mitad de lo que pase del 100% (36% como máximo: 3 toques).",
  "Extra copies level it up by themselves, up to LV7": "Las copias extra lo suben de nivel solas, hasta NV7",
  "FIRE RATE": "CADENCIA",
  "FIRST HUNDRED": "PRIMEROS CIEN",
@@ -403,7 +403,6 @@
  "REACH WAVE {0}": "LLEGA A LA OLEADA {0}",
  "REACH WAVE {0} IN TIER {1}": "LLEGA A LA OLEADA {0} EN EL TIER {1}",
  "READY IN {0}": "LISTO EN {0}",
- "REAP": "SIEGA",
  "REAPER": "SEGADOR",
  "RECHARGE": "RECARGA",
  "RED ALERT": "ALERTA ROJA",
@@ -693,5 +692,6 @@
  "-{0} PER HIT": "-{0}/GOLPE",
  "PIERCES": "PERFORA",
  "SIGNAL": "SEÑAL",
- "LOST": "PERDIDA"
+ "LOST": "PERDIDA",
+ "EXECUTED": "EJECUTADO"
 }

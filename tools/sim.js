@@ -212,14 +212,14 @@ function run0(tier,maxW,o){
     const towards=(ox,oy,px,py,from,hits)=>{const L=Math.hypot(px-ox,py-oy)||1;return along(ox,oy,(px-ox)/L,(py-oy)/L,from,Infinity,hits);};
     // a bullet that reached e, coming from (ox,oy). Game order: pierce first (it flies on along its line), else maybe a ricochet
     // to the nearest other enemy from the hit point (it homes in on that one)
-    const follow=(e,m,ox,oy,hits,bounces)=>{let aimed=0;
+    const follow=(e,m,ox,oy,hits,bounces)=>{let pd=0;const pr=st.pierceP&&Math.random()<st.pierceP?st.pierceN:0;
       for(;;){
         const c=bulletHit(e,m);hits.add(e);
         // REACH (game): a bullet that kills turns to the nearest other enemy with st.carry of the damage it had left
         if(c>0&&st.carry){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||o.ph||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
           if(nx){m*=c*st.carry;ox=e.x;oy=e.y;e=nx;continue;}}
-        // PIERCER (game): once per bullet, a st.pAim chance to go through and turn to the nearest enemy further up the field (smaller y)
-        if(st.pAim&&!aimed&&Math.random()<st.pAim){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||o.ph||hits.has(o)||o.y>=e.y)continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}if(nx){qe('pierce');aimed=1;ox=e.x;oy=e.y;e=nx;continue;}}
+        // PIERCER (game): a piercing round (st.pierceP chance) goes straight through its first st.pierceN enemies, then shop PIERCE's chance
+        if(pd<pr){pd++;qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
           if(nx&&!nx.ph){bounces++;ox=e.x;oy=e.y;e=nx;continue;}}

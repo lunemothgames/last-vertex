@@ -666,11 +666,11 @@
  "Extra damage against bosses (every 10th wave), and half as much against elites and big enemies (TANK, ARMORED), from bullets, lightning and blasts.": "Bosslara (her 10. dalga) mermi, yıldırım ve patlamalarla ek hasar; elitlere ve iri düşmanlara (TANK, ARMORED) bunun yarısı.",
  "MYTHIC": "DESTANSI",
  "Tattoo rarities have new names: COMMON, RARE, EPIC and MYTHIC (old UNCOMMON is now RARE, old RARE is EPIC, old EPIC is MYTHIC). Several tattoos also moved to the rarity that fits their strength.": "Dövme nadirliklerinin adları değişti: YAYGIN, NADİR, EPİK ve DESTANSI (eski SEYREK artık NADİR, eski NADİR artık EPİK, eski EPİK artık DESTANSI). Bazı dövmeler de gücüne uyan nadirliğe taşındı.",
- "PIERCER has a new job: a bullet can go through the enemy it hits and turn to the nearest enemy behind it. RAMPART guards much longer and recharges faster.": "DELİCİ'nin yeni bir görevi var: mermi vurduğu düşmanı delip arkasındaki en yakın düşmana dönebilir. SUR çok daha uzun korur ve daha hızlı dolar.",
+ "PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.": "PIERCER'in yeni bir işi var: mermilerinin bir kısmı delici mermidir ve sıradaki birkaç düşmanın içinden dümdüz geçer (seviye arttıkça daha fazla). RAMPART çok daha uzun korur ve daha hızlı dolar.",
  "Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), EXECUTE works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.": "Mağaza: BOSS AVCISI artık elitlere ve iri düşmanlara da (yarı güçle) işler, İNFAZ canı yarının altına inen düşmanlarda daha büyük bonusla çalışır, DELME ve SEKME daha ucuz.",
  "Quests now pay far more coins: a round amount set by your best wave.": "Görevler artık çok daha fazla para veriyor: en iyi dalgana göre belirlenen düz bir miktar.",
  "STASIS freezes enemies longer and recharges faster.": "STASIS düşmanları daha uzun dondurur ve daha hızlı dolar.",
- "{0} chance that a bullet goes through the enemy it hits and turns to the nearest enemy behind it (once per bullet)": "merminin vurduğu düşmanı delip arkasındaki en yakın düşmana dönme şansı {0} (mermi başına bir kez)",
+ "{0} of your bullets are piercing rounds: they go straight through the first {1} enemies they hit and fly on": "Mermilerinin {0} kadarı delici mermidir: çarptığı ilk {1} düşmanın içinden dümdüz geçip yoluna devam eder",
  "RANGE is gone from the shop: the new COOLDOWN upgrade takes its place and shortens the cooldown of every active tattoo and bomb (up to -25%). Coins spent on RANGE were refunded.": "MENZİL mağazadan kalktı: yerine gelen yeni BEKLEME geliştirmesi her aktif dövmenin ve bombanın bekleme süresini kısaltır (en fazla -%25). MENZİL'e harcadığın paralar geri verildi.",
  "Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.": "Her aktif dövmenin (◆) bekleme süresini kısaltır, bombalar dahil. En fazla -%25.",
  "Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the OVERKILL tattoo moves that line up.": "Üçgenin kendi nişan alır ve ateş eder. Yalnızca noktalı MENZİL çizgisinin altındaki düşmanlara ateş eder; AMANSIZ dövmesi bu çizgiyi yukarı taşır.",
@@ -689,5 +689,6 @@
  "HOLD the bomb to put it in a slot. In a run, tap its button, then tap where it should land.": "Yuvaya takmak için bombaya BASILI TUT. Turda önce tuşuna, sonra düşeceği yere dokun.",
  "The target button is gone (it always shoots the enemy in front now); in its place an AUTO button switches AUTO RETRY on and off during a run. END RUN no longer starts the AUTO RETRY countdown.": "Hedef tuşu kalktı (artık hep öndeki düşmana ateş ediyor); yerine gelen OTO tuşu, tur sırasında OTO TEKRAR'ı açıp kapatır. TURU BİTİR artık OTO TEKRAR geri sayımını başlatmaz.",
  "The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.": "Tur sonu ekranı artık seni neyin yıktığını ve en çok hasarın nereden geldiğini gösteriyor. Uzun bir OTO TEKRAR sonrası döndüğünde kısa bir özet seni karşılar.",
- "-{0} PER HIT": "-{0}/VURUŞ"
+ "-{0} PER HIT": "-{0}/VURUŞ",
+ "PIERCES": "DELME"
 }

@@ -1494,7 +1494,7 @@ const TAT_TYPES=[
   {id:'reach',       name:'OVERKILL',    icon:'range', rar:1,w:5,  v:{r:[.06,.2],s:[.3,.75]}, desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner · a bullet that kills flies on to the nearest enemy with {1} of the damage it had left',(x.r*100).toFixed(1),pc(x.s))},
   {id:'mend',        name:'RAMPART',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],guard:[6,12],cd:[45,28]},
    desc:x=>T('ACTIVE · heals {0} of your max health at once, then for {1}s every enemy that touches the perimeter is destroyed (bosses still hit)',pc(x.heal),x.guard.toFixed(1))+cdTxt(x)},
-  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:1,w:5,  v:{p:[.04,.15]},           desc:x=>T('{0} chance that a bullet goes through the enemy it hits and turns to the nearest enemy behind it (once per bullet)',pc(x.p))},
+  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:1,w:5,  v:{p:[.1,.3],n:[2,5]},   desc:x=>T('{0} of your bullets are piercing rounds: they go straight through the first {1} enemies they hit and fly on',pc(x.p),Math.round(x.n))},
   {id:'reaper',      name:'REAPER',   icon:'skull', rar:1,w:5,  v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
   {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:1,w:5,  v:{cd:[6,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely: that enemy is destroyed (a boss is pushed back) and the ones next to it are pushed back · recharges in {0}s',x.cd.toFixed(1))},
   {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:1,w:5,  v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses, elites and big enemies (TANK, ARMORED)',pc(x.b))},
@@ -1666,7 +1666,8 @@ function stats(){
     frostVuln: 1+Math.min(.5,v('slowAmt')+tb('frost').a)+tb('frost').vuln,
     rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-tb('reach').r*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-tb('reach').r)),
     pierce:    v('pierce'),
-    pAim:      tb('piercer').p||0,     // PIERCER tattoo: chance (once per bullet) to go through an enemy and home in on the nearest one behind it
+    pierceP:   tb('piercer').p||0,               // PIERCER tattoo: chance that a bullet is a piercing round...
+    pierceN:   Math.round(tb('piercer').n||0),   // ...that goes straight through this many enemies (then shop PIERCE's chance)
     carry:     tb('reach').s||0,       // REACH tattoo: a bullet that kills flies on to the nearest enemy with this share of the damage it had left
     waveHeal:  (T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
@@ -2495,11 +2496,9 @@ function updatePlay(dt){
         if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
           b.dmg*=(1-hpBefore/dmg)*st.carry;b.vx=dx/l*sp;b.vy=dy/l*sp;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;break;}
       }
-      // PIERCER: once per bullet (not a BURST pellet), a chance to go through and turn to the nearest enemy further up the field
-      if(st.pAim&&b.left===undefined&&!b.aimed&&Math.random()<st.pAim){const hits=b.hits||(b.hits=new Set());hits.add(e);let nx=null,nd=Infinity;
-        for(const o of enemies){if(hits.has(o)||o.hp<=0||o.phased||o.y>=e.y)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
-        if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;qEvent('pierce');
-          b.vx=dx/l*sp;b.vy=dy/l*sp;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;b.aimed=1;break;}}
+      // PIERCER: a piercing round (rolled at its first hit; not a BURST pellet) goes straight through its first st.pierceN enemies
+      if(b.pr===undefined)b.pr=b.left===undefined&&Math.random()<st.pierceP?st.pierceN:0;
+      if((b.pd||0)<b.pr){b.pd=(b.pd||0)+1;(b.hits||(b.hits=new Set())).add(e);if(b.tgt===e)b.tgt=null;qEvent('pierce');continue;}
       if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);if(b.tgt===e)b.tgt=null;qEvent('pierce');continue;}
       // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
       if(b.bounces<st.chain&&Math.random()<st.bounce){
@@ -3650,7 +3649,7 @@ const TAT_COLS={
   frost:[['c','SLOW %','+%'],['a','SLOW PWR','+%'],['vuln','BONUS DMG','+%']],reach:[['r','RANGE','+r'],['s','CARRY','%']],
   stasis:[['dur','FREEZE','s'],['cd','COOLDOWN','s']],mend:[['heal','HEAL','%'],['guard','GUARD','s'],['cd','COOLDOWN','s']],
   aegis:[['cd','RECHARGE','s']],boss_slayer:[['b','BOSS DMG','+%']],reaper:[['k','KILLS BELOW','%']],
-  lifesteal:[['l','HEAL / KILL','%2']],piercer:[['p','PIERCE','+%']],
+  lifesteal:[['l','HEAL / KILL','%2']],piercer:[['p','CHANCE','%'],['n','PIERCES','n']],
   nova:[['m','BLAST','x'],['cd','COOLDOWN','s']],overdrive:[['m','FIRE RATE','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
   ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shatter:[['p','BURST','%']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
   twin:[['m','TWIN DMG','%']],arc:[['every','EVERY','1/n'],['n','TARGETS','n'],['m','DMG EACH','%']],
@@ -4512,7 +4511,7 @@ const INBOX=[
     {text:'Three tattoos have a new job and a new name: CRIT DMG is now CRIT BLAST (a critical hit splashes onto the enemies around it), REACH is now OVERKILL (a bullet that kills flies on to the next enemy) and MEND is now RAMPART (after healing, every enemy that touches the perimeter is destroyed for a few seconds).'},
     {text:'AEGIS now destroys the enemy it blocks, SLAYER also hits elites and big enemies, REGEN heals faster when your health is low, and PARRY, RICOCHET and MIDAS got better numbers.'},
     {text:'Tattoo rarities have new names: COMMON, RARE, EPIC and MYTHIC (old UNCOMMON is now RARE, old RARE is EPIC, old EPIC is MYTHIC). Several tattoos also moved to the rarity that fits their strength.'},
-    {text:'PIERCER has a new job: a bullet can go through the enemy it hits and turn to the nearest enemy behind it. RAMPART guards much longer and recharges faster.'},
+    {text:'PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.'},
     {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), EXECUTE works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
     {text:'Quests now pay far more coins: a round amount set by your best wave.'},
     {text:'STASIS freezes enemies longer and recharges faster.'},

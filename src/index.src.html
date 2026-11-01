@@ -1482,7 +1482,7 @@ const TAT_TYPES=[
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:0,w:9,  v:{c:[.08,.3],a:[.08,.3],vuln:[.25,.8]},
    desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
-  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[4.5,8],cd:[38,26]},
+  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[5,10],cd:[32,20]},
    desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage',x.dur.toFixed(1))+cdTxt(x)},
   // ── rare: build pieces + defensive actives
   {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
@@ -4507,6 +4507,7 @@ const INBOX=[
     {text:'PIERCER has a new job: a bullet can go through the enemy it hits and turn to the nearest enemy behind it. RAMPART guards much longer and recharges faster.'},
     {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), EXECUTE works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
     {text:'Quests now pay far more coins: a round amount set by your best wave.'},
+    {text:'STASIS freezes enemies longer and recharges faster.'},
     {text:'BURST is now a brawler: pellets hit harder the closer the enemy is, go through armor and shields, and every kill close to the perimeter heals you a little.'},
     {text:'RANGE is gone from the shop: the new COOLDOWN upgrade takes its place and shortens the cooldown of every active tattoo and bomb (up to -25%). Coins spent on RANGE were refunded.'},
     {text:'The target button is gone (it always shoots the enemy in front now); in its place an AUTO button switches AUTO RETRY on and off during a run. END RUN no longer starts the AUTO RETRY countdown.'},

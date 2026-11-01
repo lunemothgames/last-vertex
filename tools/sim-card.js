@@ -1,4 +1,5 @@
 // Tattoo report card (overhaul step A4): every tattoo alone in its slot against no tattoo, graded with alarms.
+// Paired since 2026-11-01: the tattoo and the no-tattoo case use the same random numbers (SIM_SEED), so small tattoos are no longer lost in luck.
 //   node tools/sim-card.js [levels=2,7]      (npm run card)      SIM_N=3 runs per case, SIM_ECON must NOT be set (shop styles are fixed)
 // Each tattoo is measured by `tools/sim.js tattoocard` in 9 cases (offense / swarm / tank shop x 3 budgets), at a low level
 // (what most players own for a long time, Lv2) and a high one (Lv7). Value = "as good as this much more budget": a depth gain is turned into the

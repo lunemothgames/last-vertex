@@ -505,8 +505,9 @@ if(process.argv[2]==='tattoos'){
 //   node tools/sim.js tattoocard <id> [levels=2,7]   → one CARD line of JSON; tools/sim-card.js runs it for every tattoo and grades them
 if(process.argv[2]==='tattoocard'){
   const id=process.argv[3],LVS=(process.argv[4]||'2,7').split(',').map(Number),BUD=(process.env.SIM_BUDGETS||'3e4,3e6,3e8').split(',').map(Number),STY=['offense','swarm','tank'];
-  const N=+process.env.SIM_N||3;
-  const mean=()=>{let w=0,c=0;for(let i=0;i<N;i++){const d=depth();w+=d.eff;c+=d.cph;}return{w:w/N,c:c/N};};
+  const N=+process.env.SIM_N||3,SEED=+process.env.SIM_SEED||1;
+  // paired: every case (no tattoo and each level) starts from the same random numbers, so the difference is the tattoo and not luck
+  const mean=()=>{_seed=SEED;DROP.t=DROP.coin=DROP.gem=0;let w=0,c=0;for(let i=0;i<N;i++){const d=depth();w+=d.eff;c+=d.cph;}return{w:w/N,c:c/N};};
   const put=(st,B,tat,lv)=>{save.perm={};shop(st,B,{gameSpeed:1});save.tatCol=tat?{[tat]:{lv,copies:0}}:{};save.equipped=tat?[tat]:[];};
   const base={};for(const st of STY)for(const B of BUD){put(st,B);base[st+B]=mean();}
   // e = how fast depth grows with budget (waves x per budget x, between 3e6 and 3e8); lets the card turn a depth gain into "as good as N x budget"

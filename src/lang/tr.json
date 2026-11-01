@@ -69,7 +69,7 @@
  "ATTACK MODE": "SALDIRI MODU",
  "AUTO": "OTO",
  "AUTO RETRY": "OTO TEKRAR",
- "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren): duraklatma menüsünden ya da sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Anahtara tekrar basarak ekranın nasıl görüneceğini seç: TAM, ECO (daha az ısınır) ya da ECO+ (siyah ekran, oyunu 15 sn görmek için dokun). Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
+ "AUTO RETRY (in the shop from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "OTO TEKRAR (Tier {0}'ten itibaren mağazada): duraklatma menüsünden ya da sonuç ekranından aç, öldükten {1} saniye sonra aynı tier kendiliğinden yeniden başlar. Anahtara tekrar basarak ekranın nasıl görüneceğini seç: TAM, ECO (daha az ısınır) ya da ECO+ (siyah ekran, oyunu 15 sn görmek için dokun). Böyle başlayan run'lar altının {2} kadarını verir ve daha az elmas bulur; kendin başlattığın run tam öder. Haftalık op kendiliğinden yeniden başlamaz.",
  "AUTO: {0} BOOST": "OTO: {0} TAKVİYE",
  "AUTO: {0} BOOSTS": "OTO: {0} TAKVİYE",
  "Achievements reward milestones once each.": "Başarımlar her kilometre taşını bir kez ödüllendirir.",
@@ -668,6 +668,7 @@
  "PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.": "PIERCER'in yeni bir işi var: mermilerinin bir kısmı delici mermidir ve sıradaki birkaç düşmanın içinden dümdüz geçer (seviye arttıkça daha fazla). RAMPART çok daha uzun korur ve daha hızlı dolar.",
  "Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), REAPER (was EXECUTE) works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.": "Mağaza: BOSS AVCISI artık elitlere ve iri düşmanlara da (yarı güçle) işler, BİÇER (eski adıyla İNFAZ) canı yarının altına inen düşmanlarda daha büyük bonusla çalışır, DELME ve SEKME daha ucuz.",
  "Quests now pay far more coins: a round amount set by your best wave.": "Görevler artık çok daha fazla para veriyor: en iyi dalgana göre belirlenen düz bir miktar.",
+ "AUTO RETRY is now bought once in the shop (UTILITY, from Tier 2) instead of opening at Tier 3. If you already had it, you keep it.": "OTO TEKRAR artık Tier 3'te kendiliğinden açılmıyor; mağazadan (YARDIMCI, Tier 2'den itibaren) bir kez satın alınıyor. Zaten sende varsa sende kalır.",
  "Two names swapped to fit what they do: the shop upgrade EXECUTE is now REAPER, and the REAPER tattoo (instant kills) is now EXECUTE.": "İki isim yaptıkları işe uysun diye yer değiştirdi: mağazadaki İNFAZ geliştirmesi artık BİÇER, BİÇER dövmesi (anında öldürür) artık İNFAZ.",
  "STASIS freezes enemies longer and recharges faster.": "STASIS düşmanları daha uzun dondurur ve daha hızlı dolar.",
  "{0} of your bullets are piercing rounds: they go straight through the first {1} enemies they hit and fly on": "Mermilerinin {0} kadarı delici mermidir: çarptığı ilk {1} düşmanın içinden dümdüz geçip yoluna devam eder",
@@ -693,5 +694,6 @@
  "PIERCES": "DELME",
  "SIGNAL": "SİNYAL",
  "LOST": "KAYBOLDU",
- "EXECUTED": "İNFAZ EDİLDİ"
+ "EXECUTED": "İNFAZ",
+ "Bought once, kept forever. Switch it on in the pause menu, on the result screen or with the AUTO button in a run: after a death the same tier starts again by itself. Runs started this way pay a third of the coins. Choose how the screen looks while it runs: FULL, ECO (cooler) or ECO+ (black screen). Sold from Tier 2.": "Bir kez alınır, hep senin olur. Duraklatma menüsünden, tur sonu ekranından ya da turda OTO tuşuyla açarsın: ölünce aynı tier kendiliğinden yeniden başlar. Böyle başlayan turlar paranın üçte birini verir. Çalışırken ekranın nasıl görüneceğini seç: TAM, ECO (daha serin) ya da ECO+ (siyah ekran). Tier 2'den itibaren satılır."
 }

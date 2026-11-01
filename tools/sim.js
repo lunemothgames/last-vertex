@@ -653,7 +653,10 @@ const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kil
   save.gems+=r.gems||0;GEM.drop+=r.gems||0;CX[src]+=r.coins;questProg(r);
   if((tierBest[1]||0)>=20&&!G.tatOf('logic_bomb').lv)G.addTatCopy('logic_bomb');
   claimAch();spendGems();};
-const shopL=b=>{const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
+// AUTO RETRY: a shop item from Tier 2 (game PU.autoRetry, bought first once the tier is open and the coins are there); an older game: free from AUTO_RETRY.tier
+const autoOwned=()=>PU.autoRetry?(save.perm.autoRetry||0)>=1:G.maxUnlockedTier()>=G.AUTO_RETRY.tier;
+const buyAuto=b=>{if(EC&&AFKH>0&&PU.autoRetry&&!save.perm.autoRetry&&G.maxUnlockedTier()>=(PU.autoRetry.from||1)){const c=upCost(PU.autoRetry,0);if(b>=c){save.perm.autoRetry=1;b-=c;}}return b;};
+const shopL=b=>{b=buyAuto(b);const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
 // the weekly op, one tier below the highest, this week's two mutators; gems at waves 10/20/30 once a week (not a tier record, not idle income).
 // The game lets it be played again and again all week (its menu dot stays while a reward is left): one try a day until all three are got.
 const WK={got:[]};
@@ -665,7 +668,7 @@ let GAP=0,sessN=0;
 // a new day: last night's idle income, ads, the daily reward, 8 daily quests (one every 3 h), and on every 7th day 4 weekly quests + the weekly op
 const newDay=()=>{
   if(day>0){let s=0;
-    if(AFKH>0&&G.maxUnlockedTier()>=G.AUTO_RETRY.tier){   // AUTO RETRY left on: the same tier again and again, 2+5 s between runs
+    if(AFKH>0&&autoOwned()){   // AUTO RETRY left on: the same tier again and again, 2+5 s between runs
       while(s<AFKH*3600){const r=run(tier,1e9,{auto:true});s+=r.t+2+G.AUTO_RETRY.wait;afkClock+=r.t;bank+=r.coins;afterRun(r,'afk');tierBest[tier]=Math.max(tierBest[tier]||0,r.w);}}
     GAP=Math.max(0,(24-DAYH)*3600-s)/SESS;DROP.t+=GAP;
     const away=Math.max(0,24-DAYH-AFKH)*3600,secs=Math.min(ECO.offlineDayH*3600,away);

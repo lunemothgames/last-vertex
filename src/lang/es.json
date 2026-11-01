@@ -69,7 +69,7 @@
  "ATTACK MODE": "MODO DE ATAQUE",
  "AUTO": "AUTO",
  "AUTO RETRY": "REINTENTO AUTO",
- "AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REINTENTO AUTO (desde el Tier {0}): actívalo en el menú de pausa o en la pantalla de resultados y el mismo tier vuelve a empezar solo {1} segundos después de morir. Pulsa el interruptor otra vez para elegir cómo se ve la pantalla: TOTAL, ECO (se calienta menos) o ECO+ (pantalla negra, toca para ver el juego 15 s). Las partidas que empiezan así dan el {2} de las monedas y encuentran menos gemas; una partida que empiezas tú paga completa. La op semanal nunca se reinicia sola.",
+ "AUTO RETRY (in the shop from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.": "REINTENTO AUTO (en la tienda desde el Tier {0}): actívalo en el menú de pausa o en la pantalla de resultados y el mismo tier vuelve a empezar solo {1} segundos después de morir. Pulsa el interruptor otra vez para elegir cómo se ve la pantalla: TOTAL, ECO (se calienta menos) o ECO+ (pantalla negra, toca para ver el juego 15 s). Las partidas que empiezan así dan el {2} de las monedas y encuentran menos gemas; una partida que empiezas tú paga completa. La op semanal nunca se reinicia sola.",
  "AUTO: {0} BOOST": "AUTO: {0} MEJORA",
  "AUTO: {0} BOOSTS": "AUTO: {0} MEJORAS",
  "Achievements reward milestones once each.": "Los logros premian cada hito una sola vez.",
@@ -668,6 +668,7 @@
  "PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.": "PIERCER tiene un nuevo trabajo: algunas de tus balas son perforantes y atraviesan en línea recta a varios enemigos seguidos (más en niveles altos). RAMPART protege mucho más tiempo y se recarga más rápido.",
  "Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), REAPER (was EXECUTE) works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.": "Tienda: CAZAJEFES ahora también golpea a élites y enemigos grandes (a la mitad de fuerza), SEGADOR (antes EJECUCIÓN) funciona por debajo de la mitad de vida con un bono mayor, y PERFORACIÓN y REBOTE son más baratos.",
  "Quests now pay far more coins: a round amount set by your best wave.": "Las misiones ahora dan muchas más monedas: una cantidad redonda según tu mejor oleada.",
+ "AUTO RETRY is now bought once in the shop (UTILITY, from Tier 2) instead of opening at Tier 3. If you already had it, you keep it.": "REINTENTO AUTO ya no se abre en el Tier 3: se compra una vez en la tienda (UTILIDAD, desde el Tier 2). Si ya lo tenías, lo conservas.",
  "Two names swapped to fit what they do: the shop upgrade EXECUTE is now REAPER, and the REAPER tattoo (instant kills) is now EXECUTE.": "Dos nombres se intercambiaron para encajar con lo que hacen: la mejora de tienda EJECUCIÓN ahora es SEGADOR, y el tatuaje SEGADOR (muertes instantáneas) ahora es EJECUCIÓN.",
  "STASIS freezes enemies longer and recharges faster.": "STASIS congela a los enemigos más tiempo y se recarga más rápido.",
  "{0} of your bullets are piercing rounds: they go straight through the first {1} enemies they hit and fly on": "El {0} de tus balas son perforantes: atraviesan en línea recta a los primeros {1} enemigos que golpean y siguen volando",
@@ -693,5 +694,6 @@
  "PIERCES": "PERFORA",
  "SIGNAL": "SEÑAL",
  "LOST": "PERDIDA",
- "EXECUTED": "EJECUTADO"
+ "EXECUTED": "EJECUTADO",
+ "Bought once, kept forever. Switch it on in the pause menu, on the result screen or with the AUTO button in a run: after a death the same tier starts again by itself. Runs started this way pay a third of the coins. Choose how the screen looks while it runs: FULL, ECO (cooler) or ECO+ (black screen). Sold from Tier 2.": "Se compra una vez y es tuyo para siempre. Actívalo en el menú de pausa, en la pantalla de resultados o con el botón AUTO en una partida: al morir, el mismo tier empieza de nuevo solo. Las partidas iniciadas así pagan un tercio de las monedas. Elige cómo se ve la pantalla mientras funciona: COMPLETA, ECO (más fresca) o ECO+ (pantalla negra). A la venta desde el Tier 2."
 }

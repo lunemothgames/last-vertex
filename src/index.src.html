@@ -888,7 +888,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 const SAVE_KEY='tt3';   // keep: the key from the game's first name, renaming it would lose saves
 function defaultSave(){return{
   coins:0,gems:0,
-  perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
+  perm:{autoRetry:0,damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,cooldown:0,pierce:0,gameSpeed:0},
   temp:{},autoBoost:{},autoRetry:false,autoView:'full',tatCol:{},tatSlots:1,equipped:[],pity:0,
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,shopCat:'atk'},
@@ -1302,7 +1302,7 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // The brawler (2026-11-01): point-blank = a pellet hits x near at the muzzle, falling to x far at the end of its way · heal = share of
 // max health healed by every kill close above the perimeter (SALVAGE's zone, adds to SALVAGE) · bare = pellets go through armor and shields.
 // AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
-const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50,summaryMs:300000},ECO_WAKE=15;   // summaryMs: no touch for 5 min = "away"
+const AUTO_RETRY={tier:2,share:.35,wait:5,saveMs:50,summaryMs:300000},ECO_WAKE=15;   // summaryMs: no touch for 5 min = "away"
 const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2,near:1.8,far:.6,heal:.02,bare:true};
 // point-blank factor of a pellet that has flown d of its whole way len
 const pointBlank=(d,len)=>BURST.near+(BURST.far-BURST.near)*Math.min(1,Math.max(0,d/len));
@@ -1465,6 +1465,8 @@ const PERM_UPGRADES=[
    info:'Makes the whole game run faster (enemies, bullets, wave timers), so you earn more per minute. In a run, the speed button switches between x1.0 and the speed you\'ve bought. Max x5.'},
   {id:'offline',   cat:'util',name:'IDLE INCOME',icon:'moon',  base:300, g:1.12, max:40,   start:.06,step:.00225,fx:v=>pc(v),
    info:'While the game is closed you earn this share of your average coins per second from recent runs. Up to 8 hours count per day; collect it when you come back.'},
+  {id:'autoRetry', cat:'util',name:'AUTO RETRY', icon:'retry', base:25000,g:1,  max:1,    start:0,  step:1,    from:2, fx:v=>v>=1?T('ON'):T('OFF'),
+   info:'Bought once, kept forever. Switch it on in the pause menu, on the result screen or with the AUTO button in a run: after a death the same tier starts again by itself. Runs started this way pay a third of the coins. Choose how the screen looks while it runs: FULL, ECO (cooler) or ECO+ (black screen). Sold from Tier 2.'},
 ];
 const PU=Object.fromEntries(PERM_UPGRADES.map(u=>[u.id,u]));
 const permVal=id=>{const u=PU[id];return uVal(u,Math.min(u.max,save.perm[id]||0));};
@@ -1578,6 +1580,7 @@ if(!save.permV6){
   save.permV6=1;
 }
 // v0.6.1: thorns 400 levels × 0.125% → 250 levels × 0.2% (same total): convert levels, value kept
+if(!save.autoV7){if(maxUnlockedTier()>=3)save.perm.autoRetry=1;save.autoV7=1;}   // v0.7.0: AUTO RETRY became a shop item; who had it (Tier 3) keeps it
 if(!save.thornsV61){if(save.perm.thorns)save.perm.thorns=Math.min(250,Math.round(save.perm.thorns*.625));save.thornsV61=1;}
 // v0.7 defence rework: THORNS 250 levels x 0.2% → 63 x 0.8%, PARRY (was DODGE) 120 x 0.25% → 60 x 0.5%: levels converted with the
 // value kept and the price difference refunded; PATCH UP removed and refunded
@@ -3331,7 +3334,7 @@ function renderDead(){
   renderAutoRetry();
 }
 // the switch shows once Tier 3 is open, never after a weekly run
-const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
+const autoRetryOffered=()=>(save.perm.autoRetry||0)>=1&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
 const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered()&&!(state===ST.DEAD&&runQuit);
 const autoView=()=>autoRetryArmed()?save.autoView:'full';   // how a run looks while AUTO RETRY is on: full, save (20 fps) or eco (black screen)
 let ecoWake=0,_lastDraw=0,_ecoTxtT=0,autoLeft=0,runQuit=false;
@@ -3448,6 +3451,7 @@ $('mBoosts').addEventListener('click',e=>{
 });
 
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
+const shopShows=u=>!u.from||maxUnlockedTier()>=u.from||(save.perm[u.id]||0)>0;   // AUTO RETRY is sold from Tier 2
 // ARMOR's flat part at this level with your max health now (the shop row shows it, stats().block uses the same formula)
 const armorFlat=lv=>{const f=stats().maxHp*ECO.blockK*armorRed(uVal(PU.defense,lv));return f<10?f.toFixed(1):fmtN(f);};
 function openShop(tab){if(tab)shopTab=tab;pendingTheme=null;snd('click');renderShop();$('shopPanel').classList.add('open');$('shopPanel').querySelector('.scroll').scrollTop=0;}
@@ -3490,14 +3494,14 @@ function renderShop(){
   const cats=$('catTabs'),cur=save.settings.shopCat||'atk';
   cats.style.display=shopTab==='perm'?'':'none';
   if(shopTab==='perm')cats.innerHTML=PERM_CATS.map(([c,label,icon])=>{
-    const n=PERM_UPGRADES.filter(u=>u.cat===c&&(save.perm[u.id]||0)<u.max&&upCost(u,save.perm[u.id]||0)<=save.coins).length;
+    const n=PERM_UPGRADES.filter(u=>u.cat===c&&shopShows(u)&&(save.perm[u.id]||0)<u.max&&upCost(u,save.perm[u.id]||0)<=save.coins).length;
     return `<button data-c="${c}" class="${c===cur?'on':''}">${I(icon)}${T(label)}${n?`<b>${n}</b>`:''}</button>`;
   }).join('');
   $('shopNote').textContent='> '+T(shopTab==='perm'?'TAP AN ICON TO SEE HOW IT WORKS':shopTab==='temp'?'LASTS ONE RUN · AUTO BUYS IT BEFORE EACH RUN WITH UP TO 20% OF YOUR COINS':'NEW COLORS FOR THE GAME · BUY WITH GEMS');
 
   let html='';
   if(shopTab==='perm'){
-    html=PERM_UPGRADES.filter(u=>u.cat===cur).map(u=>{
+    html=PERM_UPGRADES.filter(u=>u.cat===cur&&shopShows(u)).map(u=>{
       const {lv,n,cost}=permPlan(u),maxed=lv>=u.max,tgt=Math.min(u.max,lv+Math.max(1,n));
       const val=l=>u.fx(uVal(u,l));
       // milestone upgrades: the bar shows progress to the next x-multiplier; others: progress to max
@@ -4145,7 +4149,7 @@ const HELP_TOPICS=[
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight and hit harder the closer the enemy is (x{0} at the triangle, x{1} at the end of their way). They go through armor and shields, and one that kills flies on with the damage it has left. Every kill close to the perimeter heals you {2} of your max health (on top of SALVAGE). MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.',BURST.near,BURST.far,pc(BURST.heal))}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
     <p>${T('Reach wave 50 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
-    <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
+    <p>${T('AUTO RETRY (in the shop from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
     <p>${T('Event waves pay about the same coins as normal ones; they only change how the fight plays out.')}</p>`],
@@ -4520,6 +4524,7 @@ const INBOX=[
     {text:'PIERCER has a new job: some of your bullets are piercing rounds that go straight through several enemies in a row (more at higher levels). RAMPART guards much longer and recharges faster.'},
     {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), REAPER (was EXECUTE) works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
     {text:'Quests now pay far more coins: a round amount set by your best wave.'},
+    {text:'AUTO RETRY is now bought once in the shop (UTILITY, from Tier 2) instead of opening at Tier 3. If you already had it, you keep it.'},
     {text:'Two names swapped to fit what they do: the shop upgrade EXECUTE is now REAPER, and the REAPER tattoo (instant kills) is now EXECUTE.'},
     {text:'STASIS freezes enemies longer and recharges faster.'},
     {text:'BURST is now a brawler: pellets hit harder the closer the enemy is, go through armor and shields, and every kill close to the perimeter heals you a little.'},

@@ -12,7 +12,7 @@
 const {spawn}=require('child_process'),path=require('path');
 const LV=(process.argv[2]||'2,7').split(',').map(Number),LOW=LV[0],HIGH=LV[LV.length-1];
 const ALARM=Object.assign({dead:0.10,weak:0.5,strong:2,strongMin:0.5},JSON.parse(process.env.SIM_ALARM||'{}'));
-const RAR=['COMMON','UNCOMMON','RARE','EPIC'];
+const RAR=['COMMON','RARE','EPIC','MYTHIC'];
 const src=require('fs').readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const ids=[...src.match(/const TAT_TYPES=\[([\s\S]*?)\n\];/)[1].matchAll(/\{id:'(\w+)'/g)].map(x=>x[1]);
 let res={};let running=0,idx=0;const t0=Date.now();const RAW=path.join(require('os').tmpdir(),'card_raw.json');

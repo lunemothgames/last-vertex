@@ -158,10 +158,6 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 
 /* ── dead ── */
 #deadUI{justify-content:center;padding:0 22px;background:rgba(var(--bg1-rgb),0.82)}
-.d-title{font-family:'VT323',monospace;font-size:68px;color:var(--hot);text-shadow:0 0 16px var(--hot);text-align:center;letter-spacing:.06em;line-height:.85}
-.d-title span{animation:blink 1s steps(1) infinite}
-.d-sub{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 14px;letter-spacing:.06em}
-.d-sub b{color:var(--a);font-weight:400}
 .d-best{text-align:center;font-family:'VT323',monospace;font-size:24px;color:var(--a2);margin-bottom:10px;display:none;animation:blink 1.2s steps(1) infinite}
 .d-best.show{display:block}
 .dstats{border:1px dashed var(--dim);padding:8px 12px;margin-bottom:22px}
@@ -169,6 +165,7 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .dr span{color:var(--mute)}
 .dr i{flex:1;border-bottom:1px dotted var(--dim);transform:translateY(-5px)}
 .dr b{font-weight:400}
+.dh{text-align:center;font-size:11px;color:var(--mute);letter-spacing:.06em;margin:8px 0 2px}
 /* auto retry switch under HOME / RETRY (from Tier 3) */
 .artog{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:38px;margin-top:12px;border:1px dashed var(--dim);color:var(--mute);
   font-family:'VT323',monospace;font-size:20px;letter-spacing:.08em;text-shadow:none}
@@ -209,7 +206,7 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .mqw>span{display:inline-block}
 .nm.mqw,.mqw.nmw{display:block;overflow:hidden;white-space:nowrap}
 .nm:has(.nmw){display:flex;align-items:center}.nmw{flex:1 1 auto;min-width:0;display:inline-block!important}
-#tgtBtn,#spdCtl,.wkbtn{white-space:nowrap}
+#hAuto,#spdCtl,.wkbtn{white-space:nowrap}
 .mqw>span.mq{animation:mq 6s ease-in-out infinite}
 @keyframes mq{0%,18%{transform:translateX(0)}50%,68%{transform:translateX(var(--mq))}100%{transform:translateX(0)}}
 .pipr{display:flex;align-items:center;gap:6px;margin-top:5px}
@@ -446,7 +443,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #abil{position:absolute;left:0;right:0;bottom:calc(17% + 8px);display:flex;justify-content:center;gap:6px}
 #abil.hi{bottom:calc(17% + 46px)}   /* 4-5 slots would run into the ad button on the right, so the row sits above it */
 .abx{pointer-events:none}
-#playUI.armed #abil,#playUI.armed #tgtBtn,#playUI.armed #spdCtl{visibility:hidden}
+#playUI.armed #abil,#playUI.armed #hAuto,#playUI.armed #spdCtl{visibility:hidden}
 .ab,.abx{width:46px;height:46px}
 .ab{position:relative;display:grid;place-items:center;border:1px solid var(--a);overflow:hidden;
   background:rgba(var(--bg1-rgb),0.7);pointer-events:auto}
@@ -456,15 +453,16 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .ab.rdy{box-shadow:0 0 10px var(--glow),inset 0 0 8px rgba(var(--a-rgb),0.3)}
 .ab.cd{border-color:var(--dim);color:var(--mute);text-shadow:none}
 .ab.on{border-color:var(--a2);color:var(--a2);box-shadow:0 0 14px var(--a2)}
-#tgtBtn{position:absolute;top:6.4%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
+#hAuto{position:absolute;top:6.4%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
   border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
-#tgtBtn svg.i{width:13px;height:13px}
-#playUI.nohud #tgtBtn,#playUI.nohud #spdCtl{display:none}
-/* game speed: one small button under the target button; tap = next speed (wraps to x1.0) */
+#hAuto svg.i{width:13px;height:13px}
+#hAuto.on{border-color:var(--a);color:var(--a);box-shadow:0 0 8px var(--glow)}
+#playUI.nohud #hAuto,#playUI.nohud #spdCtl{display:none}
+/* game speed: one small button under the AUTO RETRY button; tap = next speed (wraps to x1.0) */
 #spdCtl{position:absolute;top:11.2%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
   border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto;touch-action:manipulation}
 #spdCtl svg.i{width:13px;height:13px}
-#spdCtl::after,#tgtBtn::after{content:'';position:absolute;left:-6px;right:-4px;top:-3px;bottom:-3px}   /* a bit more to hit than you see */
+#spdCtl::after,#hAuto::after{content:'';position:absolute;left:-6px;right:-4px;top:-3px;bottom:-3px}   /* a bit more to hit than you see */
 /* ── shop: collapsible categories, auto-rebuy toggle ── */
 /* category bar: one category at a time, badge = upgrades you can afford right now */
 .ctabs{display:grid;grid-template-columns:repeat(3,1fr);margin:10px 14px 0;border-bottom:1px solid var(--dim);flex-shrink:0}
@@ -695,7 +693,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 
   <!-- IN-RUN CONTROLS -->
   <div class="layer" id="playUI">
-    <button id="tgtBtn" aria-label="Target priority"><svg class="i"><use href="#i-target"/></svg><span id="tgtTxt">FRONT</span></button>
+    <button id="hAuto" aria-label="Auto retry"><svg class="i"><use href="#i-retry"/></svg><span id="hAutoTxt">AUTO</span></button>
     <button id="spdCtl" aria-label="Game speed"><svg class="i"><use href="#i-ff"/></svg><span id="spdTxt">x1.0</span></button>
     <div id="abil"></div>
   </div>
@@ -726,8 +724,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 
   <!-- DEAD -->
   <div class="layer" id="deadUI">
-    <div class="d-title">SIGNAL<br>LOST<span>_</span></div>
-    <div class="d-sub">&gt; DESTROYED AT WAVE <b id="dWave">0</b></div>
     <div class="d-best" id="dBest">★ NEW BEST WAVE ★</div>
     <div class="dstats" id="dStats"></div>
     <div class="row2">
@@ -781,7 +777,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>HOLD</b><span>Equip or unequip it</span>
         <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
         <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
-        <b>EPIC</b><span>One is guaranteed within 50 inks</span>
+        <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
         <b>◆</b><span>Active tattoo: adds a button in runs</span>
         <b>SLOTS</b><span>Unlock more slots with gems</span>
       </div>
@@ -886,9 +882,9 @@ const SAVE_KEY='tt3';   // keep: the key from the game's first name, renaming it
 function defaultSave(){return{
   coins:0,gems:0,
   perm:{damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
-        critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,range:0,pierce:0,gameSpeed:0},
+        critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,cooldown:0,pierce:0,gameSpeed:0},
   temp:{},autoBoost:{},autoRetry:false,autoView:'full',tatCol:{},tatSlots:1,equipped:[],pity:0,
-  settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,target:0,shopCat:'atk'},
+  settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
   lastRun:null,bestWave:0,theme:'ice',themesOwned:['ice'],mode:'rapid',
@@ -1256,7 +1252,7 @@ const ECO={
   enemyAtk:.78,    enemyAtkGrowth:1.038,
   bossHpMul:6,    bossAtkMul:3,  bossEvery:10, bossCoins:8,
   bossShield:.35, bossRegen:.012,       // BULWARK boss: shield as a share of max health · REGENERATOR boss: heal per second (self and neighbours)
-  bossPulse:.35,  bossPulseEvery:6, bossPulseFirst:3.5, // boss shock wave: boss attack x this, first after 3.5 s, then every 6 s (3.9 s enraged); armor, dodge and AEGIS work on it like on a perimeter hit
+  bossPulse:.35,  bossPulseEvery:6, bossPulseFirst:3.5, // boss shock wave: boss attack x this, first after 3.5 s, then every 6 s (3.9 s enraged); armor, parry and AEGIS work on it like on a perimeter hit
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
@@ -1269,18 +1265,24 @@ const ECO={
   pullCost:20,    pull10Cost:180,
   tempCostGrowth:1.06,  autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
   rangeBase:.5,   rangeMin:.12,         // range line y as a fraction of screen height
-  kbPush:2.6,     slowTime:4,  multiExtra:2,  executeAt:.3,
+  kbPush:2.6,     slowTime:4,  multiExtra:2,  bigHunt:.5,     executeAt:.5,
   reduceKnee:.7,  reduceAbove:.25,      // damage reduction above 70% counts a quarter (77.5% at most), so thorns tanks can't become untouchable
   bossThorns:.25,                       // bosses take a quarter of thorns
-  thornHealCap:.5,                      // lifesteal from thorns refunds at most this share of the hit just taken
+  blockK:.05,                           // ARMOR also stops a flat amount of every hit: max health x this x ARMOR's share (so it keeps up with your health)
+  parryBack:8,    parryStun:1.2,        // PARRY: a parried enemy is pushed back this hard (a hit one 3.5) and stands still this many seconds (not bosses)
+  salvZone:.12,   salvBoss:10,          // SALVAGE: kills this close above the perimeter (share of screen height) heal; a boss heals x10
+  critSplashR:.09,                      // CRIT DMG tattoo: a crit splashes onto enemies within this share of the screen width
+  bigHp:1.5,                            // SLAYER: enemy types with at least this health factor count as big (TANK, ARMORED), elites too
+  aegisPushR:.18,                       // AEGIS: the blocked enemy is destroyed (a boss is pushed back), enemies this close are pushed back
+  regenLow:3,                           // REGEN tattoo: heals up to 1+this times faster as your health runs out
   offlineDayH:8,   offlineMinSec:300,   // idle income: at most 8h of time away counted per day, only after 5+ minutes away
   offlineUnverifiedH:2,                 // …and at most 2h at a time when the server clock couldn't be checked (offline)
 };
 const HUD_TOP=.1;                       // enemies fade in below the top HUD band
 // Tiers: tier t starts at wave 1 but enemies are as strong as wave 1+(t-1)·offset.
-const TIERS={offset:25,unlockWave:30,coinBonus:.2,max:30};
+const TIERS={offset:45,unlockWave:50,coinBonus:.2,max:30};
 const tierCoinMult=t=>1+TIERS.coinBonus*Math.pow(t-1,1.5);
-const tierUnlocked=t=>t===1||(save.tierBest[t-1]||0)>=TIERS.unlockWave;
+const tierUnlocked=t=>t===1||t<=(save.tierOpen||1)||(save.tierBest[t-1]||0)>=TIERS.unlockWave;
 const maxUnlockedTier=()=>{let t=1;while(t<TIERS.max&&tierUnlocked(t+1))t++;return t;};
 const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max(m,w+(t-1)*TIERS.offset):m,0);
 // Attack modes, picked on the home screen. RAPID = the classic triangle. BURST (opens at Tier 2): a slow salvo of pellets in a
@@ -1289,12 +1291,16 @@ const bestEffWave=()=>Object.entries(save.tierBest).reduce((m,[t,w])=>w?Math.max
 // range = range line (share of screen height) before RANGE upgrades, which count rangeUp as much; reach = how far a pellet flies past the line.
 // Tuned 2026-10-27 with the real game and `node tools/sim.js modes` / `SIM_MODE=burst npm run pace`: up close every pellet hits, so builds that
 // let enemies come near (thorns, armor) gain most; stronger numbers made those builds faster than today's fastest one.
+// The brawler (2026-11-01): point-blank = a pellet hits x near at the muzzle, falling to x far at the end of its way · heal = share of
+// max health healed by every kill close above the perimeter (SALVAGE's zone, adds to SALVAGE) · bare = pellets go through armor and shields.
 // AUTO RETRY (from this tier): after a death the next run starts by itself; such runs pay `share` of the coins
-const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50},ECO_WAKE=15;
-const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2};
+const AUTO_RETRY={tier:3,share:.35,wait:5,saveMs:50,summaryMs:300000},ECO_WAKE=15;   // summaryMs: no touch for 5 min = "away"
+const BURST={tier:2,pellets:5,spread:.3,rate:.28,dmg:1.2,range:.57,rangeUp:.5,rangeMin:.4,reach:1.2,near:1.8,far:.6,heal:.02,bare:true};
+// point-blank factor of a pellet that has flown d of its whole way len
+const pointBlank=(d,len)=>BURST.near+(BURST.far-BURST.near)*Math.min(1,Math.max(0,d/len));
 const isBurst=()=>save.mode==='burst';
 // Tier mastery: reaching these waves inside a tier earns its stars; every star is a small permanent bonus
-const MASTERY=[30,50,75];
+const MASTERY=[50,75,100];
 const STAR={dmg:.015,hp:.015,coin:.01};
 const tierStars=t=>MASTERY.filter(w=>(save.tierBest[t]||0)>=w).length;
 const totalStars=()=>{let n=0;for(let t=1;t<=TIERS.max;t++)n+=tierStars(t);return n;};
@@ -1303,7 +1309,7 @@ const MUTATORS={
   swift:   {name:'SWIFT',       desc:'Enemies move 60% faster · +50% coins',                 espd:1.6,coin:1.5},
   horde:   {name:'HORDE',       desc:'Twice as many enemies, each with half the health',      spawn:2,ehp:.5},
   glass:   {name:'GLASS CANNON',desc:'You deal double damage and take double damage',        dmg:2,taken:2},
-  drought: {name:'DROUGHT',     desc:'No regen, no lifesteal · every wave clear heals 20%',   regen:0,ls:0,waveHealAdd:.2},
+  drought: {name:'DROUGHT',     desc:'No regen, no salvage · every wave clear heals 20%',   regen:0,ls:0,waveHealAdd:.2},
   bossrush:{name:'BOSS RUSH',   desc:'A boss every 3 waves',                                  bossEvery:3},
   fragile: {name:'FRAGILE',     desc:'Half max health · enemies have 30% less health',        hp:.5,ehp:.7},
   spiked:  {name:'SPIKED',      desc:'Thorns hit twice as hard · bullets deal 40% less',      thorn:2,dmg:.6},
@@ -1411,31 +1417,29 @@ const PERM_UPGRADES=[
    info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
   {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.17, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.'},
-  {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:400, g:1.32, max:50,   start:0,  step:.01,  fx:v=>pc(v),
-   info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50% from the shop, 75% with tattoos.'},
-  {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:200, g:1.19, max:120,  start:0,  step:.005, fx:v=>pc(v),
+  {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:250, g:1.2,  max:50,   start:0,  step:.01,  fx:v=>pc(v),
+   info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50%.'},
+  {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:125, g:1.13, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
   {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:167,  start:0,  step:.03,  fx:v=>'+'+pc(v),
-   info:'Extra damage against bosses (every 10th wave), from bullets, lightning and blasts.'},
-  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:100,  start:0,  step:.02,  fx:v=>'+'+pc(v),
-   info:'Extra bullet damage against enemies below 30% of their health, to finish off wounded enemies faster.'},
-  {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
-   info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier.'},
+   info:'Extra damage against bosses (every 10th wave), and half as much against elites and big enemies (TANK, ARMORED), from bullets, lightning and blasts.'},
+  {id:'execute',   cat:'atk', name:'EXECUTE',    icon:'exec', base:250, g:1.05, max:100,  start:0,  step:.04,  fx:v=>'+'+pc(v),
+   info:'Extra bullet damage against enemies below half of their health, to finish off wounded enemies faster.'},
+  {id:'cooldown',  cat:'atk', name:'COOLDOWN',   icon:'clock', base:400, g:1.09, max:100,  start:0,  step:.0025,fx:v=>'-'+pc(v),
+   info:'Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.'},
   // ── defense
   {id:'maxHp',     cat:'def', name:'MAX HP',     icon:'heart', base:8,   p:2.2,  max:1e6,  start:10, step:3,    ms:[200,1.1,5000], fx:v=>fmtN(v)+' HP',
    info:'Your triangle\'s health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
    info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
-   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most).'},
-  {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:250,  start:0,  step:.002, fx:v=>pc(v),
-   info:'Every time an enemy hits the perimeter (even when you dodge) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.'},
-  {id:'dodge',     cat:'def', name:'DODGE',      icon:'wind',  base:60,  g:1.13, max:120,  start:0,  step:.0025,fx:v=>pc2(v),
-   info:'Chance to take no damage from a perimeter hit. The enemy still bounces back and still takes thorns. Max 50%.'},
-  {id:'lifesteal', cat:'def', name:'LIFESTEAL',  icon:'drop',  base:50,  g:1.12, max:100,  start:0,  step:.001, fx:v=>pc(v),
-   info:'Heals you for this share of the damage your bullets deal. Thorns damage heals too, but never more than half of the hit you just took.'},
-  {id:'waveHeal',  cat:'def', name:'PATCH UP',   icon:'patch',  base:400, g:1.2,  max:40,   start:0,  step:.005, fx:v=>pc(v),
-   info:'Heals this share of your max health at the end of every wave.'},
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health, so weak hits do nothing.'},
+  {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
+   info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Bosses take a quarter. Max 50% from the shop; with the THORNS tattoo up to 100%, so one touch kills.'},
+  {id:'dodge',     cat:'def', name:'PARRY',      icon:'wind',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
+   info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo.'},
+  {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'drop',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
+   info:'Every enemy that dies close to the perimeter (from thorns, bullets or anything else) heals you this share of your max health. A boss heals 10 times as much.'},
   {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
   {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
@@ -1462,62 +1466,62 @@ const permVal=id=>{const u=PU[id];return uVal(u,Math.min(u.max,save.perm[id]||0)
 const TAT_MAX=7;
 const TAT_REQ=[0,2,3,4,6,8,11];             // copies for Lv l→l+1 (35 copies to max)
 const tatReq=l=>TAT_REQ[l]||Infinity;
-const PITY=50;                              // an epic is guaranteed within this many summons
+const PITY=50;                              // a mythic (top tier) is guaranteed within this many summons
 const cdTxt=x=>' · '+T('{0}s cooldown',x.cd.toFixed(0));
 // grenade effects: GOO sticks for t seconds, then bursts on whatever is within r (share of screen width); VIRUS lasts t seconds and jumps on death
 const GRENADE={goo:{t:3,r:.11},virus:{t:8,spread:.15}};
 const TAT_TYPES=[
-  // ── common: plain stats
+  // ── common: plain stats + the simple control pieces
   {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.55]},          desc:x=>T('+{0} bullet damage',pc(x.dmg))},
   {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.04,.2]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
   {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.16,.96]},            desc:x=>T('+{0} max health',pc(x.hp))},
-  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.0065,.04]},       desc:x=>T('heals {0} of your max health every second',pc2(x.pct))},
+  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.0065,.04]},       desc:x=>T('heals {0} of your max health every second, up to 4x faster as your health runs low',pc2(x.pct))},
   {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts)',pc(x.red))},
   {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.08,.4]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
-  // ── uncommon: build pieces + defensive actives
-  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
-  {id:'crit_mult',   name:'CRIT DMG', icon:'burst', rar:1,w:6,  v:{m:[.25,1.3]},           desc:x=>T('+x{0} crit power: critical hits deal that much more',x.m.toFixed(2))},
-  {id:'dodge',       name:'DODGE',    icon:'wind',  rar:1,w:6,  v:{d:[.04,.2]},            desc:x=>T('+{0} chance to take no damage from a perimeter hit (50% max)',pc(x.d))},
-  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:1,w:6,  v:{t:[.32,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
-  {id:'frost',       name:'FROST',    icon:'snow',  rar:1,w:5,  v:{c:[.08,.3],a:[.08,.3],vuln:[.25,.8]},
+  {id:'frost',       name:'FROST',    icon:'snow',  rar:0,w:9,  v:{c:[.08,.3],a:[.08,.3],vuln:[.25,.8]},
    desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
-  {id:'reach',       name:'REACH',    icon:'range', rar:1,w:5,  v:{r:[.06,.2]},            desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner',(x.r*100).toFixed(1))},
-  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:1,w:5,  act:1,v:{dur:[4.5,8],cd:[38,26]},
+  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[4.5,8],cd:[38,26]},
    desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage',x.dur.toFixed(1))+cdTxt(x)},
-  {id:'mend',        name:'MEND',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],cd:[60,35]},
-   desc:x=>T('ACTIVE · heals {0} of your max health at once',pc(x.heal))+cdTxt(x)},
-  // ── rare: mechanics + offensive actives
-  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:2,w:3.5,v:{cd:[6,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely, then recharges in {0}s',x.cd.toFixed(1))},
-  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:2,w:3.5,v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses',pc(x.b))},
-  {id:'reaper',      name:'REAPER',   icon:'skull', rar:2,w:3.5,v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
-  {id:'lifesteal',   name:'LIFESTEAL',icon:'drop',  rar:2,w:3.5,v:{l:[.03,.15]},           desc:x=>T('+{0} of the damage your bullets deal heals you',pc(x.l))},
-  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:2,w:3.5,v:{p:[.08,.35]},           desc:x=>T('+{0} chance for a bullet to go through an enemy and keep flying (75% max)',pc(x.p))},
-  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:2,w:3.5,v:{p:[.05,.12]},
+  // ── rare: build pieces + defensive actives
+  {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
+  {id:'crit_mult',   name:'CRIT BLAST', icon:'burst', rar:1,w:6,  v:{m:[.25,1.3],s:[.25,.6]}, desc:x=>T('+x{0} crit power · a critical hit splashes {1} of its damage onto the enemies around it',x.m.toFixed(2),pc(x.s))},
+  {id:'dodge',       name:'PARRY',    icon:'wind',  rar:1,w:6,  v:{d:[.1,.5]},             desc:x=>T('+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max)',pc(x.d))},
+  {id:'reach',       name:'OVERKILL',    icon:'range', rar:1,w:5,  v:{r:[.06,.2],s:[.3,.75]}, desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner · a bullet that kills flies on to the nearest enemy with {1} of the damage it had left',(x.r*100).toFixed(1),pc(x.s))},
+  {id:'mend',        name:'RAMPART',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],guard:[6,12],cd:[45,28]},
+   desc:x=>T('ACTIVE · heals {0} of your max health at once, then for {1}s every enemy that touches the perimeter is destroyed (bosses still hit)',pc(x.heal),x.guard.toFixed(1))+cdTxt(x)},
+  {id:'piercer',     name:'PIERCER',  icon:'pierce',rar:1,w:5,  v:{p:[.04,.15]},           desc:x=>T('{0} chance that a bullet goes through the enemy it hits and turns to the nearest enemy behind it (once per bullet)',pc(x.p))},
+  {id:'reaper',      name:'REAPER',   icon:'skull', rar:1,w:5,  v:{k:[.2,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health',pc(x.k))},
+  {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:1,w:5,  v:{cd:[6,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely: that enemy is destroyed (a boss is pushed back) and the ones next to it are pushed back · recharges in {0}s',x.cd.toFixed(1))},
+  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:1,w:5,  v:{b:[.3,1.5]},            desc:x=>T('+{0} damage to bosses, elites and big enemies (TANK, ARMORED)',pc(x.b))},
+  {id:'lifesteal',   name:'SALVAGE',  icon:'drop',  rar:1,w:5,  v:{l:[.012,.06]},          desc:x=>T('+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health',pc2(x.l))},
+  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:1,w:5,  v:{p:[.05,.12]},
    desc:x=>T('a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p))},
-  {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[8,22],cd:[44,27]},
+  // ── epic: build cores + offensive actives
+  {id:'thorns',      name:'THORNS',   icon:'spikes',rar:2,w:3.5, v:{t:[.32,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
+  {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[8,22],cd:[88,54]},
    desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
-  {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[2.2,3.2],dur:[10,14],cd:[40,26]},
+  {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[2.2,3.2],dur:[10,14],cd:[60,39]},
    desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
-  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[1,2],cd:[60,40]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
-  {id:'virus_bomb',  name:'VIRUS BOMB',icon:'virus',rar:2,w:3,act:1,gren:'virus',r:.2,v:{m:[.15,.35],cd:[55,36]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it',x.m.toFixed(2),GRENADE.virus.t)+cdTxt(x)},
-  // ── epic: new mechanics
-  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:3,w:1.2,v:{c:[.1,.22],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
-  {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2,v:{m:[4,12],cd:[23,10]},
-   desc:x=>T('when your health drops below 30%: a shockwave hits every enemy in the lower half for {0}x bullet damage and throws them back',x.m.toFixed(1))+cdTxt(x)},
-  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2,v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
-  {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2,v:{every:[6,3],n:[3,5],m:[.4,.75]},
-   desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
-  {id:'goo_bomb',    name:'GOO BOMB',icon:'goo',rar:3,w:1.2,act:1,gren:'goo',r:.2,v:{m:[.6,1.2],m2:[1.2,2.4],cd:[60,40]},
-   desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
-  {id:'midas',       name:'MIDAS',    icon:'midas', rar:3,w:1.2,act:1,v:{m:[2,3.5],dur:[10,15],cd:[90,90]},
+  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:2,w:3.5, v:{c:[.16,.35],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
+  {id:'midas',       name:'MIDAS',    icon:'midas', rar:2,w:3,  act:1,v:{m:[2,3.5],dur:[10,15],cd:[45,45]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
+  {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[12,30],cd:[24,14]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: a bomb lands there and blasts everything in a circle for {0}x bullet damage, pushing it back',x.m.toFixed(1))+cdTxt(x)},
+  // ── mythic: the strongest mechanics
+  {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2, v:{m:[4,12],cd:[46,20]},
+   desc:x=>T('when your health drops below 30%: a shockwave hits every enemy in the lower half for {0}x bullet damage and throws them back',x.m.toFixed(1))+cdTxt(x)},
+  {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2, v:{every:[6,4],n:[3,5],m:[.4,.75]},
+   desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
+  {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2, v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
+  {id:'goo_bomb',    name:'GOO BOMB',icon:'goo',rar:3,w:1.2, act:1,gren:'goo',r:.2,v:{m:[3,7],m2:[5,12],cd:[26,16]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
+  {id:'virus_bomb',  name:'VIRUS BOMB',icon:'virus',rar:3,w:1.2, act:1,gren:'virus',r:.2,v:{m:[1.5,3.5],cd:[36,21]},
+   desc:x=>T('ACTIVE · tap the button, then tap the field: everything there is infected and loses {0}x bullet damage every second for {1}s; when an infected enemy dies the virus jumps to those next to it',x.m.toFixed(2),GRENADE.virus.t)+cdTxt(x)},
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
-const RAR_NAMES=['COMMON','UNCOMMON','RARE','EPIC'];
+const RAR_NAMES=['COMMON','RARE','EPIC','MYTHIC'];
 const TAT_SLOT_PRICES=[60,200,500,1200];    // gems for slot 2,3,4,5 (≈2 days … ≈6 weeks of free gems)
 const MAX_SLOTS=5;
 const tatLerp=(r,lv)=>r[0]+(r[1]-r[0])*(lv-1)/(TAT_MAX-1);
@@ -1567,10 +1571,26 @@ if(!save.permV6){
 }
 // v0.6.1: thorns 400 levels × 0.125% → 250 levels × 0.2% (same total): convert levels, value kept
 if(!save.thornsV61){if(save.perm.thorns)save.perm.thorns=Math.min(250,Math.round(save.perm.thorns*.625));save.thornsV61=1;}
+// v0.7 defence rework: THORNS 250 levels x 0.2% → 63 x 0.8%, PARRY (was DODGE) 120 x 0.25% → 60 x 0.5%: levels converted with the
+// value kept and the price difference refunded; PATCH UP removed and refunded
+if(!save.defV7){
+  const spent=(u,n)=>{let c=0;for(let i=0;i<n;i++)c+=Math.ceil(u.p?u.base*Math.pow(i+1,u.p):u.base*Math.pow(u.g,i));return c;};
+  for(const [id,old,div] of [['thorns',{base:12,p:2},4],['dodge',{base:60,g:1.13},2]]){
+    const lv=save.perm[id]||0;if(!lv)continue;const nl=Math.min(PU[id].max,Math.round(lv/div));
+    save.coins=(save.coins||0)+Math.max(0,spent(old,lv)-spent(PU[id],nl));save.perm[id]=nl;
+  }
+  if(save.perm.waveHeal)save.coins=(save.coins||0)+spent({base:400,g:1.2},save.perm.waveHeal);
+  delete save.perm.waveHeal;save.defV7=1;
+}
+// v0.7: the RANGE upgrade is gone (COOLDOWN took its place): its coins are refunded
+if(save.perm.range){let c=0;for(let i=0;i<save.perm.range;i++)c+=Math.ceil(60*Math.pow(1.18,i));save.coins=(save.coins||0)+c;}
+delete save.perm.range;
 if(save.perm.slow){save.perm.slowAmt=(save.perm.slowAmt||0)+save.perm.slow;}
 delete save.perm.slow;
 if(!save.tierBest||typeof save.tierBest!=='object')save.tierBest={};
 if(!save.tierBest[1]&&save.bestWave)save.tierBest[1]=save.bestWave;
+// v0.7: unlock wave 30 → 50: tiers already open under the old rule stay open
+if(!save.tierV7){let t=1;while(t<30&&(save.tierBest[t]||0)>=30)t++;save.tierOpen=t;save.tierV7=1;}
 if(!save.tier||!tierUnlocked(save.tier))save.tier=1;
 if(save.mode!=='burst'||maxUnlockedTier()<BURST.tier)save.mode='rapid';
 if(!['full','save','eco'].includes(save.autoView))save.autoView='full';
@@ -1578,9 +1598,10 @@ save.coins=Math.floor(save.coins||0);
 
 // ── STATS ────────────────────────────────────────────────────────────────────
 // effect values of an equipped tattoo (all zero when not equipped)
-function tb(id){return tatFx(TT[id],save.equipped.includes(id)?tatOf(id).lv:0);}
+// COOLDOWN (shop): every active tattoo and bomb recharges faster
+function tb(id){const o=tatFx(TT[id],save.equipped.includes(id)?tatOf(id).lv:0);if(TT[id].act&&o.cd)o.cd*=1-permVal('cooldown');return o;}
 // timed effects of active tattoos in the current run (overdrive / midas)
-let runFx={odT:0,odM:1,midT:0,midM:1};
+let runFx={odT:0,odM:1,midT:0,midM:1,guardT:0};
 let runMods=null;                       // weekly-op mutators of the current run, or the current wave event (null = normal rules)
 let runEvSeed=0;                        // picks the shuffle of this run's wave events
 let runEvent=null;                      // key of the wave event that is running (normal runs only)
@@ -1614,8 +1635,10 @@ function stats(){
     pellets:   B?BURST.pellets:1, pellet:B?BURST.dmg:1,
     hitDmg:    dmg*(B?BURST.dmg:1),   // bullet damage with the mode bonus: pellets, TWIN, ARC, NOVA, SHOCKWAVE, bombs
     maxHp,
-    regen:     (v('regen')+maxHp*tb('regen').pct)*M.regen,
+    regen:     v('regen')*M.regen,
+    regenT:    maxHp*tb('regen').pct*M.regen,   // REGEN tattoo: this per second at full health, up to (1+ECO.regenLow)x as health runs out
     dmgTaken:  (1-cutRed(reduce))*M.taken,
+    block:     maxHp*ECO.blockK*armorRed(v('defense')),   // ARMOR's flat part: cut from every hit after the share above
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
     coinChance:Math.min(1,ECO.coinChance+v('lootChance')),
     jackpot:   lk.jack,
@@ -1625,20 +1648,24 @@ function stats(){
     crit:      Math.min(.8,critRaw),
     critM:     v('critMult')+tb('crit_mult').m+Math.max(0,critRaw-.8)*3,
     dodge:     Math.min(.5,v('dodge')+tb('dodge').d),
-    ls:        (v('lifesteal')+tb('lifesteal').l)*M.ls,
+    salv:      (v('lifesteal')+tb('lifesteal').l+(B?BURST.heal||0:0))*M.ls,   // SALVAGE (+ BURST's own): share of max health healed per kill near the perimeter
     multiChance:Math.min(.6,v('multishot')),
     bounce:    Math.min(.85,v('bounce')+rk.c),
     chain:     rk.n?Math.round(rk.n):1,
     bossDmg:   1+v('bossDmg')+tb('boss_slayer').b,
+    bigDmg:    1+v('bossDmg')*ECO.bigHunt+tb('boss_slayer').b,   // BOSS HUNTER (at ECO.bigHunt strength) and SLAYER also hit elites and big types (vsDmg)
+    splash:    tb('crit_mult').s||0,     // CRIT DMG tattoo: a crit splashes this share of its damage around
     execute:   1+v('execute'),
     reap:      tb('reaper').k,
     slowChance:Math.min(.8,v('slowChance')+tb('frost').c),
     slowAmt:   Math.min(.5,v('slowAmt')+tb('frost').a),
     // slowed / frozen enemies take extra bullet damage: the slow power itself, plus the FROST tattoo
     frostVuln: 1+Math.min(.5,v('slowAmt')+tb('frost').a)+tb('frost').vuln,
-    rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
-    pierce:    Math.min(.75,v('pierce')+tb('piercer').p),
-    waveHeal:  v('waveHeal')+(T.invincible?.15:0)+M.waveHealAdd,
+    rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-tb('reach').r*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-tb('reach').r)),
+    pierce:    v('pierce'),
+    pAim:      tb('piercer').p||0,     // PIERCER tattoo: chance (once per bullet) to go through an enemy and home in on the nearest one behind it
+    carry:     tb('reach').s||0,       // REACH tattoo: a bullet that kills flies on to the nearest enemy with this share of the damage it had left
+    waveHeal:  (T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
     // game speed: the player's chosen speed, between x1 and what the shop has unlocked
     // settings.speed is only set while the player chose something below the max; otherwise the run uses the max
@@ -1659,6 +1686,9 @@ let triX,hp,runCoins,waveNum,enemies,bullets,pickups,
     wavePhase,waveTimer,deadTimer,fireCooldown,paused,confirmEndRun,
     runDmgDealt,runDmgTaken,runKills,runWave,runStart,runNewBest=false;
 let runAuto=false;   // this run was started by AUTO RETRY, not by the player
+// for the result screen: damage that really took health, by source ('shot' or a tattoo id), and damage taken, by enemy kind
+let runDmgBy={},runHitBy={};
+const dmgBy=(src,d)=>{if(d>0)runDmgBy[src]=(runDmgBy[src]||0)+d;};
 const runPay=c=>runAuto&&c>0?Math.max(1,Math.round(c*AUTO_RETRY.share)):c;   // coins an AUTO RETRY run actually pays
 let hudHidden=false,deathShot=null,runTier=1,runUnlockedTier=0,waveSpawnTimer=0,waveDuration=0,shockCooldown=0;
 // progress before the run (best/tier are saved every wave), income for coin drops, tattoo timers
@@ -1684,11 +1714,11 @@ function buildStars(){
 }
 
 function initRun(){
-  runFx={odT:0,odM:1,midT:0,midM:1};
+  runFx={odT:0,odM:1,midT:0,midM:1,guardT:0};
   triX=GW/2;hp=stats().maxHp;runCoins=0;paused=false;confirmEndRun=false;
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
-  runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;
+  runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;runDmgBy={};runHitBy={};
   runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];runUnlockSnd=0;
   cancelArm();bombs=[];
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
@@ -1720,7 +1750,6 @@ document.addEventListener('keydown',e=>{
     snd('click');return;
   }
   if(paused)return;
-  if(k==='t'||k==='T'){cycleTarget();return;}
   if(k==='-'||k==='+'||k==='='){stepSpeed(k==='-'?-1:1);return;}
   const n=+k;if(n>=1&&n<=MAX_SLOTS){const id=save.equipped[n-1];if(isAct(id))useActive(id);}
 });
@@ -1879,7 +1908,7 @@ function resumeRun(mr){
   delete save.midRun;
   startRun(mr.weekly);
   waveNum=mr.wave;hp=Math.min(mr.hp,stats().maxHp);
-  runCoins=mr.coins||0;runKills=mr.kills||0;runDmgDealt=mr.dmgDealt||0;runDmgTaken=mr.dmgTaken||0;
+  runCoins=mr.coins||0;runKills=mr.kills||0;runDmgDealt=mr.dmgDealt||0;runDmgTaken=mr.dmgTaken||0;runDmgBy=mr.dmgBy||{};runHitBy=mr.hitBy||{};
   runPlayT=mr.playT||0;runEarned=mr.earned||0;
   paused=true;
   persist();
@@ -1894,7 +1923,9 @@ function saveProgress(){
     if(runWave>(save.tierBest[runTier]||0)){save.tierBest[runTier]=runWave;save.bestWave=bestEffWave();}
     const after=tierStars(runTier);
     if(after>before){toast(T('★ TIER {0} MASTERY {1}/{2}',runTier,after,MASTERY.length));snd('star');achCheck();}
-    if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()));track('tier_unlock',{tier:maxUnlockedTier()});}
+    if(maxUnlockedTier()>runPrevMaxTier&&!runUnlockSnd){runUnlockSnd=1;
+      if(runAuto){ecoWake=ECO_WAKE;syncEco();}   // AUTO RETRY: wake the black screen so the player sees it (the run goes on in the same tier)
+      snd('unlock');toast(T('TIER {0} UNLOCKED',maxUnlockedTier()),runAuto,false,runAuto?6000:0);track('tier_unlock',{tier:maxUnlockedTier()});}
     // best real-time income, used for idle income (runs shorter than 2 minutes don't count)
     // average real-time income of recent runs (2+ minutes), used for idle income
     // each attack mode keeps its own average; idle income (save.idleCps) uses the mode that earns more
@@ -1906,7 +1937,7 @@ function saveProgress(){
   }
   persist();
 }
-function triggerDeath(){
+function triggerDeath(quit){
   const TRI_Y=GH*TRI_FRAC;
   // freeze the last frame for the CRT power-off animation
   deathShot=document.createElement('canvas');deathShot.width=GW;deathShot.height=GH;
@@ -1917,7 +1948,7 @@ function triggerDeath(){
   delete save.midRun;
   runMods=null;runEvent=null;   // weekly / event rules end with the run: the menu must show normal numbers
   save.lastRun={coins:runCoins,kills:runKills,wave:runWave,tier:runTier,weekly:runWeekly,auto:runAuto,
-    dmgDealt:Math.round(runDmgDealt),dmgTaken:Math.round(runDmgTaken),
+    dmgDealt:Math.round(runDmgDealt),dmgTaken:Math.round(runDmgTaken),dmgBy:runDmgBy,hitBy:runHitBy,
     time:Math.round(runPlayT)};
   if(runWeekly){runNewBest=runWave>(weeklyState().best||0);saveProgress();}
   else{
@@ -1929,16 +1960,19 @@ function triggerDeath(){
   save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
   track('run_end',{tier:runTier,wave:runWave,secs:Math.round(runPlayT),weekly:runWeekly?1:0,best:runNewBest?1:0,run_no:LIFE().runs});
+  if(runAuto){autoSess.runs++;autoSess.coins+=runCoins;autoSess.best=Math.max(autoSess.best,runWave);}
+  runQuit=!!quit;   // ended from the pause menu: no AUTO RETRY countdown this time (the switch stays on)
   persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;autoLeft=0;keepAwake(wakeWanted());
 }
 // ── SLEEP / WAKE ──
 // Screen locked or app sent to the background: pause the run and silence everything (the music runs on
 // timers, so pausing the game alone kept it playing). Back in front: sound resumes, the run stays paused.
 function goBackground(){
+  if(state===ST.DEAD){deadTimer=Math.min(deadTimer,2);autoLeft=0;}   // AUTO RETRY countdown: starts again in full when the player is back
   if(state===ST.PLAY){
     if(!paused)paused=true;
     save.midRun={wave:waveNum,hp,hpMax:stats().maxHp,tier:runTier,weekly:runWeekly,
-      coins:runCoins,kills:runKills,dmgDealt:runDmgDealt,dmgTaken:runDmgTaken,
+      coins:runCoins,kills:runKills,dmgDealt:runDmgDealt,dmgTaken:runDmgTaken,dmgBy:runDmgBy,hitBy:runHitBy,
       playT:runPlayT,earned:runEarned,ts:Date.now()};
   }
   stopMusic();
@@ -1965,7 +1999,7 @@ window.addEventListener('pagehide',goBackground);
 // keep the screen on during a run (Screen Wake Lock, Chrome 84+); off again when the run ends,
 // unless AUTO RETRY is about to start the next one
 let wakeLock=null,wakePending=false;
-const wakeWanted=()=>state===ST.PLAY||(state===ST.DEAD&&autoRetryArmed());
+const wakeWanted=()=>state===ST.PLAY&&!paused||state===ST.DEAD&&autoRetryArmed()&&!anyPanelOpen();
 function keepAwake(on){
   if(!('wakeLock' in navigator))return;
   if(on){
@@ -1988,6 +2022,8 @@ function killEnemy(e,st){
     for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R)){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}
   }
   if(st.shatter>0&&(e.slowT>0||e.frozenT>0)&&!e.boss)shatterQ.push({x:e.x,y:e.y,dmg:e.maxHp*st.shatter});
+  // SALVAGE: a kill close above the perimeter heals a share of max health
+  if(st.salv>0&&e.y+e.sz/2>GH*(LINE_FRAC-ECO.salvZone))hp=Math.min(st.maxHp,hp+st.maxHp*st.salv*(e.boss?ECO.salvBoss:1));
   const v=coinValueAt(effWave())*st.mult*e.coin;
   let coins=e.boss?Math.max(1,Math.round(v)):(e.coin>0&&Math.random()<st.coinChance?Math.max(1,Math.round(v)):0);
   if(coins>0&&Math.random()<st.jackpot)coins*=3;
@@ -2020,6 +2056,7 @@ function makeEnemy(type,x,y,boss){
     e.shield=e.maxShield=hp*T.shield*ramp;
   }
   if(!boss&&(T.armor||M.armor))e.armorThr=Math.max(T.armor||0,M.armor||0);
+  if(!boss&&T.hp>=ECO.bigHp)e.big=true;   // SLAYER's targets: big types (TANK, ARMORED) and elites
   if(!boss&&M.eregen)e.regen=M.eregen;
   if(!boss&&(M.dive||M.rise||M.berserk||M.cling)){e.ev={dive:M.dive,rise:M.rise,berserk:M.berserk,cling:M.cling};e.evWave=waveNum;}
   if(!boss&&T.heal)e.healT=1;
@@ -2036,7 +2073,7 @@ function spawnEnemy(){
   // elite: very rare, chance grows with wave
   const eliteChance=Math.min(.06,ew*.0008);
   if(Math.random()<eliteChance){
-    e.elite=true;e.hp*=3;e.maxHp=e.hp;e.sz*=1.35;e.coin*=2;e.atk*=1.5;
+    e.elite=true;e.big=true;e.hp*=3;e.maxHp=e.hp;e.sz*=1.35;e.coin*=2;e.atk*=1.5;
   }
 }
 function spawnWave(){
@@ -2048,7 +2085,6 @@ function spawnWave(){
   if(waveNum>1){const st=stats();if(st.bounty>0){const c=runPay(Math.round(coinValueAt(effWave())*st.mult*ENEMY_TYPES.basic.coin*st.bounty));
     if(c>0){save.coins+=c;runCoins+=c;runEarned+=c;qEvent('coins',c);snd('bounty');}}}
   if(waveNum===3)hint('hud');
-  if(waveNum===6)hint('target');
   const boss=waveNum%((runMods&&runMods.bossEvery)||ECO.bossEvery)===0;
   waveDuration=Math.min(45,18+waveNum*.5);
   waveTimer=waveDuration;
@@ -2072,18 +2108,17 @@ function spawnWave(){
   if(boss){screenFlash=.5;shake={x:0,y:0,t:.3};}
 }
 // damage that doesn't come from a bullet (arc, nova, shockwave); deaths are handled in the enemy loop
-function hurt(e,dmg,quiet){e.hp-=dmg;runDmgDealt+=dmg;if(quiet)return;e.hitFlash=.18;dmgText(e,dmg,false);}
+function hurt(e,dmg,quiet,src){dmgBy(src,Math.min(dmg,Math.max(0,e.hp)));e.hp-=dmg;runDmgDealt+=dmg;if(quiet)return;e.hitFlash=.18;dmgText(e,dmg,false);}
 // blast push (NOVA, SHOCKWAVE, LOGIC BOMB): bosses are not pushed, a stronger push already running is kept
 const knock=(e,m)=>{if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*m);};
+// extra damage against bosses (BOSS HUNTER + SLAYER) and against elites and big types (SLAYER only)
+const vsDmg=(e,st)=>e.boss?st.bossDmg:e.big?st.bigDmg:1;
 // inside a blast circle of radius R around (x,y), counting the enemy's own size
 const inBlast=(o,x,y,R)=>{const dx=o.x-x,dy=o.y-y,r=R+o.sz*.5;return dx*dx+dy*dy<=r*r;};
 
 // ── TARGETING & BULLETS ──────────────────────────────────────────────────────
-const TARGET_MODES=['FRONT','STRONG','WEAK'];
-function targetOrder(list){
-  const m=save.settings.target||0;
-  return list.sort(m===1?(a,b)=>b.atk-a.atk||b.y-a.y:m===2?(a,b)=>a.atk-b.atk||b.y-a.y:(a,b)=>b.y-a.y);
-}
+// the enemy closest to the perimeter is always shot first (the FRONT / STRONG / WEAK button was removed in 0.7.0: only FRONT ever mattered)
+const targetOrder=list=>list.sort((a,b)=>b.y-a.y);
 // segment (x0,y0)→(x1,y1) against the square of half-size r around (cx,cy):
 // returns how far along the segment it first touches (0…1), or -1 if it misses
 function segBoxHit(x0,y0,x1,y1,cx,cy,r){
@@ -2096,10 +2131,6 @@ function segBoxHit(x0,y0,x1,y1,cx,cy,r){
   return t0;
 }
 const inRangeEnemies=st=>enemies.filter(e=>e.y>=st.rangeY&&e.hp>0&&!e.phased);
-function cycleTarget(){
-  save.settings.target=((save.settings.target||0)+1)%TARGET_MODES.length;persist();snd('blip');renderPlayUI();
-  spawnText(GW/2,GH*.4,T('TARGET:')+' '+T(TARGET_MODES[save.settings.target]),C.a2);
-}
 function fireBullets(st){
   const TRI_Y=GH*TRI_FRAC,order=targetOrder(inRangeEnemies(st));
   if(!order.length)return;
@@ -2112,7 +2143,7 @@ function fireBullets(st){
     const n=st.pellets*(multi?2:1),S=BURST.spread,left=(by-st.rangeY)*BURST.reach;
     for(let k=0;k<n;k++){
       const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg,sz:bSize*.8,bounces:0,tgt:null,left});
+      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg,sz:bSize*.8,bounces:0,tgt:null,left,len:left});
     }
   }else{
     shots.push({e:target,m:1});
@@ -2137,7 +2168,7 @@ function arcStrike(first,st){
     for(const o of enemies){if(o.hp<=0||hit.includes(o))continue;const d=(o.x-cur.x)**2+(o.y-cur.y)**2;if(d<nd){nd=d;nx=o;}}
     if(!nx)break;hit.push(nx);pts.push({x:nx.x,y:nx.y});cur=nx;
   }
-  for(const e of hit)hurt(e,st.hitDmg*st.arcM*(e.boss?st.bossDmg:1));
+  for(const e of hit)hurt(e,st.hitDmg*st.arcM*vsDmg(e,st),0,'arc');
   arcs.push({pts,life:1});
 }
 
@@ -2151,14 +2182,15 @@ function useActive(id){
   if(id==='nova'){
     for(const e of enemies){
       if(e.hp<=0||e.y<GH*HUD_TOP-e.sz)continue;
-      hurt(e,st.hitDmg*x.m*(e.boss?st.bossDmg:1));
+      hurt(e,st.hitDmg*x.m*vsDmg(e,st),0,'nova');
       knock(e,1.5);
     }
     novas.push({x:triX,y:TRI_Y,life:1,col:C.a2});screenFlash=.2;shake={x:0,y:0,t:.25};
   }else if(id==='overdrive'){runFx.odT=x.dur;runFx.odM=x.m;}
   else if(id==='midas'){runFx.midT=x.dur;runFx.midM=x.m;}
   else if(id==='stasis'){for(const e of enemies)e.frozenT=e.boss?x.dur/2:x.dur;}
-  else if(id==='mend'){const h=st.maxHp*x.heal;hp=Math.min(st.maxHp,hp+h);burst(triX,TRI_Y,C.r[2],14,GH*.08);spawnText(triX,TRI_Y-GH*.08,'+'+fmtN(h)+' HP',C.r[2]);}
+  else if(id==='mend'){const h=st.maxHp*x.heal;hp=Math.min(st.maxHp,hp+h);burst(triX,TRI_Y,C.r[2],14,GH*.08);spawnText(triX,TRI_Y-GH*.08,'+'+fmtN(h)+' HP',C.r[2]);
+    runFx.guardT=x.guard;}   // and for a few seconds whatever touches the perimeter is destroyed (contactHit)
   actCD[id]=x.cd;snd({nova:'nova',stasis:'freeze',mend:'heal',overdrive:'power',midas:'collect'}[id]||'gem');qEvent('active');
   spawnText(GW/2,GH*.4,T(TT[id].name)+'!',C.a2);
 }
@@ -2175,13 +2207,13 @@ function throwBomb(x,y){
   bombs.push({id,x0:triX,y0:GH*TRI_FRAC-GH*.05,x1,y1,t:0,dur:.3});
   actCD[id]=tb(id).cd;snd('throw');qEvent('bomb');LIFE().bombs=(LIFE().bombs||0)+1;achCheck();
 }
-const bombVuln=(e,st)=>(e.boss?st.bossDmg:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+const bombVuln=(e,st)=>vsDmg(e,st)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
 // GOO bursts (on its timer, or when its host dies): damages the host itself and whatever is next to it
 function gooBurst(e,st){
   const R=GW*GRENADE.goo.r;e.gooT=0;
   for(const o of enemies){
     if(o.hp<=0||(o!==e&&!inBlast(o,e.x,e.y,R)))continue;
-    hurt(o,e.gooD*bombVuln(o,st));
+    hurt(o,e.gooD*bombVuln(o,st),0,'goo_bomb');
   }
   if(novas.length<10){novas.push({x:e.x,y:e.y,life:1,col:C.a,r:R,fill:true});burst(e.x,e.y,C.a,6,GH*.1);}   // a crowd of bursts at once draws only the first rings
   snd('bomb');
@@ -2191,7 +2223,7 @@ function blastBomb(b){
   for(const e of enemies){
     if(e.hp<=0||!inBlast(e,b.x1,b.y1,R))continue;
     if(kind==='virus'){e.virT=GRENADE.virus.t;e.virD=Math.max(e.virD||0,base*x.m);continue;}   // a new infection refreshes the timer, it never stacks
-    hurt(e,base*x.m*bombVuln(e,st));
+    hurt(e,base*x.m*bombVuln(e,st),0,b.id);
     if(kind==='goo'){e.gooT=GRENADE.goo.t;e.gooD=base*x.m2;}else knock(e,1.5);
   }
   const col=kind==='goo'?C.a:kind==='virus'?C.r[3]:C.a2;
@@ -2234,24 +2266,28 @@ function evSpeedMul(e){
   if(e.berserk)m*=EV_TUNE.berserkSpd;
   return m;
 }
-// one touch of the perimeter (a first contact, or a tick of a clinging enemy): dodge, AEGIS or damage, then thorns
+// one touch of the perimeter (a first contact, or a tick of a clinging enemy): parry, AEGIS or damage, then thorns
 function contactHit(e,st,mul){
   const LINE_Y=GH*LINE_FRAC;
-  let taken=0;
-  const thorn=()=>{if(st.thornPct>0){const d=Math.min(e.hp,e.maxHp*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=d;runDmgDealt+=d;dmgText(e,d,false);if(st.ls>0&&taken>0)hp=Math.min(st.maxHp,hp+Math.min(d*st.ls,taken*ECO.thornHealCap));}};
+  // MEND's guard: a normal enemy touching the perimeter is destroyed (bosses hit as usual)
+  if(runFx.guardT>0&&!e.boss){const d=e.hp;e.hp=0;runDmgDealt+=d;dmgBy('mend',d);burst(e.x,LINE_Y,C.r[2],8,GH*.06);snd('block');return;}
+  const thorn=()=>{if(st.thornPct>0){const d=Math.min(e.hp,e.maxHp*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);}};
   if(Math.random()<st.dodge){
     snd('dodge');qEvent('dodge');
-    spawnText(e.x,LINE_Y-GH*.02,T('DODGE'),C.a2);
+    spawnText(e.x,LINE_Y-GH*.02,T('PARRY'),C.a2);
     burst(e.x,LINE_Y,C.a2,6,GH*.05);
-    e.kbVy=-e.spd*2;
+    e.kbVy=-e.spd*ECO.parryBack;if(!e.boss)e.stunT=ECO.parryStun;
   }else if(st.aegisCD>0&&aegisT<=0){
     aegisT=st.aegisCD;snd('block');
     spawnText(e.x,LINE_Y-GH*.02,T('BLOCK'),C.a2);
     burst(e.x,LINE_Y,C.a2,10,GH*.07);
-    e.kbVy=-e.spd*3.5;
+    // the blocked enemy is destroyed (a boss is only pushed back) and the ones close to it are pushed back
+    e.kbVy=-e.spd*3.5;if(!e.boss){const d=e.hp;e.hp=0;runDmgDealt+=d;dmgBy('aegis',d);}
+    for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,GW*ECO.aegisPushR))knock(o,1.5);
+    novas.push({x:e.x,y:LINE_Y,life:1,col:C.a2,r:GW*ECO.aegisPushR});
   }else{
-    const dmg=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken;taken=dmg;
-    hp-=dmg;runDmgTaken+=dmg;snd('breach');hint('breach');
+    const dmg=Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-st.block);
+    hp-=dmg;runDmgTaken+=dmg;{const k=e.boss?'boss:'+(e.kind||'classic'):e.type;runHitBy[k]=(runHitBy[k]||0)+dmg;}snd('breach');hint('breach');
     burst(e.x,LINE_Y,C.hot,8,GH*.06);
     if(mul===1){screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.2};}
     e.kbVy=-e.spd*3.5;
@@ -2260,7 +2296,7 @@ function contactHit(e,st,mul){
 }
 
 // ── GAME LOOP ────────────────────────────────────────────────────────────────
-let lastTime=0;
+let lastTime=0,_wakeWas=false;
 function loop(ts){
   requestAnimationFrame(loop);
   if(fxLow()&&ts-lastTime<30)return;   // LOW: 30 fps cap (less heat and battery on weak phones)
@@ -2280,6 +2316,10 @@ function loop(ts){
   }
   else{updateDead(frameDt);if(autoView()==='eco'&&ecoWake<=0)ecoTick(ts);else drawDead();}   // ECO+: not even the result screen is drawn
   syncUI();
+  const ww=wakeWanted();if(ww!==_wakeWas){_wakeWas=ww;keepAwake(ww);}   // pause, popups and the end of the countdown let the screen sleep again
+  syncEco();
+}
+function syncEco(){   // ECO+ black screen on or off
   const ecoOn=(state===ST.PLAY&&!paused||state===ST.DEAD)&&autoView()==='eco'&&ecoWake<=0;
   if(ecoOn!==_ecoShown){_ecoShown=ecoOn;$('ecoUI').classList.toggle('show',ecoOn);document.body.classList.toggle('eco',ecoOn);updateMusicVolume();}
 }
@@ -2315,6 +2355,7 @@ function updatePlay(dt){
   for(const id in actCD){const was=actCD[id];actCD[id]=Math.max(0,was-dt);if(was>0&&actCD[id]===0&&TT[id]&&TT[id].gren)snd('ready');}
   if(runFx.odT>0)runFx.odT-=dt;
   if(runFx.midT>0)runFx.midT-=dt;
+  if(runFx.guardT>0)runFx.guardT-=dt;
   aegisT=Math.max(0,aegisT-dt);
 
   if(Math.random()<dt*(fxLow()?8:20)){
@@ -2328,22 +2369,22 @@ function updatePlay(dt){
   // the triangle slides under its current target (or the closest enemy)
   let triTarget=GW/2+Math.sin(Date.now()*.0005)*GW*.1;
   // only the first target is needed: one pass instead of filtering and sorting the whole crowd every frame
-  const tm=save.settings.target||0;let tg=null;
+  let tg=null;
   for(const e of enemies){
     if(e.y<st.rangeY||e.hp<=0||e.phased)continue;
-    if(!tg||(tm===1?(e.atk>tg.atk||(e.atk===tg.atk&&e.y>tg.y)):tm===2?(e.atk<tg.atk||(e.atk===tg.atk&&e.y>tg.y)):e.y>tg.y))tg=e;
+    if(!tg||e.y>tg.y)tg=e;
   }
   if(!tg&&enemies.length)tg=enemies.reduce((a,b)=>b.y>a.y?b:a);
   if(tg)triTarget=tg.x;
   triX+=(triTarget-triX)*Math.min(1,dt*1.8);
   triX=Math.max(GW*.06,Math.min(GW*.94,triX));
 
-  if(hp<st.maxHp)hp=Math.min(st.maxHp,hp+st.regen*dt);
+  if(hp<st.maxHp)hp=Math.min(st.maxHp,hp+(st.regen+st.regenT*(1+ECO.regenLow*(1-hp/st.maxHp)))*dt);
   shockCooldown=Math.max(0,shockCooldown-dt);
   if(st.shockM>0&&hp/st.maxHp<.3&&shockCooldown<=0){
     for(const e of enemies){
       if(e.hp<=0||e.y<GH*.45)continue;
-      hurt(e,st.hitDmg*st.shockM*(e.boss?st.bossDmg:1));
+      hurt(e,st.hitDmg*st.shockM*vsDmg(e,st),0,'shockwave');
       knock(e,2);
     }
     novas.push({x:triX,y:LINE_Y,life:1,col:C.hot});screenFlash=.25;shake={x:0,y:0,t:.2};
@@ -2356,8 +2397,8 @@ function updatePlay(dt){
     if(waveTimer<=0){wavePhase='active';spawnWave();}
   } else if(wavePhase==='active'){
     // continuous spawning
-    const interval=Math.max(0.5,2.2-waveNum*.04);
-    const perSpawn=Math.max(1,Math.round(Math.floor(1+waveNum/20)*(runMods?runMods.spawn:1)));
+    const interval=Math.max(0.5,2.2-waveNum*.015);
+    const perSpawn=Math.max(1,Math.round(Math.floor(1+waveNum/25)*(runMods?runMods.spawn:1)));
     waveSpawnTimer-=dt;
     if(waveSpawnTimer<=0){
       waveSpawnTimer=interval*(runMods?runMods.ival:1);
@@ -2395,8 +2436,10 @@ function updatePlay(dt){
     // homing: a bullet follows the enemy it was fired at, so knockback / dodging can't make it miss;
     // if that enemy dies first, the bullet flies on in a straight line
     if(b.tgt){
-      if(b.tgt.hp<=0||b.tgt.phased)b.tgt=null;
-      else{const sp=Math.hypot(b.vx,b.vy),dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;}
+      if(b.tgt.hp<=0||b.tgt.phased){
+        b.tgt=null;
+      }
+      if(b.tgt){const sp=Math.hypot(b.vx,b.vy),dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,l=Math.hypot(dx,dy)||1;b.vx=dx/l*sp;b.vy=dy/l*sp;}
     }
     b.x+=b.vx*dt;b.y+=b.vy*dt;
     if(b.left!==undefined)b.left-=Math.hypot(b.vx,b.vy)*dt;   // BURST pellet: flies a limited way
@@ -2417,25 +2460,43 @@ function updatePlay(dt){
       }
       if(!e)break;
       const hx=b.px+(b.x-b.px)*tBest,hy=b.py+(b.y-b.py)*tBest;   // where the bullet touched the enemy
-      const isCrit=Math.random()<st.crit;
-      let dmg=b.dmg*(isCrit?st.critM:1)*(e.boss?st.bossDmg:1)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
-      // ARMOR: a bullet weaker than armorThr x its max health is cut in proportion (thorns / blasts skip it)
-      if(e.armorThr)dmg*=Math.min(1,dmg/(e.maxHp*e.armorThr));
-      const hpBefore=e.shield>0?Infinity:e.hp;
-      // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts skip it)
-      if(e.shield>0){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
+      const isCrit=Math.random()<st.crit,pel=b.left!==undefined,bare=pel&&BURST.bare;
+      let dmg=b.dmg*(isCrit?st.critM:1)*vsDmg(e,st)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
+      // BURST point-blank: the way the pellet had flown when it touched the enemy
+      if(pel)dmg*=pointBlank(b.len-b.left-Math.hypot(b.x-hx,b.y-hy),b.len);
+      // ARMOR: a bullet weaker than armorThr x its max health is cut in proportion (thorns / blasts / BURST pellets skip it)
+      if(e.armorThr&&!bare)dmg*=Math.min(1,dmg/(e.maxHp*e.armorThr));
+      const hpBefore=e.shield>0&&!bare?Infinity:e.hp;
+      // WARDEN shield: soaks bullets at half strength until it breaks (thorns / blasts / BURST pellets skip it)
+      dmgBy('shot',e.shield>0&&!bare?Math.min(dmg*.5,e.shield):Math.min(dmg,Math.max(0,e.hp)));
+      if(e.shield>0&&!bare){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
       else e.hp-=dmg;
       runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;
-      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){e.hp=0;spawnText(e.x,e.y-e.sz,T('REAP'),C.r[3]);}
-      if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');}
+      if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){dmgBy('reaper',e.hp);e.hp=0;spawnText(e.x,e.y-e.sz,T('REAP'),C.r[3]);}
+      if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');
+        // CRIT DMG tattoo: the crit splashes a share of its damage onto the enemies around the hit (they die in the enemy loop)
+        if(st.splash>0){const R=GW*ECO.critSplashR;for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,hx,hy,R))hurt(o,dmg*st.splash*vsDmg(o,st),true,'crit_mult');
+          if(novas.length<10)novas.push({x:hx,y:hy,life:1,col:C.r[2],r:R,fill:true});}}
       else{snd('hit');burst(hx,hy,C.a2,5,GH*.06);}
       dmgText(e,dmg,isCrit);
-      if(st.ls>0)hp=Math.min(st.maxHp,hp+dmg*st.ls);
       if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
       if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
       // BURST: a pellet that kills flies on with the damage it had left
-      if(b.left!==undefined&&e.hp<=0&&dmg>hpBefore){b.dmg*=1-hpBefore/dmg;(b.hits||(b.hits=new Set())).add(e);continue;}
+      if(pel&&e.hp<=0&&dmg>hpBefore){b.dmg*=1-hpBefore/dmg;(b.hits||(b.hits=new Set())).add(e);continue;}
+      // REACH: a bullet that kills turns to the nearest other enemy with a share of the damage it had left
+      if(st.carry>0&&e.hp<=0&&dmg>hpBefore){
+        const hits=b.hits||(b.hits=new Set());hits.add(e);
+        let nx=null,nd=Infinity;
+        for(const o of enemies){if(hits.has(o)||o.hp<=0||o.phased)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
+        if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
+          b.dmg*=(1-hpBefore/dmg)*st.carry;b.vx=dx/l*sp;b.vy=dy/l*sp;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;break;}
+      }
+      // PIERCER: once per bullet (not a BURST pellet), a chance to go through and turn to the nearest enemy further up the field
+      if(st.pAim&&b.left===undefined&&!b.aimed&&Math.random()<st.pAim){const hits=b.hits||(b.hits=new Set());hits.add(e);let nx=null,nd=Infinity;
+        for(const o of enemies){if(hits.has(o)||o.hp<=0||o.phased||o.y>=e.y)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
+        if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;qEvent('pierce');
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;b.aimed=1;break;}}
       if(Math.random()<st.pierce){(b.hits||(b.hits=new Set())).add(e);if(b.tgt===e)b.tgt=null;qEvent('pierce');continue;}
       // ricochet: redirect from the hit point into the nearest other enemy (chains with the RICOCHET tattoo)
       if(b.bounces<st.chain&&Math.random()<st.bounce){
@@ -2461,6 +2522,7 @@ function updatePlay(dt){
     if(Math.abs(e.kbVy)<e.spd*.05)e.kbVy=0;
     if(e.slowT>0)e.slowT-=dt;
     if(e.frozenT>0)e.frozenT-=dt;
+    if(e.stunT>0)e.stunT-=dt;   // PARRY: stands still, knockback still carries it
     const frozen=e.frozenT>0;
     if(e.pulse>0)e.pulse-=dt*2;
     // wave events: MENDING TIDE heals the enemy itself, BERSERK triggers once it is wounded
@@ -2493,13 +2555,13 @@ function updatePlay(dt){
         e.enraged=true;e.spd=e.baseSpd*1.4;snd('enrage');screenFlash=.3;shake={x:0,y:0,t:.3};
         spawnText(e.x,e.y-e.sz*.8,T('ENRAGED'),C.hot);burst(e.x,e.y,C.hot,16,GH*.12);
       }
-      // pulse: a shock wave that hurts the triangle itself. Armor, dodge and AEGIS work on it like on a perimeter hit
+      // pulse: a shock wave that hurts the triangle itself. Armor, parry and AEGIS work on it like on a perimeter hit
       e.pulseT=(e.pulseT??ECO.bossPulseFirst)-dt;
       if(e.pulseT<=0&&e.y>GH*HUD_TOP){
         e.pulseT=ECO.bossPulseEvery*(e.enraged?.65:1);e.pulse=1;burst(e.x,e.y,C.hot,14,GH*.1);const bm={x1:e.x,y1:e.y,x2:triX,y2:TRI_Y,life:1,col:C.hot};beams.push(bm);
-        if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('DODGE'),C.a2);}
+        if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('PARRY'),C.a2);}
         else if(st.aegisCD>0&&aegisT<=0){bm.col=C.a2;aegisT=st.aegisCD;snd('block');spawnText(triX,LINE_Y-GH*.05,T('BLOCK'),C.a2);}
-        else{const d=e.atk*ECO.bossPulse*st.dmgTaken;hp-=d;runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
+        else{const d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-st.block);hp-=d;runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
@@ -2509,12 +2571,12 @@ function updatePlay(dt){
         burst(e.x,e.y,C.hot,8,GH*.06);
       }
     }
-    const spd=frozen||e.clung?0:e.spd*(e.slowT>0?1-st.slowAmt:1)*evSpeedMul(e);
+    const spd=frozen||e.clung||e.stunT>0?0:e.spd*(e.slowT>0?1-st.slowAmt:1)*evSpeedMul(e);
     e.y+=(spd+(frozen?0:e.kbVy))*dt;
     if(e.hitFlash>0)e.hitFlash-=dt;
     if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e,st);}
     // VIRUS ticks are quiet (no flash, no number): a whole wave can be infected at once
-    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){hurt(e,e.virD*e.virAcc,1);e.virAcc=0;}}
+    if(e.virT>0&&e.hp>0){e.virT-=dt;e.virAcc=(e.virAcc||0)+dt;if(e.virAcc>=.5){hurt(e,e.virD*e.virAcc,1,'virus_bomb');e.virAcc=0;}}
 
     // every touch while moving down counts as a hit (and knocks it back again); CLINGERS stay and hit again every few seconds
     if(e.clung){
@@ -2545,7 +2607,7 @@ function runShatter(st){
       const d=(o.x-b.x)**2+(o.y-b.y)**2;if(d<=r2)near.push([d,o]);
     }
     near.sort((p,q)=>p[0]-q[0]);
-    for(const [,o] of near.slice(0,ECO.shatterMax)){hurt(o,b.dmg*(o.boss?.25:1));o.slowT=Math.max(o.slowT,ECO.slowTime);}
+    for(const [,o] of near.slice(0,ECO.shatterMax)){hurt(o,b.dmg*(o.boss?.25:1),0,'shatter');o.slowT=Math.max(o.slowT,ECO.slowTime);}
     novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});snd('shatter');burst(b.x,b.y,C.a2,10,GH*.08);
   }
 }
@@ -2574,8 +2636,9 @@ function updateDead(dt){
   deadTimer+=dt;
   // AUTO RETRY: the result screen shows from 2 s; the next run starts AUTO_RETRY.wait seconds later
   if(autoRetryArmed()&&deadTimer>2){
+    if(anyPanelOpen()){deadTimer=2;if(autoLeft){autoLeft=0;renderAutoRetry();}return;}   // a popup (away coins, an ad…) holds the countdown; it restarts in full when closed
     const left=Math.ceil(2+AUTO_RETRY.wait-deadTimer);
-    if(left<=0){snd('launch');startRun(false,true);return;}
+    if(left<=0){save.autoLast=save.autoView;snd('launch');startRun(false,true);return;}
     if(left!==autoLeft){autoLeft=left;renderAutoRetry();snd(left===1?'count1':'count');}
   }
   if(screenFlash>0)screenFlash=Math.max(0,screenFlash-dt*2);
@@ -2708,7 +2771,8 @@ function drawPlay(){
   const zh=GH*.045,fg=cx.createLinearGradient(0,LINE_Y,0,LINE_Y+zh);
   fg.addColorStop(0,hexA(C.hot,.08));fg.addColorStop(1,'rgba(0,0,0,0)');
   cx.fillStyle=fg;cx.fillRect(0,LINE_Y,GW,zh);
-  cx.strokeStyle=hexA(C.hot,.45);cx.lineWidth=1;cx.setLineDash([6,6]);
+  const guard=runFx.guardT>0;   // MEND's guard: the perimeter glows solid
+  cx.strokeStyle=guard?C.r[2]:hexA(C.hot,.45);cx.lineWidth=guard?3:1;cx.setLineDash(guard?[]:[6,6]);
   cx.beginPath();cx.moveTo(0,LINE_Y+.5);cx.lineTo(GW,LINE_Y+.5);cx.stroke();cx.setLineDash([]);
   // range line: the triangle only shoots below this
   const RY=st.rangeY;
@@ -3076,9 +3140,9 @@ function syncUI(){
   if(k==='dead')renderDead();
 }
 
-// in-run controls: one button per equipped active tattoo + target priority
+// in-run controls: one button per equipped active tattoo + AUTO RETRY on/off
 function renderPlayUI(){
-  $('tgtTxt').textContent=T(TARGET_MODES[save.settings.target||0]);
+  renderAutoRetry();
   const maxSp=permVal('gameSpeed');$('spdCtl').style.display=maxSp>1?'':'none';$('spdTxt').textContent='x'+stats().speed.toFixed(1);
   $('abil').classList.toggle('hi',IS_APP&&save.tatSlots>=4);
   // one fixed cell per tattoo slot, so a button never moves when another slot changes
@@ -3105,7 +3169,7 @@ function updatePlayUI(){
   }
 }
 $('abil').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b)useActive(b.dataset.act);});
-$('tgtBtn').addEventListener('click',cycleTarget);
+
 // speed steps of 0.5 from x1 up to the unlocked maximum (which is always reachable as the last step)
 function stepSpeed(dir){
   const max=permVal('gameSpeed'),cur=stats().speed;
@@ -3149,7 +3213,7 @@ function renderMenu(){
 // attack mode: the line under the triangle names the mode, the cards switch it (BURST opens at Tier 2)
 const MODES=[
   {id:'rapid',name:'RAPID',icon:'stream',desc:'Fast single shots with long range.'},
-  {id:'burst',name:'BURST',icon:'spread',desc:'A slow blast of 5 pellets, short range, hits hardest up close.'},
+  {id:'burst',name:'BURST',icon:'spread',desc:'A slow blast of 5 pellets: the closer the enemy, the harder they hit. They go through armor and shields, and kills near the perimeter heal you.'},
 ];
 function renderModeLine(){$('mModeTxt').textContent=T('MODE: {0}',isBurst()?'BURST':'RAPID');}
 function renderModeCards(){
@@ -3229,29 +3293,46 @@ $('mGear').addEventListener('click',openSettings);
 $('pResume').addEventListener('click',()=>{snd('click');paused=false;});
 $('pSet').addEventListener('click',openSettings);
 $('pEnd').addEventListener('click',()=>{snd('click');confirmEndRun=true;});
-$('pYes').addEventListener('click',()=>{confirmEndRun=false;triggerDeath();});
+$('pYes').addEventListener('click',()=>{confirmEndRun=false;triggerDeath(true);});
 $('pNo').addEventListener('click',()=>{snd('click');confirmEndRun=false;});
 
 // dead
 function renderDead(){
   const r=save.lastRun||{};
-  $('dWave').textContent=`${r.wave||0} · ${r.weekly?T('WEEKLY OP'):T('TIER {0}',r.tier||1)}`;
   $('dBest').textContent='★ '+(runUnlockedTier?T('TIER {0} UNLOCKED',runUnlockedTier):r.weekly?T('NEW WEEKLY BEST'):T('NEW BEST WAVE'))+' ★';
   $('dBest').classList.toggle('show',runNewBest||!!runUnlockedTier);
   const prevBest=runNewBest||r.weekly?0:(save.tierBest[r.tier||1]||0);
   const cpm=r.time>0?Math.round((r.coins||0)/(r.time/60)):0;
-  const rows=[[T('WAVE'),r.wave||0],[T('KILLS'),r.kills||0],[T('COINS'),'+'+fmtC(r.coins||0)],
-    [T('COINS/MIN'),fmtN(cpm)],[T('DMG DEALT'),fmtN(r.dmgDealt||0)],[T('DMG TAKEN'),fmtN(r.dmgTaken||0)],[T('TIME'),formatTime(r.time||0)]];
+  const rows=[[T('WAVE'),(r.wave||0)+' · '+(r.weekly?T('WEEKLY OP'):T('TIER {0}',r.tier||1))],[T('KILLS'),r.kills||0],[T('COINS'),'+'+fmtC(r.coins||0)],
+    [T('COINS/MIN'),fmtN(cpm)],[T('TIME'),formatTime(r.time||0)]];
   if(prevBest>0)rows.splice(1,0,[T('BEST'),prevBest]);
   if(r.auto)rows.splice(rows.findIndex(x=>x[0]===T('COINS'))+1,0,[T('AUTO RETRY'),T('COINS x{0}',AUTO_RETRY.share)]);
-  $('dStats').innerHTML=rows.map(([k,v])=>`<div class="dr"><span>${k}</span><i></i><b>${v}</b></div>`).join('');
+  const row=([k,v])=>`<div class="dr"><span>${k}</span><i></i><b>${v}</b></div>`;
+  // shares only, never raw numbers: the top 3 damage sources, and the enemy kind that took the most health
+  const top=(o,n)=>{const e=Object.entries(o||{}),s=e.reduce((a,[,v])=>a+v,0);
+    return s>0?e.sort((a,b)=>b[1]-a[1]).slice(0,n).map(([k,v])=>[k,Math.max(1,Math.round(v/s*100))]):[];};
+  const srcName=k=>k==='shot'?T('SHOTS'):TT[k]?T(TT[k].name):k;
+  const foeName=k=>k.startsWith('boss:')?BOSS_NAMES[k.slice(5)]||'BOSS':ENEMY_TYPES[k]?ENEMY_TYPES[k].name:k;
+  const dmg=top(r.dmgBy,3),foe=top(r.hitBy,1)[0];
+  $('dStats').innerHTML=rows.map(row).join('')
+    +(foe?row([T('BROKEN BY'),foeName(foe[0])+' '+foe[1]+'%']):'')
+    +(dmg.length?`<div class="dh">${T('TOP DAMAGE')}</div>`+dmg.map(([k,p])=>row([srcName(k),p+'%'])).join(''):'');
   renderAutoRetry();
 }
 // the switch shows once Tier 3 is open, never after a weekly run
 const autoRetryOffered=()=>maxUnlockedTier()>=AUTO_RETRY.tier&&!(state===ST.PLAY?runWeekly:save.lastRun&&save.lastRun.weekly);   // while playing it is the current run that counts
-const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered();
+const autoRetryArmed=()=>!!save.autoRetry&&autoRetryOffered()&&!(state===ST.DEAD&&runQuit);
 const autoView=()=>autoRetryArmed()?save.autoView:'full';   // how a run looks while AUTO RETRY is on: full, save (20 fps) or eco (black screen)
-let ecoWake=0,_lastDraw=0,_ecoTxtT=0,autoLeft=0;
+let ecoWake=0,_lastDraw=0,_ecoTxtT=0,autoLeft=0,runQuit=false;
+// AUTO RETRY runs since the player last touched the game: summed up at the next touch after a long enough absence
+let autoSess={runs:0,coins:0,best:0},lastInput=Date.now();
+function playerBack(){
+  const away=Date.now()-lastInput;lastInput=Date.now();
+  if(autoSess.runs>=2&&away>=AUTO_RETRY.summaryMs)
+    toast(T('WHILE YOU WERE AWAY')+'<small>'+T('{0} AUTO RUNS · +{1} COINS',autoSess.runs,fmtC(autoSess.coins))+'</small><small>'+T('BEST WAVE {0}',autoSess.best)+'</small>',false,true,6000);
+  autoSess={runs:0,coins:0,best:0};
+}
+for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,playerBack,true);
 function ecoTick(ts){
   if(ts-_ecoTxtT<1000)return;_ecoTxtT=ts;
   $('ecoW').textContent=(runWeekly?T('WEEKLY'):'T'+runTier)+' · '+T('WAVE {0}',waveNum);
@@ -3265,11 +3346,22 @@ function cycleAuto(){
     if(!(save.hints||{}).autoView){(save.hints||(save.hints={})).autoView=1;toast(T('TAP AGAIN FOR THE ECO MODES')+'<small>'+T('ECO: 20 FPS, STAYS COOLER')+'</small><small>'+T('ECO+: BLACK SCREEN, TAP TO SEE THE GAME')+'</small>',false,true,4500);}
   }
   else if(save.autoView==='full')save.autoView='save';
-  else if(save.autoView==='save'){save.autoView='eco';ecoWake=0;}
+  else if(save.autoView==='save'){save.autoView='eco';ecoWake=ECO_WAKE;}   // not black at once: like a tap, the game stays visible ECO_WAKE seconds
   else{save.autoRetry=false;save.autoView='full';}
+  autoChanged();
+}
+function autoChanged(){
+  if(state===ST.DEAD){runQuit=false;deadTimer=Math.min(deadTimer,2);}   // switched on the result screen: a full countdown, even after END RUN
   autoLeft=0;persist();snd('blip');renderAutoRetry();keepAwake(wakeWanted());
 }   // seconds shown on the switch while the next run counts down
-function renderAutoRetry(){   // the same switch sits on the result screen and in the pause menu
+function toggleAutoHud(){
+  if(save.autoRetry)save.autoRetry=false;
+  else{save.autoRetry=true;save.autoView=save.autoLast||'full';if(save.autoView==='eco')ecoWake=ECO_WAKE;}
+  autoChanged();
+}
+function renderAutoRetry(){   // the same switch sits on the result screen and in the pause menu; the HUD has a plain on/off one
+  const h=$('hAuto');h.style.display=autoRetryOffered()?'':'none';h.classList.toggle('on',!!save.autoRetry);
+  $('hAutoTxt').textContent=T('AUTO')+(save.autoRetry?' '+T('ON'):' '+T('OFF'));
   for(const [bid,tid] of [['dAuto','dAutoTxt'],['pAuto','pAutoTxt']]){
     const b=$(bid);
     b.style.display=autoRetryOffered()?'':'none';
@@ -3278,6 +3370,7 @@ function renderAutoRetry(){   // the same switch sits on the result screen and i
   }
 }
 for(const id of ['dAuto','pAuto'])$(id).addEventListener('click',cycleAuto);
+$('hAuto').addEventListener('click',toggleAutoHud);
 $('dHome').addEventListener('click',()=>{snd('click');state=ST.MENU;keepAwake(false);startMusic(true);if(runUnlockedTier)maybeAskReview();});
 // store rating prompt (app only): after a run that unlocked a new tier, once the player is a few tiers in.
 // At most 3 asks, 60+ days apart; Google / Apple also decide on their own whether the window really shows.
@@ -3545,11 +3638,11 @@ const TAT_COLS={
   attack_power:[['dmg','DAMAGE','+%']],attack_speed:[['rate','FIRE RATE','+%']],max_hp:[['hp','MAX HP','+%']],
   regen:[['pct','HEAL / SEC','%2']],defense:[['red','DMG TAKEN','-%']],coin_mult:[['c','COINS','+%']],
   luck:[['jack','x3 CHANCE','%'],['drop','MORE DROPS','+%']],
-  crit_chance:[['c','CRIT','+%']],crit_mult:[['m','CRIT DMG','+x']],dodge:[['d','DODGE','+%']],thorns:[['t','THORNS','+%']],
-  frost:[['c','SLOW %','+%'],['a','SLOW PWR','+%'],['vuln','BONUS DMG','+%']],reach:[['r','RANGE','+r']],
-  stasis:[['dur','FREEZE','s'],['cd','COOLDOWN','s']],mend:[['heal','HEAL','%'],['cd','COOLDOWN','s']],
+  crit_chance:[['c','CRIT','+%']],crit_mult:[['m','CRIT DMG','+x'],['s','SPLASH','%']],dodge:[['d','PARRY','+%']],thorns:[['t','THORNS','+%']],
+  frost:[['c','SLOW %','+%'],['a','SLOW PWR','+%'],['vuln','BONUS DMG','+%']],reach:[['r','RANGE','+r'],['s','CARRY','%']],
+  stasis:[['dur','FREEZE','s'],['cd','COOLDOWN','s']],mend:[['heal','HEAL','%'],['guard','GUARD','s'],['cd','COOLDOWN','s']],
   aegis:[['cd','RECHARGE','s']],boss_slayer:[['b','BOSS DMG','+%']],reaper:[['k','KILLS BELOW','%']],
-  lifesteal:[['l','LIFESTEAL','+%']],piercer:[['p','PIERCE','+%']],
+  lifesteal:[['l','HEAL / KILL','%2']],piercer:[['p','PIERCE','+%']],
   nova:[['m','BLAST','x'],['cd','COOLDOWN','s']],overdrive:[['m','FIRE RATE','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
   ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shatter:[['p','BURST','%']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
   twin:[['m','TWIN DMG','%']],arc:[['every','EVERY','1/n'],['n','TARGETS','n'],['m','DMG EACH','%']],
@@ -3631,7 +3724,7 @@ function renderTattoos(){
     if(c.lv){
       found++;
       const isEq=save.equipped.includes(t.id),maxed=c.lv>=TAT_MAX,p=maxed?100:c.copies/tatReq(c.lv)*100;
-      d.className='ctile'+(isEq?' eq':'');d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
+      d.className='ctile'+(isEq?' eq':'');d.dataset.id=t.id;d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
       d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${T(t.name)}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
     }else{
       d.className='ctile locked';
@@ -3646,7 +3739,7 @@ function renderTattoos(){
 
 // ── QUESTS ───────────────────────────────────────────────────────────────────
 // A new daily quest every `dailyEveryH` hours, a weekly one every `weeklyEveryH`. Board holds `cap`.
-const QUEST={cap:10,dailyEveryH:3,weeklyCount:4};   // 10 daily quests at most; 4 weekly quests every Monday
+const QUEST={cap:10,dailyEveryH:3,weeklyCount:4,dayCoins:60,weekCoins:500};   // 10 daily quests at most; 4 weekly quests every Monday
 const QUEST_DEFS=[
   {k:'kill',         txt:n=>T('Destroy {0} enemies',fmtN(n)),          d:[60,120],w:[700,1100]},
   {k:'kill_basic',   txt:n=>T('Destroy {0} basic enemies',fmtN(n)),    d:[40,80], w:[450,750]},
@@ -3658,7 +3751,7 @@ const QUEST_DEFS=[
   {k:'crit',         txt:n=>T('Land {0} critical hits',fmtN(n)),       d:[25,50], w:[260,420],need:()=>permVal('critChance')>0},
   {k:'slow',         txt:n=>T('Slow down {0} enemies',fmtN(n)),        d:[15,30], w:[180,300],need:()=>permVal('slowChance')>0&&permVal('slowAmt')>0},
   {k:'multishot',    txt:n=>T('Fire {0} multishots',fmtN(n)),          d:[15,30], w:[180,300],need:()=>permVal('multishot')>0},
-  {k:'dodge',        txt:n=>T('Dodge {0} hits',fmtN(n)),               d:[4,8],   w:[40,70],  need:()=>permVal('dodge')>0},
+  {k:'dodge',        txt:n=>T('Parry {0} hits',fmtN(n)),               d:[4,8],   w:[40,70],  need:()=>permVal('dodge')>0},
   {k:'bomb',         txt:n=>T('Throw {0} bombs',fmtN(n)),              d:[10,20], w:[80,140], need:()=>TAT_TYPES.some(t=>t.gren&&tatOf(t.id).lv>0)},
   {k:'pierce',       txt:n=>T('Pierce through {0} enemies',fmtN(n)),   d:[10,20], w:[120,200],need:()=>permVal('pierce')>0},
   {k:'drop',         txt:n=>T(n>1?'Collect {0} field drops':'Collect {0} field drop',n),d:[1,2],   w:[6,10]},
@@ -3666,6 +3759,8 @@ const QUEST_DEFS=[
   {k:'coins',        txt:n=>T('Earn {0} coins in runs',fmtN(n)),       coins:true},
 ];
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+// quest coins: the best wave's coin value x QUEST.dayCoins / weekCoins, rounded to a plain number (1, 1.5, 2, 2.5 … 9.5 x a power of ten)
+const roundNice=x=>{if(x<10)return Math.max(1,Math.round(x));const p=Math.pow(10,Math.floor(Math.log10(x)));return Math.round(x/p*2)/2*p;};
 function makeQuest(kind){
   const W=kind==='weekly';
   const pool=QUEST_DEFS.filter(d=>!d.need||d.need());
@@ -3680,7 +3775,7 @@ function makeQuest(kind){
   else if(d.coins)target=Math.ceil(cv*(W?rint(250,400):rint(25,45)));
   else{const r=W?d.w:d.d;target=rint(r[0],r[1]);}
   return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind,k:d.k,target,prog:0,
-    gems:W?rint(9,12):rint(1,2),coins:Math.ceil(cv*(W?rint(100,160):rint(12,20)))};
+    gems:W?rint(9,12):rint(1,2),coins:roundNice(cv*(W?QUEST.weekCoins:QUEST.dayCoins))};
 }
 // Everyone runs on the same clock: daily quests arrive at fixed UTC slots (00:00, 03:00, … UTC) and
 // the week turns over on Monday 00:00 UTC for everybody (new weekly quests + new weekly-op rules).
@@ -3903,7 +3998,6 @@ const HINTS={
   breach:'> ENEMIES THAT TOUCH THE RED PERIMETER DAMAGE YOU. THEY BOUNCE BACK AND RETURN.',
   drops:'> TAP FLOATING COINS AND GEMS TO COLLECT THEM.',
   hud:'> DOUBLE-TAP THE FIELD TO HIDE THE HUD. DOUBLE-TAP AGAIN TO BRING IT BACK.',
-  target:'> THE TARGET BUTTON (TOP RIGHT) PICKS WHO YOU SHOOT FIRST: FRONT, STRONGEST OR WEAKEST.',
   active:'> ACTIVE TATTOOS GIVE YOU A BUTTON ABOVE THE PERIMETER. TAP IT WHEN IT GLOWS (KEYS 1-5).',
 };
 let hintQueue=[],hintTO=null;
@@ -3940,6 +4034,10 @@ const COACH=[
    text:'Ink one tattoo.'},
   {id:'equip', where:'tat', sel:'#invGrid .ctile:not(.locked)', when:()=>LIFE().pulls>0&&!save.equipped.length&&TAT_TYPES.some(t=>tatOf(t.id).lv),
    text:'HOLD a tattoo to put it in your slot. Tap it to see what it does.'},
+  {id:'bomb',  where:'menu',sel:'#mTat',  when:()=>bombIdle(),
+   text:'You have a BOMB tattoo. Put it in a slot to throw it in your runs.'},
+  {id:'bombequip',where:'tat',sel:'#invGrid .ctile[data-id$="_bomb"]:not(.eq)',when:()=>bombIdle(),
+   text:'HOLD the bomb to put it in a slot. In a run, tap its button, then tap where it should land.'},
   {id:'quests',where:'menu',sel:'#mQuest',when:()=>save.quests.some(questDone),
    text:'A quest is done. Open QUESTS and claim its reward.'},
   {id:'tier',  where:'menu',sel:'#tNext', when:()=>maxUnlockedTier()>1&&save.tier===1,
@@ -3952,6 +4050,7 @@ const COACH=[
    text:'Try the WEEKLY OP: two special rules each week and extra gems.'},
 ];
 let coachCur=null,coachEl=null;
+const bombIdle=()=>TAT_TYPES.some(t=>t.gren&&tatOf(t.id).lv)&&!save.equipped.some(id=>TT[id]&&TT[id].gren);   // owns a bomb, none equipped
 function coachClear(done){
   if(coachEl)coachEl.classList.remove('coach');
   if(done&&coachCur){if(!save.coach)save.coach={};save.coach[coachCur.id]=1;persist();}
@@ -4028,11 +4127,11 @@ const pityRar=()=>{const p=tatPool();return p.length?Math.max(...p.map(t=>t.rar)
 const HELP_TOPICS=[
   ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
-  ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade moves that line up.')}</p>
-    <p>${T('The {0} target button (top right) chooses who gets shot first: FRONT = closest to you, STRONG = hits hardest, WEAK = hits softest (when they hit the same, the closest one first). Bullets follow their target.',I('target'))}</p>
-    <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight, and one that kills flies on with the damage it has left. MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.')}</p>`],
+  ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the OVERKILL tattoo moves that line up.')}</p>
+    <p>${T('It always shoots the enemy closest to the perimeter first. Bullets follow their target.')}</p>
+    <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight and hit harder the closer the enemy is (x{0} at the triangle, x{1} at the end of their way). They go through armor and shields, and one that kills flies on with the damage it has left. Every kill close to the perimeter heals you {2} of your max health (on top of SALVAGE). MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.',BURST.near,BURST.far,pc(BURST.heal))}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
-    <p>${T('Reach wave 30 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
+    <p>${T('Reach wave 50 in a tier to unlock the next one: the same waves with much stronger enemies, and more coins. Choose the tier with the arrows above PLAY.')}</p>
     <p>${T('AUTO RETRY (from Tier {0}): switch it on in the pause menu or the result screen and the same tier starts again by itself {1} seconds after a death. Tap the switch again to choose how the screen looks while it runs: FULL, ECO (stays cooler) or ECO+ (black screen, tap to see the game for 15 s). Runs started this way pay {2} of the coins and find fewer gems; a run you start yourself pays in full. The weekly op never restarts by itself.',AUTO_RETRY.tier,AUTO_RETRY.wait,Math.round(AUTO_RETRY.share*100)+'%')}</p>`],
   ['events','spark','WAVE EVENTS',()=>`<p>${T('From wave 4, every 7th wave brings a random event that changes the rules for that wave only. It is announced on screen. Boss waves and the WEEKLY OP never have one.')}</p>
     ${EVENT_KEYS.map(k=>`<p><b>${T(EVENTS[k].name)}</b>: ${T(EVENTS[k].desc)}</p>`).join('')}
@@ -4043,29 +4142,29 @@ const HELP_TOPICS=[
     enemyRow('tank',r[3],T('TANK'),T('Slow, lots of health, hits hard.')),
     enemyRow('plated',r[2],T('PLATED'),T('A light shield soaks bullets until it breaks. A first look at what is coming later.')),
     enemyRow('splitter',r[2],T('SPLITTER'),T('Breaks into two small SHARDS when it dies.')),
-    enemyRow('armored',r[3],T('ARMORED'),T('Bullets weaker than a tenth of its health are cut in proportion. Strong hits and blasts get through.')),
+    enemyRow('armored',r[3],T('ARMORED'),T('Bullets weaker than a tenth of its health are cut in proportion. Strong hits, blasts and BURST pellets get through.')),
     enemyRow('ghost',r[1],T('GHOST'),T('Fades out for a moment: bullets pass through it. Blasts and thorns still hit.')),
-    enemyRow('warden',r[2],T('WARDEN'),T('From tier 3. A strong shield soaks bullets until it breaks; thorns and blasts go around it.')),
+    enemyRow('warden',r[2],T('WARDEN'),T('From tier 3. A strong shield soaks bullets until it breaks; thorns, blasts and BURST pellets go around it.')),
     enemyRow('mender',r[1],T('MENDER'),T('From tier 8. Heals the enemies around it, so take it out first.')),
     enemyRow('blinker',r[3],T('BLINKER'),T('From tier 11. Jumps forward every few seconds.')),
     enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),
-    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, dodge and AEGIS reduce them.')),
+    enemyRow('boss',C.hot,T('BOSS'),T('Every 10th wave, in four kinds that take turns: calls shards, wears a shield (BULWARK), calls runners (SWARMLORD) or heals (REGENERATOR). Enrages below half health. Its shock waves hurt you directly; armor, parry and AEGIS reduce them.')),
   ].join('')+`</div>`;}],
   ['damage','shield','TAKING DAMAGE',()=>`<p>${T('Each enemy that touches the perimeter deals its attack as damage, then bounces back and comes again.')}</p>
-    <p>${T('MAX HP and REGEN keep you standing, ARMOR and DODGE soften or skip hits, THORNS hurts whoever hits you and LIFESTEAL heals you as you deal damage.')}</p>`],
+    <p>${T('MAX HP and REGEN keep you standing, ARMOR softens hits, PARRY skips a hit and throws the enemy far back, THORNS hurts whoever hits you and SALVAGE heals you when enemies die close to the perimeter.')}</p>`],
   ['money','coins','COINS & GEMS',()=>`<p>${T('{0} COINS come from kills, bosses, wave bounty, coin drops, quests and idle income. Spend them in the SHOP.',I('coin'))}</p>
     <p>${T(IS_APP?'{0} GEMS come from quests, achievements, the weekly op, ads and gem drops. Spend them on tattoos, tattoo slots and themes.':'{0} GEMS come from quests, achievements, the weekly op and gem drops. Spend them on tattoos, tattoo slots and themes.',I('gem'))}</p>
     <p>${T('Coins and gems sometimes float on the field during a run: tap them to collect.')}</p>`],
   ['shop','bag','SHOP',()=>`<p>${T('PERMANENT upgrades last forever, sorted into ATTACK, DEFENSE and UTILITY. Tap an icon to see exactly what it does; x1 / x5 / x10 / MAX choose how many levels you buy at once.')}</p>
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
   ['tattoos','spark','TATTOOS',()=>`<p>${T('Get tattoos inked with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
-    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. An epic tattoo is guaranteed within 50 inks.')}</p>
+    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. A mythic tattoo is guaranteed within 50 inks.')}</p>
     <p>${T('BOMBS are active tattoos you aim: tap the bomb button, then tap the field where it should land. Tap below the perimeter to cancel. The cooldown starts at the throw and runs on game time.')}</p>
     <div class="odds">${oddsGrid()}</div>`],
   ['quests','list','QUESTS & ACHIEVEMENTS',()=>`<p>${T('A new daily quest arrives every 3 hours and 4 weekly quests every Monday; the board holds 10. Finish them and tap CLAIM for gems and coins.')}</p>
     <p>${T('Achievements reward milestones once each.')}</p>`],
   ['weekly','flag','WEEKLY OP',()=>`<p>${T('A special run with two rule-changing mutators that change every Monday. It is played one tier below your highest and pays gems at waves 10, 20 and 30. It never changes your tier records.')}</p>`],
-  ['stars','star','MASTERY STARS',()=>`<p>${T('Reach waves 30, 50 and 75 in a tier to earn its three stars. Every star gives +1.5% damage, +1.5% max health and +1% coins forever. Tap the tier name on the main screen to see them.')}</p>`],
+  ['stars','star','MASTERY STARS',()=>`<p>${T('Reach waves 50, 75 and 100 in a tier to earn its three stars. Every star gives +1.5% damage, +1.5% max health and +1% coins forever. Tap the tier name on the main screen to see them.')}</p>`],
   ['controls','ff','SPEED & CONTROLS',()=>`<p>${T('The {0} button switches the game speed, up to the GAME SPEED you bought.',I('ff'))}</p>
     <p>${T('Double-tap the field to hide the HUD. Pause with the button at the top right or your phone\'s back button.')}</p>`],
   ['idle','moon','IDLE INCOME',()=>`<p>${T('While the game is closed you keep earning a share of your average income from recent runs (IDLE INCOME in the shop raises it). Up to 8 hours a day count; collect it when you come back.')}</p>`],
@@ -4089,7 +4188,7 @@ $('helpList').addEventListener('click',e=>{
 
 // ── FIT TEXT ──
 // Translations can be longer than the English: headers and buttons shrink their font until the text fits.
-const FIT_SEL='.adbtn span,.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#tgtBtn span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.d-title,.p-title,.logo';
+const FIT_SEL='.adbtn span,.ph h2,.tabs button,.ctabs button,.bnav button span,.btn,.wkbtn span,#hAuto span,.tinfo b,.lab,.pull .l,.qtop .qk,.hh span,.sl span,.ctile .n,.p-title,.logo';
 function fitText(){
   for(const el of document.querySelectorAll(FIT_SEL)){
     if(!el.offsetParent)continue;
@@ -4392,6 +4491,27 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.0',date:'2026-10-31',name:'UPDATE 0.7.0',
+   lines:[
+    {text:'A new tier now opens at wave 50 (was 30), and the waves grow more evenly. Tiers you already opened stay open. Mastery stars are at waves 50, 75 and 100.'},
+    {text:'Defence reworked: THORNS is much cheaper (fewer levels, each worth 4 times more), and ARMOR also stops a small flat amount of every hit.'},
+    {text:'DODGE is now PARRY: a parried enemy is thrown far back and stands still for a moment. It is cheaper too.'},
+    {text:'LIFESTEAL is now SALVAGE: every enemy that dies close to the perimeter heals you a share of your max health.'},
+    {text:'PATCH UP is gone and its coins were refunded. Your THORNS and PARRY levels were converted with their value kept, and the price difference came back to you as coins.'},
+    {text:'NOVA and SHOCKWAVE were far stronger than every other tattoo: their cooldowns are now twice as long. They still hit just as hard.'},
+    {text:'ARC strikes a little less often at high levels (every 4th shot at most instead of every 3rd), and OVERDRIVE recharges a bit slower.'},
+    {text:'Bombs are much stronger: LOGIC, GOO and VIRUS BOMB hit far harder and recharge much faster.'},
+    {text:'Three tattoos have a new job and a new name: CRIT DMG is now CRIT BLAST (a critical hit splashes onto the enemies around it), REACH is now OVERKILL (a bullet that kills flies on to the next enemy) and MEND is now RAMPART (after healing, every enemy that touches the perimeter is destroyed for a few seconds).'},
+    {text:'AEGIS now destroys the enemy it blocks, SLAYER also hits elites and big enemies, REGEN heals faster when your health is low, and PARRY, RICOCHET and MIDAS got better numbers.'},
+    {text:'Tattoo rarities have new names: COMMON, RARE, EPIC and MYTHIC (old UNCOMMON is now RARE, old RARE is EPIC, old EPIC is MYTHIC). Several tattoos also moved to the rarity that fits their strength.'},
+    {text:'PIERCER has a new job: a bullet can go through the enemy it hits and turn to the nearest enemy behind it. RAMPART guards much longer and recharges faster.'},
+    {text:'Shop: BOSS HUNTER now also hits elites and big enemies (at half strength), EXECUTE works below half health with a bigger bonus, and PIERCE and RICOCHET are cheaper.'},
+    {text:'Quests now pay far more coins: a round amount set by your best wave.'},
+    {text:'BURST is now a brawler: pellets hit harder the closer the enemy is, go through armor and shields, and every kill close to the perimeter heals you a little.'},
+    {text:'RANGE is gone from the shop: the new COOLDOWN upgrade takes its place and shortens the cooldown of every active tattoo and bomb (up to -25%). Coins spent on RANGE were refunded.'},
+    {text:'The target button is gone (it always shoots the enemy in front now); in its place an AUTO button switches AUTO RETRY on and off during a run. END RUN no longer starts the AUTO RETRY countdown.'},
+    {text:'The result screen now shows what broke you and which sources did the most damage. After a long AUTO RETRY session, a short summary greets you when you are back.'},
+  ]},
   {id:'0.6.9',date:'2026-10-29',name:'UPDATE 0.6.9',
    lines:[
     {text:'AUTO RETRY can now also be switched on in the pause menu. The switch has four settings: OFF, FULL, ECO (draws 20 times a second, runs cooler) and ECO+ (black screen, no sound; tap to see the game for 15 s).'},

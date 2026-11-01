@@ -16,7 +16,7 @@ if(!fs.existsSync(keyFile)){console.error('Missing '+keyFile+' — gift codes ca
 
 const src=fs.readFileSync(path.join(root,'src','index.src.html'),'utf8');
 const themeIds=[...src.matchAll(/\{id:'([a-z]+)',\s+name:'[^']+',\s*note:/g)].map(m=>m[1]);
-const tatIds=[...src.matchAll(/\{id:'([a-z_]+)',\s+name:'[^']+',\s*icon:'[a-z0-9]+',\s*rar:/g)].map(m=>m[1]);
+const tatIds=[...src.matchAll(/\{id:'([a-z_]+)',\s*name:'[^']+',\s*icon:'[a-z0-9]+',\s*rar:/g)].map(m=>m[1]);
 
 const a=process.argv.slice(2),r={};let note='';
 for(let i=0;i<a.length;i++){

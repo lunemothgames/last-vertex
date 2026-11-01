@@ -30,7 +30,7 @@ const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PR
   'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
-  "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice};"].join('\n'))(save,1,1);
+  "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice,crowdK:typeof crowdK===\"undefined\"?null:crowdK};"].join('\n'))(save,1,1);
 // next-run boosts (SHOP section): SIM_BOOST=all buys every affordable one before each run (lucky, power, berserk, rapid, shield, guardian, focus), or a list: SIM_BOOST=lucky,power
 const TEMP=src.includes('const TEMP_UPGRADES=')?new Function(cut('const TEMP_UPGRADES=','const tempCost=')+';return TEMP_UPGRADES;')():[];
 const {fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,coinValueAt,upCost,stats,tb,setTier}=G;
@@ -61,23 +61,25 @@ for(const [id,o] of Object.entries(JSON.parse(process.env.SIM_TT||'{}')))Object.
 // of its own style; what really differs between builds are the 5 tattoo slots. (Comparing builds that each spend differently
 // mostly measures how good their spending is, not how good their tattoos are.)
 const ECON={coinMult:1,lootChance:1,bounty:1,gameSpeed:1};
-const BASE={damage:3,fireRate:2,maxHp:1,regen:1,multishot:2,bounce:2,pierce:2,range:1,...ECON};
+// crit is in BASE since B6 item 3 (CRIT BLAST made it worth buying): a real player buys it too, and without it the late-game
+// lead of offense/tank over active/swarm/control was the shop, not the tattoos
+const BASE={damage:3,fireRate:2,maxHp:1,regen:1,multishot:2,bounce:2,pierce:2,critChance:1,critMult:1,...ECON};
 const plus=x=>({...BASE,...Object.fromEntries(Object.entries(x).map(([k,v])=>[k,(BASE[k]||0)+v]))});
-const DEF={defense:2,thorns:3,dodge:1,lifesteal:1,waveHeal:1,regen:2,maxHp:2},CTRL={knockback:1,slowChance:2,slowAmt:2},COIN={coinMult:3,lootChance:2,bounty:2,gameSpeed:2};
-// bomb builds: offense shop, the bomb in place of SLAYER
-const bombB=t=>({shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:[t,'attack_power','attack_speed','crit_chance','crit_mult']});
+const DEF={defense:2,thorns:3,dodge:1,lifesteal:1,regen:2,maxHp:2},CTRL={knockback:1,slowChance:2,slowAmt:2},COIN={coinMult:3,lootChance:2,bounty:2,gameSpeed:2};
+// bomb builds: offense shop + COOLDOWN, the bomb in place of SLAYER
+const bombB=t=>({shop:plus({critChance:1,critMult:1,bossDmg:1,cooldown:2}),tat:[t,'attack_power','attack_speed','crit_chance','crit_mult']});
 const BUILDS={
-  offense:   {shop:plus({critChance:2,critMult:2,bossDmg:1}),tat:['attack_power','attack_speed','crit_chance','crit_mult','boss_slayer']},
+  offense:   {shop:plus({critChance:1,critMult:1,bossDmg:1}),tat:['attack_power','attack_speed','crit_chance','crit_mult','boss_slayer']},
   swarm:     {shop:plus({}),tat:['twin','arc','ricochet','piercer','attack_power']},
   tank:      {shop:plus(DEF),tat:['thorns','aegis','defense','regen','max_hp']},
   thornsTank:{shop:plus(DEF),tat:['thorns','aegis','defense','regen','lifesteal']},
   bruiser:   {shop:plus(DEF),tat:['thorns','mend','shockwave','attack_power','dodge']},
   bomb:      bombB('logic_bomb'), goo:bombB('goo_bomb'), virus:bombB('virus_bomb'),
-  active:    {shop:plus({}),tat:['nova','overdrive','stasis','mend','attack_power']},
+  active:    {shop:plus({cooldown:2}),tat:['nova','overdrive','stasis','mend','attack_power']},
   control:   {shop:plus(CTRL),tat:['frost','reach','stasis','attack_power','attack_speed']},
   shatter:   {shop:plus(CTRL),tat:['frost','shatter','stasis','attack_power','attack_speed']},
   chillNoKb: {shop:plus({slowChance:2,slowAmt:2}),tat:['frost','reach','stasis','attack_power','attack_speed']},
-  reaper:    {shop:plus({execute:2,critChance:1}),tat:['reaper','attack_speed','crit_chance','attack_power','crit_mult']},
+  reaper:    {shop:plus({execute:2}),tat:['reaper','attack_speed','crit_chance','attack_power','crit_mult']},
   farm:      {shop:plus(COIN),tat:['coin_mult','luck','midas','attack_power','attack_speed']},
   greedy:    {shop:plus(COIN),tat:['twin','arc','ricochet','coin_mult','midas']},
 };
@@ -91,7 +93,7 @@ function equip(b,lv){
 function shop(b,bank,skip){
   const W=(process.env.SIM_SHOP&&BUILDS[process.env.SIM_SHOP]?BUILDS[process.env.SIM_SHOP]:BUILDS[b]).shop;   // SIM_SHOP=swarm: every build spends like that one, so only the tattoos differ
   for(;;){let best=null;
-    for(const id in W){if(skip&&skip[id])continue;const u=PU[id],l=save.perm[id]||0;if(l>=u.max)continue;
+    for(const id in W){if(skip&&skip[id])continue;const u=PU[id];if(!u)continue;const l=save.perm[id]||0;if(l>=u.max)continue;   // !u: an older game (SIM_SRC) without this upgrade
       const c=upCost(u,l);if(c<=bank&&(!best||c/W[id]<best[1]/W[best[0]]))best=[id,c];}
     if(!best)return bank;bank-=best[1];save.perm[best[0]]=(save.perm[best[0]]||0)+1;}
 }
@@ -112,16 +114,17 @@ function run(tier,maxW=1e9,o={}){
   try{return run0(tier,maxW,o);}finally{if(G.setMods)G.setMods(null);}
 }
 function run0(tier,maxW,o){
-  setTier(tier);const st=stats(),AUTO=!!o.auto,WM=o.mods||null;
+  setTier(tier);const st=stats();const AUTO=!!o.auto,WM=o.mods||null;
   const pay=c=>AUTO&&c>0?Math.max(1,Math.round(c*G.AUTO_RETRY.share)):c;   // game runPay()
   // QE = the quest events of this run, counted where the game calls qEvent() / qReach() (kill_<type>, crit, knockback, slow, pierce,
   // multishot, dodge; wave = the last wave whose timer ran out)
   const TOT={k:0,b:0,d:0,bombs:0,taps:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
     fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps,qe:QE});
+  const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
   const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
-  const TRACE=process.env.SIM_TRACE==='1';let tkills=0,tdmg=0,tcontacts=0,tdealt=0,tc0=0;
+  const TRACE=process.env.SIM_TRACE==='1';const SALV={n:0};let tkills=0,tdmg=0,tcontacts=0,tdealt=0,tc0=0;
   // the field lives across waves, like the game's: when the wave timer runs out the next wave starts and the leftovers stay
   // (a boss that is not killed walks on into the next waves). Everything below that depends on the wave is set at its start.
   const KD=Math.pow(.03,dt),KI=(1-KD)/Math.log(1/.03);   // knockback fades to x0.03 a second; KI = distance a push of speed 1 carries an enemy in one step
@@ -130,24 +133,28 @@ function run0(tier,maxW,o){
   const mid=()=>A.midas&&A.midas.left>0?A.midas.m:1;   // MIDAS running: every coin multiplier is raised
   const pick=()=>{let r=Math.random()*tw;for(const x of pool){r-=x.w;if(r<0)return x;}return pool[0];};
   // h = size (game e.sz), w = hitbox width for BURST, x defaults to a random spot that keeps the enemy on the field (game spawnEnemy)
-  const mk=(T,y,x)=>{const h=T.sz*GWH*(M.esz||1),m=h+.05*GWH;return{T,x:x??m+Math.random()*(GWH-2*m),y,sc:.1,wv:w,h,w:h*1.1,hp:hpB*T.hp*(M.ehp||1),max:hpB*T.hp*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),kb:0,slow:0,frz:0,boss:false,
+  // ck = game crowdK(waveNum) if the game has it: fewer, tougher enemies (health and coins per enemy raised by the same factor)
+  const mk=(T,y,x)=>{const h=T.sz*GWH*(M.esz||1),m=h+.05*GWH,ck=G.crowdK?G.crowdK(w):1;return{T,x:x??m+Math.random()*(GWH-2*m),y,sc:.1,wv:w,h,w:h*1.1,hp:hpB*T.hp*ck*(M.ehp||1),max:hpB*T.hp*ck*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*ck*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),big:T.hp>=(ECO.bigHp||Infinity),kb:0,slow:0,frz:0,boss:false,
     sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0};};
   const d2=(a,x,y)=>(a.x-x)**2+(a.y-y)**2;
   const inBlast=(o,x,y,R)=>d2(o,x,y)<=(R+o.h*.5)**2;   // game inBlast(): the circle counts the enemy's own size
   {
     // game spawnEnemy(): a continuously spawned enemy can be an elite (chance grows with the wave, at most 6%); its shield is not tripled
-    const elite=e=>{if(Math.random()<Math.min(.06,ew*.0008)){e.hp*=3;e.max=e.hp;e.w*=1.35;e.h*=1.35;e.coin*=2;e.atk*=1.5;}return e;};
+    const elite=e=>{if(Math.random()<Math.min(.06,ew*.0008)){e.big=true;e.hp*=3;e.max=e.hp;e.w*=1.35;e.h*=1.35;e.coin*=2;e.atk*=1.5;}return e;};
     const midas=mid;
     const hit=(e,d)=>{e.hp-=d;tdealt+=d;};   // blasts, ARC, NOVA, SHOCKWAVE, GOO, VIRUS: no lifesteal (game hurt())
     const push=(e,m)=>{if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*m);};   // same rule as the game's knock()
-    const HD=st.dmg*st.pellet,vul=e=>(e.boss?st.bossDmg:1)*(e.slow>0||e.frz>0?st.frostVuln:1);   // game: st.hitDmg, bombVuln()
+    // game vsDmg(): BOSS HUNTER + SLAYER on bosses, SLAYER alone on elites and big types (e.big)
+    var vsD=e=>e.boss?st.bossDmg:e.big?(st.bigDmg||1):1;
+    const HD=st.dmg*st.pellet,vul=e=>vsD(e)*(e.slow>0||e.frz>0?st.frostVuln:1);   // game: st.hitDmg, bombVuln()
     const gooBurst=e=>{const R=G.GRENADE.goo.r*GWH;e.gooT=0;for(const o of E)if(o.hp>0&&(o===e||inBlast(o,e.x,e.y,R)))hit(o,e.gooD*vul(o));};
     // game killEnemy(): GOO bursts, VIRUS jumps to the neighbours, SHATTER queues a burst, coins, SPLITTER leaves 2 shards
-    const kill=e=>{const c0=coins;ky+=e.y;kn++;if(TRACE&&e.boss)console.log('  boss down in wave '+w+', '+(left>0?(dur-left).toFixed(1)+' s in':'in the break'));
+    // SALVAGE (game killEnemy): an enemy dying within ECO.salvZone above the perimeter heals st.salv of max health (bosses x ECO.salvBoss)
+    const kill=e=>{const c0=coins;ky+=e.y;kn++;if(st.salv&&e.y+e.h/2>LINE-ECO.salvZone){hp=Math.min(st.maxHp,hp+st.maxHp*st.salv*(e.boss?ECO.salvBoss:1));SALV.n++;}if(TRACE&&e.boss)console.log('  boss down in wave '+w+', '+(left>0?(dur-left).toFixed(1)+' s in':'in the break'));
       if(e.gooT>0)gooBurst(e);
       if(e.virT>0){const R=G.GRENADE.virus.spread*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R)){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}}
       if(st.shatter>0&&(e.slow>0||e.frz>0)&&!e.boss)SQ.push({x:e.x,y:e.y,d:e.max*st.shatter});
-      if(e.T===ENEMY_TYPES.splitter)for(const s of[-1,1]){const m=mk(ENEMY_TYPES.mini,e.y,e.x+s*e.h*.45);m.sc=1;m.kb=e.kb;E.push(m);}
+      if(e.T===ENEMY_TYPES.splitter&&!e.cx)for(const s of[-1,1]){const m=mk(ENEMY_TYPES.mini,e.y,e.x+s*e.h*.45);m.sc=1;m.kb=e.kb;E.push(m);}
       if(e.boss)TOT.b++;
       qe('kill_'+(e.boss?'boss':ETYPE.get(e.T)));
       if(e.boss||e.coin&&Math.random()<st.coinChance)coins+=pay(cv*e.coin*midas()*(Math.random()<st.jackpot?3:1));
@@ -155,25 +162,34 @@ function run0(tier,maxW,o){
     // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
     const riseF=e=>{if(!(e.rs&&e.wv===w&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
     const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
+    // st.block = ARMOR's flat part (game contactHit): every hit is cut by this much, small hits do nothing
     const contact=(e,mul)=>{
-      let taken=0,back=3.5;   // how hard it is pushed back: a dodged enemy less (game contactHit)
-      if(Math.random()<st.dodge){back=2;qe('dodge');}
-      else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;
-      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;tdmg+=taken;tdAll+=taken;}
+      // MEND's guard: a normal enemy touching the perimeter is destroyed, nothing else happens (game contactHit)
+      if(A.mend&&A.mend.left>0&&!e.boss){tdealt+=e.hp;e.hp=0;tcontacts++;return 3.5;}
+      let taken=0,back=3.5;   // how hard it is pushed back (game contactHit)
+      // PARRY: pushed back ECO.parryBack and stands still ECO.parryStun seconds (not bosses)
+      if(Math.random()<st.dodge){back=ECO.parryBack||2;if(ECO.parryStun&&!e.boss)e.stun=ECO.parryStun;qe('dodge');}
+      // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
+      else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0));hp-=taken;tdmg+=taken;tdAll+=taken;}
       tcontacts++;
       const th=Math.min(e.hp,e.max*st.thornPct*(e.boss?ECO.bossThorns:1));e.hp-=th;tdealt+=th;
-      if(taken>0)hp=Math.min(st.maxHp,hp+Math.min(th*st.ls,taken*ECO.thornHealCap));
+      // B6-2 test: ECO.contactDie = share of its max health an enemy loses per perimeter hit (like free thorns, pays coins); 1 = it is spent
+      // (no coins, no shards) unless ECO.contactPay
+      if(ECO.contactDie>=1&&!ECO.contactPay&&!e.boss){e.coin=0;e.hp=0;e.cx=1;}else if(ECO.contactDie&&!e.boss){const d=Math.min(e.hp,e.max*ECO.contactDie);e.hp-=d;tdealt+=d;}
       return back;
     };
     // one bullet / pellet hit on e (a crit roll per hit like the game: an average would hide the damage a crit wastes on overkill; armor, shield, reaper, knockback, slow)
-    const bulletHit=(e,m)=>{
-      const dn=st.dmg*m*(e.boss?st.bossDmg:1)*(e.hp<e.max*ECO.executeAt?st.execute:1)*(e.slow>0||e.frz>0?st.frostVuln:1);
+    // bare = a BURST pellet that goes through armor and shields (game BURST.bare)
+    const bulletHit=(e,m,bare)=>{
+      const dn=st.dmg*m*vsD(e)*(e.hp<e.max*ECO.executeAt?st.execute:1)*(e.slow>0||e.frz>0?st.frostVuln:1);
       const cr=Math.random()<st.crit;if(cr)qe('crit');
-      let d=dn*(cr?st.critM:1);const before=e.sh>0?Infinity:e.hp;
-      if(e.ar)d*=Math.min(1,d/(e.max*e.ar));
-      if(e.sh>0){e.sh-=d*.5;tdealt+=d;}else hit(e,d);
+      let d=dn*(cr?st.critM:1);const before=e.sh>0&&!bare?Infinity:e.hp;
+      if(e.ar&&!bare)d*=Math.min(1,d/(e.max*e.ar));
+      if(e.sh>0&&!bare){e.sh-=d*.5;tdealt+=d;}else hit(e,d);
       HN.n++;HN.d+=d;
-      hp=Math.min(st.maxHp,hp+d*st.ls);   // lifesteal: bullets only (and the capped thorns refund in contact())
+      // CRIT DMG tattoo (game): a crit splashes st.splash of its damage onto the enemies around (they die at the end of the step)
+      if(cr&&st.splash){const R=ECO.critSplashR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,d*st.splash*vsD(o));}
       if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
       if(!e.boss&&Math.random()<st.kbChance){e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);qe('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(!(e.slow>0))qe('slow');e.slow=ECO.slowTime;}
@@ -196,9 +212,14 @@ function run0(tier,maxW,o){
     const towards=(ox,oy,px,py,from,hits)=>{const L=Math.hypot(px-ox,py-oy)||1;return along(ox,oy,(px-ox)/L,(py-oy)/L,from,Infinity,hits);};
     // a bullet that reached e, coming from (ox,oy). Game order: pierce first (it flies on along its line), else maybe a ricochet
     // to the nearest other enemy from the hit point (it homes in on that one)
-    const follow=(e,m,ox,oy,hits,bounces)=>{
+    const follow=(e,m,ox,oy,hits,bounces)=>{let aimed=0;
       for(;;){
-        bulletHit(e,m);hits.add(e);
+        const c=bulletHit(e,m);hits.add(e);
+        // REACH (game): a bullet that kills turns to the nearest other enemy with st.carry of the damage it had left
+        if(c>0&&st.carry){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||o.ph||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
+          if(nx){m*=c*st.carry;ox=e.x;oy=e.y;e=nx;continue;}}
+        // PIERCER (game): once per bullet, a st.pAim chance to go through and turn to the nearest enemy further up the field (smaller y)
+        if(st.pAim&&!aimed&&Math.random()<st.pAim){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||o.ph||hits.has(o)||o.y>=e.y)continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}if(nx){qe('pierce');aimed=1;ox=e.x;oy=e.y;e=nx;continue;}}
         if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
           if(nx&&!nx.ph){bounces++;ox=e.x;oy=e.y;e=nx;continue;}}
@@ -213,12 +234,14 @@ function run0(tier,maxW,o){
       const mu=Math.random()<st.multiChance;if(mu)qe('multishot');
       const tg=vis[0],n=st.pellets*(mu?2:1),S=BU.spread,base=Math.atan2(tg.y-BY,tg.x-triX);
       for(let k=0;k<n;k++){const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-        P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:(BY-st.rangeY)*BU.reach,m:st.pellet,hits:new Set(),tg});PEL.n++;BUL.n++;}
+        const len=(BY-st.rangeY)*BU.reach;P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:len,len,m:st.pellet,hits:new Set(),tg});PEL.n++;BUL.n++;}
     };
+    // game pointBlank(): a pellet hits x near at the muzzle, falling to x far at the end of its way (x1 in a game without it)
+    const PB=(d,len)=>BU.near===undefined?1:BU.near+(BU.far-BU.near)*Math.min(1,Math.max(0,d/len)),BARE=!!(BU&&BU.bare);
     // game segBoxHit(): how far along the segment it first touches the square of half-size r around (cx,cy), or -1
     const segBox=(x0,y0,x1,y1,cx,cy,r)=>{let t0=0,t1=1;for(const [p,d,lo,hi] of [[x0,x1-x0,cx-r,cx+r],[y0,y1-y0,cy-r,cy+r]]){if(Math.abs(d)<1e-12){if(p<lo||p>hi)return -1;continue;}let a=(lo-p)/d,b=(hi-p)/d;if(a>b){const q=a;a=b;b=q;}if(a>t0)t0=a;if(b<t1)t1=b;if(t0>t1)return -1;}return t0;};
     const flyPellets=()=>{
-      const n=Math.max(1,Math.round(dt*60)),L=.95*dt/n;
+      const n=Math.max(1,Math.round(dt*60)),L=BSP*dt/n;
       for(let i=P.length-1;i>=0;i--){const p=P[i];let gone=false;
         for(let k=0;k<n&&!gone;k++){const px=p.x,py=p.y;p.x+=p.ux*L;p.y+=p.uy*L;p.left-=L;
           // walk along this step's path: always the nearest enemy it crosses; a kill with damage to spare or a pierce goes on
@@ -228,7 +251,7 @@ function run0(tier,maxW,o){
               const q=segBox(px,py,p.x,p.y,o.x,o.y,r);if(q>=0&&q<tb){tb=q;e=o;}}
             if(!e)break;
             if(!p.hit){p.hit=1;PEL.h++;if(e===p.tg)PEL.f++;}
-            const carry=bulletHit(e,p.m);p.hits.add(e);
+            const f=PB(p.len-p.left-(1-tb)*L,p.len),carry=bulletHit(e,p.m*f,BARE);p.hits.add(e);
             if(carry>0){p.m*=carry;continue;}
             if(Math.random()<st.pierce){qe('pierce');continue;}
             if(st.chain>0&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||p.hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
@@ -249,7 +272,7 @@ function run0(tier,maxW,o){
     var tick=active=>{
       t+=dt;aegis=Math.max(0,aegis-dt);shock=Math.max(0,shock-dt);
       if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0,n=Math.floor(per)+(Math.random()<per%1?1:0);i<n;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
-      hp=Math.min(st.maxHp,hp+st.regen*dt);cd-=dt;
+      hp=Math.min(st.maxHp,hp+(st.regen+(st.regenT||0)*(1+(ECO.regenLow||0)*(1-hp/st.maxHp)))*dt);cd-=dt;   // REGEN tattoo: faster when low (game updatePlay)
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
       if(!AUTO){const wall=DROP.t+t/st.speed;
@@ -264,7 +287,7 @@ function run0(tier,maxW,o){
       // active tattoos, cast as soon as they are useful (same rules as the referee's player)
       if(!AUTO)for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
         const live=E.filter(e=>e.hp>0&&e.y>.1);
-        if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*(e.boss?st.bossDmg:1));push(e,1.5);}}
+        if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*vsD(e));push(e,1.5);}}
         else if(TT[id].gren&&!NOBOMB){   // the player puts the bomb on the enemy with the most others inside its circle, if 3+
           if(live.length<3)continue;
           const R=TT[id].r*GWH;let best=null,bn=0;
@@ -275,11 +298,11 @@ function run0(tier,maxW,o){
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}
         else if(id==='stasis'&&E.some(e=>e.y>.7)){for(const e of E)e.frz=e.boss?a.dur/2:a.dur;}
-        else if(id==='mend'&&hp<st.maxHp*.5){hp=Math.min(st.maxHp,hp+st.maxHp*a.heal);}
+        else if(id==='mend'&&hp<st.maxHp*.5){hp=Math.min(st.maxHp,hp+st.maxHp*a.heal);a.left=a.guard||0;}   // MEND's guard (game runFx.guardT): see contact()
         else continue;
         a.cd=tb(id).cd;
       }
-      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.hp>0&&e.y>=.45){hit(e,HD*st.shockM*(e.boss?st.bossDmg:1));push(e,2);}shock=st.shockCD;}
+      if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.hp>0&&e.y>=.45){hit(e,HD*st.shockM*vsD(e));push(e,2);}shock=st.shockCD;}
       for(const e of E){
         e.sc=Math.min(1,e.sc+dt*(e.boss?.8:4));
         const kb0=e.kb;e.kb*=KD;if(Math.abs(e.kb)<e.sp*.05)e.kb=0;
@@ -297,12 +320,13 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{const d=e.atk*ECO.bossPulse*st.dmgTaken;hp-=d;tdmg+=d;tdAll+=d;}}}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{const d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0));hp-=d;tdmg+=d;tdAll+=d;}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
         }
-        const sp=e.clOn?0:e.sp*(e.slow>0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
+        if(e.stun>0)e.stun-=dt;
+        const sp=e.clOn||e.stun>0?0:e.sp*(e.slow>0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
         // the perimeter is touched by the enemy's front edge; it is put back just in front of the line
         if(e.clOn){
           if(e.hp>0){e.kb=0;e.y=LINE-e.h/2-.003;e.clT-=dt;
@@ -318,7 +342,7 @@ function run0(tier,maxW,o){
       for(let q=0;q<Q.length;){
         const b=Q[q];if(b.at>t){q++;continue;}Q.splice(q,1);
         let e=b.e;const hits=new Set();
-        if(!(e.hp>0&&!e.ph)){e=towards(b.ox,BY,e.x,e.y,Math.min(Math.hypot(e.x-b.ox,e.y-BY)-e.h*.55,.95*((e.td??t)-b.t0)),hits);if(!e){BUL.m++;continue;}}
+        if(!(e.hp>0&&!e.ph)){e=towards(b.ox,BY,e.x,e.y,Math.min(Math.hypot(e.x-b.ox,e.y-BY)-e.h*.55,BSP*((e.td??t)-b.t0)),hits);if(!e){BUL.m++;continue;}}
         follow(e,b.m,b.ox,BY,hits,0);
       }
       // game: one volley per frame at most, and the cooldown restarts at 1/rate, so the rate is rounded up to whole frames
@@ -331,11 +355,11 @@ function run0(tier,maxW,o){
         else if(Math.random()<st.multiChance){qe('multishot');for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);}
         if(st.twin)B.push([vis[1]?1:0,st.twin*st.pellet]);
         // flight: 0.95 screen heights a second from just above the triangle, the enemy walking into it
-        for(const [i0,m] of B){const e=vis[i0];Q.push({e,m,ox:triX,t0:t,at:t+Math.max(0,Math.hypot(e.x-triX,BY-e.y)-e.h*.55)/(.95+e.sp)});BUL.n++;}
+        for(const [i0,m] of B){const e=vis[i0];Q.push({e,m,ox:triX,t0:t,at:t+Math.max(0,Math.hypot(e.x-triX,BY-e.y)-e.h*.55)/(BSP+e.sp)});BUL.n++;}
         // ARC: lightning from the target to the nearest enemies, each within 0.4 screen widths of the last
         if(st.arcEvery&&++shots%st.arcEvery===0){const hs=[vis[0]];let cur=vis[0];const r2=(.4*GWH)**2;
           while(hs.length<st.arcN){let nx=null,nd=r2;for(const o of E){if(o.hp<=0||hs.includes(o))continue;const d=d2(o,cur.x,cur.y);if(d<nd){nd=d;nx=o;}}if(!nx)break;hs.push(nx);cur=nx;}
-          for(const e of hs)hit(e,HD*st.arcM*(e.boss?st.bossDmg:1));}
+          for(const e of hs)hit(e,HD*st.arcM*vsD(e));}
         cd+=1/rate;
       }
       for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){const d=E[i];E.splice(i,1);d.td=t;kill(d);tkills++;}
@@ -379,8 +403,8 @@ function run0(tier,maxW,o){
     while(left>0)if(r=tick(true))return r;
     QE.wave=w;   // game qReach('wave',waveNum) when the wave timer runs out
     hp=Math.min(st.maxHp,hp+st.maxHp*st.waveHeal);
-    if(TRACE)console.log('wave '+String(w).padStart(3)+' (eff '+String(ew).padStart(3)+')  hp '+String(Math.round(hp/st.maxHp*100)).padStart(3)+'%  kills '+String(tkills).padStart(4)+'  contacts '+String(tcontacts).padStart(4)+'  dmg taken '+(tdmg/st.maxHp*100).toFixed(1)+'% of maxHp  (atk/contact '+(tcontacts?(tdmg/tcontacts/st.maxHp*100).toFixed(2):'0')+'% of maxHp)  dealt '+fmtN(tdealt)+'  coins '+fmtN(coins-tc0)+'  left on field '+E.length+(E.some(e=>e.boss)?' +boss':'')+' ('+E.filter(e=>e.T===ENEMY_TYPES.mini).length+' shards)  bullets '+BUL.n+', '+Math.round(BUL.m/Math.max(1,BUL.n)*100)+'% missed');BUL.N+=BUL.n;BUL.M+=BUL.m;BUL.n=BUL.m=0;
-    TOT.k+=tkills;TOT.d+=tdealt;tkills=0;tdmg=0;tcontacts=0;tdealt=0;tc0=coins;
+    if(TRACE)console.log('wave '+String(w).padStart(3)+' (eff '+String(ew).padStart(3)+')  hp '+String(Math.round(hp/st.maxHp*100)).padStart(3)+'%  kills '+String(tkills).padStart(4)+'  contacts '+String(tcontacts).padStart(4)+'  dmg taken '+(tdmg/st.maxHp*100).toFixed(1)+'% of maxHp  (atk/contact '+(tcontacts?(tdmg/tcontacts/st.maxHp*100).toFixed(2):'0')+'% of maxHp)  dealt '+fmtN(tdealt)+'  coins '+fmtN(coins-tc0)+'  left on field '+E.length+(E.some(e=>e.boss)?' +boss':'')+' ('+E.filter(e=>e.T===ENEMY_TYPES.mini).length+' shards)'+(st.salv?'  salvage '+SALV.n:'')+'  bullets '+BUL.n+', '+Math.round(BUL.m/Math.max(1,BUL.n)*100)+'% missed');BUL.N+=BUL.n;BUL.M+=BUL.m;BUL.n=BUL.m=0;
+    TOT.k+=tkills;TOT.d+=tdealt;tkills=0;tdmg=0;tcontacts=0;tdealt=0;tc0=coins;SALV.n=0;
     // the 2-2.5 s break: nothing spawns, but the field keeps moving and the triangle keeps shooting
     for(let gap=2+Math.random()*.5;gap>0;gap-=dt)if(r=tick(false))return r;
   }

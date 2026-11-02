@@ -15,7 +15,8 @@ const fs=require('fs'),path=require('path');
 // independent sample (sim-pace.js uses this to run each build several times and print a mean ± range, not one lucky/unlucky run).
 let _seed=((+process.env.SIM_SEED||1)>>>0)||1;
 function rand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;_seed>>>=0;return _seed/4294967296;}
-Math.random=rand;   // the game's own copied-in code (via `new Function`) also calls Math.random(), so this seeds it too
+Math.random=rand;
+const HUMAN=+process.env.SIM_HUMAN||0;   // reaction time in real seconds for active tattoos and bombs (0 = the perfect player)   // the game's own copied-in code (via `new Function`) also calls Math.random(), so this seeds it too
 // SIM_SRC=<file> measures another copy of the game (e.g. an older version) with the same builds
 const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
@@ -285,7 +286,9 @@ function run0(tier,maxW,o){
         if(!tg)for(const e of E)if(!tg||e.y>tg.y)tg=e;
         if(tg)triX=Math.max(GWH*.06,Math.min(GWH*.94,triX+(tg.x-triX)*Math.min(1,dt*1.8)));}
       // active tattoos, cast as soon as they are useful (same rules as the referee's player)
+      // SIM_HUMAN=s: the player taps an active s real seconds after it is ready (s x game speed in game time), not at once
       if(!AUTO)for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
+        if(HUMAN){if(a.rdy==null)a.rdy=t+HUMAN*st.speed;if(t<a.rdy)continue;}
         const live=E.filter(e=>e.hp>0&&e.y>.1);
         if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*vsD(e));push(e,1.5);}}
         else if(TT[id].gren&&!NOBOMB){   // the player puts the bomb on the enemy with the most others inside its circle, if 3+
@@ -300,7 +303,7 @@ function run0(tier,maxW,o){
         else if(id==='stasis'&&E.some(e=>e.y>.7)){for(const e of E)e.frz=e.boss?a.dur/2:a.dur;}
         else if(id==='mend'&&hp<st.maxHp*.5){hp=Math.min(st.maxHp,hp+st.maxHp*a.heal);a.left=a.guard||0;}   // MEND's guard (game runFx.guardT): see contact()
         else continue;
-        a.cd=tb(id).cd;
+        a.cd=tb(id).cd;a.rdy=null;
       }
       if(st.shockM&&hp<st.maxHp*.3&&shock<=0){for(const e of E)if(e.hp>0&&e.y>=.45){hit(e,HD*st.shockM*vsD(e));push(e,2);}shock=st.shockCD;}
       for(const e of E){

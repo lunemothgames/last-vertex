@@ -462,6 +462,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 #hAuto{position:absolute;top:6.4%;right:2%;min-width:16%;height:4.2%;min-height:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
   border:1px solid var(--dim);background:rgba(var(--bg1-rgb),0.72);font-family:'VT323',monospace;font-size:17px;pointer-events:auto}
 #hAuto svg.i{width:13px;height:13px}
+#hAuto{color:var(--mute)}
 #hAuto.on{border-color:var(--a);color:var(--a);box-shadow:0 0 8px var(--glow)}
 #playUI.nohud #hAuto,#playUI.nohud #spdCtl{display:none}
 /* game speed: one small button under the AUTO RETRY button; tap = next speed (wraps to x1.0) */
@@ -612,6 +613,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 <symbol id="i-magnet" viewBox="0 0 24 24"><path d="M5 4h4v8a3 3 0 0 0 6 0V4h4v8a7 7 0 0 1-14 0z"/><path d="M5 8h4M15 8h4"/></symbol>
 <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-3 4 3 4H5"/></symbol>
 <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/></symbol>
+<symbol id="i-range" viewBox="0 0 24 24"><path d="M7.5 21l4.5-6 4.5 6z"/><path d="M2 11h3M7 11h3M14 11h3M19 11h3"/><path d="M12 9V2M9 5l3-3 3 3"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6M12 2v3"/></symbol>
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13"/><path d="M3 7l9 7 9-7"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12"/><path d="M3 13h18M12 9v12"/><path d="M12 9C9 9 7.5 7.5 8 6s3-1.5 4 3zM12 9c3 0 4.5-1.5 4-3s-3-1.5-4 3z"/></symbol>
@@ -1433,6 +1435,8 @@ const PERM_UPGRADES=[
    info:'Extra damage against bosses (every 10th wave), and half as much against elites and big enemies (TANK, ARMORED), from bullets, lightning and blasts.'},
   {id:'execute',   cat:'atk', name:'REAPER',     icon:'skull', base:250, g:1.05, max:100,  start:0,  step:.04,  fx:v=>'+'+pc(v),
    info:'Extra bullet damage against enemies below half of their health, to finish off wounded enemies faster.'},
+  {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
+   info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier.'},
   {id:'cooldown',  cat:'atk', name:'COOLDOWN',   icon:'clock', base:400, g:1.09, max:100,  start:0,  step:.0025,fx:v=>'-'+pc(v),
    info:'Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.'},
   // ── defense
@@ -1593,9 +1597,7 @@ if(!save.defV7){
   if(save.perm.waveHeal)save.coins=(save.coins||0)+spent({base:400,g:1.2},save.perm.waveHeal);
   delete save.perm.waveHeal;save.defV7=1;
 }
-// v0.7: the RANGE upgrade is gone (COOLDOWN took its place): its coins are refunded
-if(save.perm.range){let c=0;for(let i=0;i<save.perm.range;i++)c+=Math.ceil(60*Math.pow(1.18,i));save.coins=(save.coins||0)+c;}
-delete save.perm.range;
+// RANGE left the shop in 0.7.0 (levels refunded then) and came back in 0.7.1: saves that skipped 0.7.0 simply keep their levels
 if(save.perm.slow){save.perm.slowAmt=(save.perm.slowAmt||0)+save.perm.slow;}
 delete save.perm.slow;
 if(!save.tierBest||typeof save.tierBest!=='object')save.tierBest={};
@@ -1673,7 +1675,7 @@ function stats(){
     slowAmt:   Math.min(.5,v('slowAmt')+tb('frost').a),
     // slowed / frozen enemies take extra bullet damage: the slow power itself, plus the FROST tattoo
     frostVuln: 1+Math.min(.5,v('slowAmt')+tb('frost').a)+tb('frost').vuln,
-    rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-tb('reach').r*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-tb('reach').r)),
+    rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
     pierce:    v('pierce'),
     pierceP:   tb('piercer').p||0,               // PIERCER tattoo: chance that a bullet is a piercing round...
     pierceN:   Math.round(tb('piercer').n||0),   // ...that goes straight through this many enemies (then shop PIERCE's chance)
@@ -2249,6 +2251,7 @@ function blastBomb(b){
 // ── PARTICLES ────────────────────────────────────────────────────────────────
 function burst(x,y,col,n,speed){
   if(fxLow())n=Math.ceil(n/6);else if(fxMid())n=Math.ceil(n/3);
+  n=Math.min(n,(fxLow()?40:fxMid()?100:220)-particles.length);   // a crowd at high game speed must not pile up sparks
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2,spd=(speed||GH*.12)*(0.3+Math.random()*.9);
     particles.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
@@ -2319,10 +2322,13 @@ function loop(ts){
   if(state===ST.PLAY&&!paused&&!document.hidden)perfSample(rawMs);
   if(state===ST.MENU){updateMenu(frameDt);drawMenu();}
   else if(state===ST.PLAY){
-    if(!paused)runPlayT+=frameDt;
+    // a slow phone draws fewer frames, but the run still moves at its real speed: a long frame (down to 10 fps) gets
+    // more sub-steps of the same size as at 60 fps, so game speed x3 stays x3 (before, frames over 50 ms slowed the run)
+    const gdt=Math.min(rawMs/1000,.1);
+    if(!paused)runPlayT+=gdt;
     // game speed: split into sub-steps so fast bullets don't tunnel through enemies
-    const sp=paused?1:stats().speed,n=Math.ceil(sp),view=paused?'full':autoView();
-    for(let i=0;i<n&&state===ST.PLAY;i++)updatePlay(frameDt*sp/n);
+    const sp=paused?1:stats().speed,n=Math.ceil(sp)*Math.max(1,Math.round(gdt*60)),view=paused?'full':autoView();
+    for(let i=0;i<n&&state===ST.PLAY;i++)updatePlay(gdt*sp/n);
     if(state!==ST.PLAY)drawDead();
     else if(view==='eco'&&ecoWake<=0)ecoTick(ts);   // black screen: the run is only calculated, never drawn
     else if(view!=='save'||ts-_lastDraw>=AUTO_RETRY.saveMs){_lastDraw=ts;drawPlay();updatePlayUI();}   // 20 fps drawing on the cooler setting
@@ -3371,11 +3377,11 @@ function autoChanged(){
 function toggleAutoHud(){
   if(save.autoRetry)save.autoRetry=false;
   else{save.autoRetry=true;save.autoView=save.autoLast||'full';if(save.autoView==='eco')ecoWake=ECO_WAKE;}
-  autoChanged();
+  autoChanged();toast(T('AUTO RETRY')+': '+T(save.autoRetry?'ON':'OFF'));
 }
 function renderAutoRetry(){   // the same switch sits on the result screen and in the pause menu; the HUD has a plain on/off one
   const h=$('hAuto');h.style.display=autoRetryOffered()?'':'none';h.classList.toggle('on',!!save.autoRetry);
-  $('hAutoTxt').textContent=T('AUTO')+(save.autoRetry?' '+T('ON'):' '+T('OFF'));
+  $('hAutoTxt').textContent=T('AUTO');   // just the word in every language (ON/OFF made it wide enough to cover the boss bar); the colour shows the state
   for(const [bid,tid] of [['dAuto','dAutoTxt'],['pAuto','pAutoTxt']]){
     const b=$(bid);
     b.style.display=autoRetryOffered()?'':'none';
@@ -4149,7 +4155,7 @@ const pityRar=()=>{const p=tatPool();return p.length?Math.max(...p.map(t=>t.rar)
 const HELP_TOPICS=[
   ['goal','target','THE GOAL',()=>`<p>${T('You are the triangle at the bottom. Enemies come down from the top; when one reaches the red PERIMETER line it hits you and bounces back.')}</p>
     <p>${T('Survive as many waves as you can. When your health runs out the run ends, but every coin and gem you earned is yours to keep. Spend them, get stronger, go again.')}</p>`],
-  ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the OVERKILL tattoo moves that line up.')}</p>
+  ['shoot','range','SHOOTING & RANGE',()=>`<p>${T('Your triangle aims and fires by itself. It only shoots enemies below the dotted RANGE line; the RANGE upgrade and the OVERKILL tattoo move that line up.')}</p>
     <p>${T('It always shoots the enemy closest to the perimeter first. Bullets follow their target.')}</p>
     <p>${T('ATTACK MODE: tap MODE under the triangle on the home screen. RAPID fires fast single shots. BURST (opens at Tier 2) fires a slow blast of 5 pellets in a cone with short range; pellets fly straight and hit harder the closer the enemy is (x{0} at the triangle, x{1} at the end of their way). They go through armor and shields, and one that kills flies on with the damage it has left. Every kill close to the perimeter heals you {2} of your max health (on top of SALVAGE). MULTISHOT doubles a blast to 10 pellets; ARC, TWIN, NOVA, SHOCKWAVE and bombs hit 1.2x harder; ARC counts a blast as one shot.',BURST.near,BURST.far,pc(BURST.heal))}</p>`],
   ['waves','flag','WAVES, BOSSES & TIERS',()=>`<p>${T('A wave lasts a set time; the bar under the wave number shows how much is left. Every 10th wave brings a BOSS that speeds up below half health. Some waves bring a special rule, announced on screen.')}</p>
@@ -4513,6 +4519,11 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.1',date:'2026-11-02',name:'UPDATE 0.7.1',lines:[
+    {text:'RANGE is back in the shop, next to COOLDOWN: it moves the dotted line up, so you start shooting earlier.'},
+    {text:'High game speed no longer slows down on weaker phones when the field fills up: the run keeps its speed, only the picture gets less smooth.'},
+    {text:'The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.'},
+  ]},
   {id:'0.7.0',date:'2026-10-31',name:'UPDATE 0.7.0',
    lines:[
     {text:'A new tier now opens at wave 50 (was 30), and the waves grow more evenly. Tiers you already opened stay open. Mastery stars are at waves 50, 75 and 100.'},

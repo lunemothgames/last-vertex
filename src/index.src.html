@@ -1514,7 +1514,7 @@ const TAT_TYPES=[
    desc:x=>T('a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p))},
   // ── epic: build cores + offensive actives
   {id:'thorns',      name:'THORNS',   icon:'spikes',rar:2,w:3.5, v:{t:[.32,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
-  {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[8,22],cd:[85,51]},
+  {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  act:1,v:{m:[8,22],cd:[70,40]},
    desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[2.2,3.2],dur:[10,14],cd:[57,36]},
    desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
@@ -4523,6 +4523,7 @@ const INBOX=[
     {text:'RANGE is back in the shop, next to COOLDOWN: it moves the dotted line up, so you start shooting earlier.'},
     {text:'High game speed no longer slows down on weaker phones when the field fills up: the run keeps its speed, only the picture gets less smooth.'},
     {text:'Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.'},
+    {text:'NOVA recharges much faster on top of that.'},
     {text:'The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.'},
   ]},
   {id:'0.7.0',date:'2026-10-31',name:'UPDATE 0.7.0',

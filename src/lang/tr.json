@@ -690,5 +690,6 @@
  "High game speed no longer slows down on weaker phones when the field fills up: the run keeps its speed, only the picture gets less smooth.": "Yüksek oyun hızı, saha dolunca zayıf telefonlarda artık yavaşlamıyor: tur hızını korur, sadece görüntü biraz daha az akıcı olur.",
  "The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.": "Tur içindeki OTO tuşu kısaldı ve artık boss can çubuğunu kapatmıyor; OTO TEKRAR'ın açık olup olmadığını rengi gösterir.",
  "UPDATE 0.7.1": "GÜNCELLEME 0.7.1",
- "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Her aktif dövme ve bomba 3 saniye daha hızlı doluyor; hazır olduğu anda basmasan bile işe yarıyor."
+ "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Her aktif dövme ve bomba 3 saniye daha hızlı doluyor; hazır olduğu anda basmasan bile işe yarıyor.",
+ "NOVA recharges much faster on top of that.": "NOVA bunun üstüne çok daha hızlı doluyor."
 }

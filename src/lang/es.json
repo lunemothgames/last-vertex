@@ -690,5 +690,6 @@
  "High game speed no longer slows down on weaker phones when the field fills up: the run keeps its speed, only the picture gets less smooth.": "La velocidad de juego alta ya no se ralentiza en móviles más débiles cuando el campo se llena: la partida mantiene su velocidad, solo la imagen va menos fluida.",
  "The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.": "El botón AUTO en partida es más corto y ya no tapa la barra de vida del jefe; su color indica si REINTENTO AUTO está activado.",
  "UPDATE 0.7.1": "ACTUALIZACIÓN 0.7.1",
- "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Cada tatuaje activo y cada bomba se recargan 3 segundos más rápido, así rinden aunque no los toques justo cuando están listos."
+ "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Cada tatuaje activo y cada bomba se recargan 3 segundos más rápido, así rinden aunque no los toques justo cuando están listos.",
+ "NOVA recharges much faster on top of that.": "Además, NOVA se recarga mucho más rápido."
 }

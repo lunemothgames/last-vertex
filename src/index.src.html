@@ -1286,6 +1286,8 @@ const ECO={
   // freezes the enemy freezeT s (not bosses) · SLOW POWER over 50% still adds to the damage slowed enemies take · RICOCHET over 85% →
   // a bounced bullet gets +this x the excess damage · RANGE past its line limit → +this x the excess bullet damage
   parryOverStun:10, freezeK:.5, freezeT:1, bounceOverDmg:3, rangeOverDmg:1.5,
+  // ARC / RICOCHET with no other enemy close (a boss alone): a jump that finds no new target hits the last one again at this share
+  arcBack:.5, ricBack:.5,
   salvZone:.12,   salvBoss:10,          // SALVAGE: kills this close above the perimeter (share of screen height) heal; a boss heals x10
   salvZoneT:.4,                         // the SALVAGE tattoo's own, much wider zone (about the lower half of the field)
   critSplashR:.09,                      // CRIT DMG tattoo: a crit splashes onto enemies within this share of the screen width
@@ -1496,7 +1498,7 @@ const TAT_TYPES=[
   {id:'attack_power',name:'ATK PWR',  icon:'bullet', rar:0,w:10, v:{dmg:[.1,.55]},          desc:x=>T('+{0} bullet damage',pc(x.dmg))},
   {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.04,.2]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
   {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.3,1.3]},            desc:x=>T('+{0} max health',pc(x.hp))},
-  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.012,.07]},       desc:x=>T('heals {0} of your max health every second, up to 4x faster as your health runs low',pc2(x.pct))},
+  {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.012,.07]},       desc:x=>T('heals {0} of your max health (not counting the MAX HP tattoo) every second, up to 4x faster as your health runs low',pc2(x.pct))},
   {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},          desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts)',pc(x.red))},
   {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.08,.4]},             desc:x=>T('+{0} coins from every source',pc(x.c))},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
@@ -1525,7 +1527,7 @@ const TAT_TYPES=[
    desc:x=>T('ACTIVE · blasts every enemy on screen for {0}x bullet damage and pushes them back',x.m.toFixed(1))+cdTxt(x)},
   {id:'overdrive',   name:'OVERDRIVE',icon:'od',    rar:2,w:3,  act:1,v:{m:[2.2,3.2],dur:[10,14],cd:[57,36]},
    desc:x=>T('ACTIVE · x{0} fire rate for {1}s',x.m.toFixed(2),x.dur.toFixed(1))+cdTxt(x)},
-  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:2,w:3.5, v:{c:[.16,.35],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times',pc(x.c),Math.round(x.n))},
+  {id:'ricochet',    name:'RICOCHET', icon:'bounce',rar:2,w:3.5, v:{c:[.16,.35],n:[2,4]},    desc:x=>T('+{0} ricochet chance · a bullet can bounce up to {1} times · with no other enemy around it bounces back into the same one at half damage',pc(x.c),Math.round(x.n))},
   {id:'midas',       name:'MIDAS',    icon:'midas', rar:2,w:3,  act:1,v:{m:[2,3.5],dur:[10,15],cd:[42,42]},
    desc:x=>T('ACTIVE · for {0}s every kill pays x{1} coins',x.dur.toFixed(1),x.m.toFixed(1))+cdTxt(x)},
   {id:'logic_bomb',  name:'LOGIC BOMB',icon:'bomb',rar:2,w:3,  act:1,gren:'logic',r:.2,v:{m:[12,30],cd:[21,11]},
@@ -1534,7 +1536,7 @@ const TAT_TYPES=[
   {id:'shockwave',   name:'SHOCKWAVE',icon:'shock', rar:3,w:1.2, v:{m:[4,12],cd:[46,20]},
    desc:x=>T('when your health drops below 30%: a shockwave hits every enemy in the lower half for {0}x bullet damage and throws them back',x.m.toFixed(1))+cdTxt(x)},
   {id:'arc',         name:'ARC',      icon:'arc',   rar:3,w:1.2, v:{every:[6,4],n:[3,5],m:[.4,.75]},
-   desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each',Math.round(x.every),Math.round(x.n),pc(x.m))},
+   desc:x=>T('every {0}th shot also sends lightning through up to {1} enemies, {2} of bullet damage each · jumps that find no new enemy strike the last one again at half damage',Math.round(x.every),Math.round(x.n),pc(x.m))},
   {id:'twin',        name:'TWIN',     icon:'twin',  rar:3,w:1.2, v:{m:[.3,.7]},             desc:x=>T('every shot also fires a second bullet at the next enemy in line (or the same one) with {0} of the damage',pc(x.m))},
   {id:'goo_bomb',    name:'GOO BOMB',icon:'goo',rar:3,w:1.2, act:1,gren:'goo',r:.2,v:{m:[3,7],m2:[5,12],cd:[23,13]},
    desc:x=>T('ACTIVE · tap the button, then tap the field: goo hits everything there for {0}x bullet damage and sticks; {1}s later every stuck enemy bursts for {2}x on itself and whatever is next to it',x.m.toFixed(1),GRENADE.goo.t,x.m2.toFixed(1))+cdTxt(x)},
@@ -1661,7 +1663,9 @@ function stats(){
     hitDmg:    dmg*(B?BURST.dmg:1),   // bullet damage with the mode bonus: pellets, TWIN, ARC, NOVA, SHOCKWAVE, bombs
     maxHp,
     regen:     v('regen')*M.regen,
-    regenT:    maxHp*tb('regen').pct*M.regen,   // REGEN tattoo: this per second at full health, up to (1+ECO.regenLow)x as health runs out
+    // REGEN tattoo: this per second at full health, up to (1+ECO.regenLow)x as health runs out; a share of max health WITHOUT the MAX HP
+    // tattoo, so the two do not multiply each other (MAX HP x REGEN made the all-defense build run far ahead)
+    regenT:    maxHp/(1+tb('max_hp').hp)*tb('regen').pct*M.regen,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
     block:     maxHp*ECO.blockK*armorRed(v('defense')),   // ARMOR's flat part: cut from every hit after the share above
     blockA:    ECO.blockA*armorRed(v('defense')),          // ...plus this x atkAt(effWave()) at the moment of the hit (blockNow)
@@ -2204,6 +2208,8 @@ function arcStrike(first,st){
     if(!nx)break;hit.push(nx);pts.push({x:nx.x,y:nx.y});cur=nx;
   }
   for(const e of hit)hurt(e,st.hitDmg*st.arcM*vsDmg(e,st),0,'arc');
+  // jumps left over strike the last enemy again (weaker), so ARC is not wasted on a lone boss
+  if(hit.length<st.arcN&&cur.hp>0)hurt(cur,st.hitDmg*st.arcM*ECO.arcBack*(st.arcN-hit.length)*vsDmg(cur,st),0,'arc');
   arcs.push({pts,life:1});
 }
 
@@ -2546,6 +2552,8 @@ function updatePlay(dt){
         for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
         if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
           b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.dmg*=st.bounceM;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;delete b.left;break;}
+        // no other enemy to bounce to: it bounces back into the same one (weaker)
+        if(e.hp>0)hurt(e,dmg*st.bounceM*ECO.ricBack,0,'shot');
       }
       hit=true;break;
     }
@@ -4547,6 +4555,7 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
   {id:'0.7.1',date:'2026-11-02',name:'UPDATE 0.7.1',lines:[
+    {text:'ARC and RICOCHET no longer waste hits when no other enemy is around: they strike the same one again at half damage. The REGEN tattoo no longer counts the MAX HP tattoo, so the two together no longer run far ahead of every other build.'},
     {text:'ARMOR\'s flat block now also grows with the enemies of each tier, so defense keeps up when you move to a higher tier.'},
     {text:'Nothing above a limit is wasted any more: extra PARRY keeps parried enemies still longer, extra SLOW CHANCE can freeze enemies, extra SLOW POWER and RANGE add damage, and extra RICOCHET makes bounced bullets hit harder.'},
     {text:'REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.'},

@@ -224,7 +224,9 @@ function run0(tier,maxW,o){
         if(pd<pr){pd++;qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
-          if(nx&&!nx.ph){bounces++;m*=st.bounceM||1;ox=e.x;oy=e.y;e=nx;continue;}}
+          if(nx&&!nx.ph){bounces++;m*=st.bounceM||1;ox=e.x;oy=e.y;e=nx;continue;}
+          // game: no other enemy → bounces back into the same one (game reuses the hit's damage, crit included: average crit here)
+          if(!nx&&e.hp>0&&ECO.ricBack)hit(e,HD*m*(st.bounceM||1)*ECO.ricBack*vsD(e)*(1+st.crit*(st.critM-1))*(e.slow>0||e.frz>0?st.frostVuln:1));}
         return;
       }
     };
@@ -363,7 +365,8 @@ function run0(tier,maxW,o){
         // ARC: lightning from the target to the nearest enemies, each within 0.4 screen widths of the last
         if(st.arcEvery&&++shots%st.arcEvery===0){const hs=[vis[0]];let cur=vis[0];const r2=(.4*GWH)**2;
           while(hs.length<st.arcN){let nx=null,nd=r2;for(const o of E){if(o.hp<=0||hs.includes(o))continue;const d=d2(o,cur.x,cur.y);if(d<nd){nd=d;nx=o;}}if(!nx)break;hs.push(nx);cur=nx;}
-          for(const e of hs)hit(e,HD*st.arcM*vsD(e));}
+          for(const e of hs)hit(e,HD*st.arcM*vsD(e));
+          if(hs.length<st.arcN&&cur.hp>0)hit(cur,HD*st.arcM*(ECO.arcBack||0)*(st.arcN-hs.length)*vsD(cur));}   // game: leftover jumps hit the last one again
         cd+=1/rate;
       }
       for(let i=E.length-1;i>=0;i--)if(E[i].hp<=0){const d=E[i];E.splice(i,1);d.td=t;kill(d);tkills++;}
@@ -602,7 +605,7 @@ if(TLV)equip(BUILD,TLV);
 const LOG=[1,2,5,10,20,42,84,168,336,600,1000,1500,2000,3000].filter(h=>h<=HOURS);
 let bank=0,clock=0,li=0,runs=0,tier=1;const tierBest={1:0};save.tierBest=tierBest;   // mastery stars count
 // SIM_PACE=1: print the hours it takes to first reach these effective waves (to compare builds' real speed)
-const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300,400],hit={},atH={},AT=[42,84,168,336,600];
+const PACE=process.env.SIM_PACE==='1',MILES=[50,75,100,125,150,175,200,250,300,400],hit={},atH={},tierH={},AT=[42,84,168,336,600];   // tierH[h] = highest tier opened by then
 const effNow=()=>Object.entries(tierBest).reduce((m,[t,w])=>w?Math.max(m,(t-1)*TIERS.offset+w):m,0);
 const BOOST=(process.env.SIM_BOOST==='all'?'lucky,power,berserk,rapid,shield,invincible,focus':process.env.SIM_BOOST||'').split(',').filter(Boolean);
 let idleCps=0;   // average income per second of recent runs (game save.idleCps): idle income, daily reward coins, and an older game's (SIM_SRC) boost prices
@@ -712,7 +715,7 @@ while(clock<HOURS*3600){
   afterRun(r,'runs');
   bank=shopL(bank);
   if(TRACE)trace(r);
-  if(PACE){const e=effNow();for(const m of MILES)if(e>=m&&hit[m]===undefined)hit[m]=+(clock/3600).toFixed(1);for(const h of AT)if(clock>=h*3600&&atH[h]===undefined)atH[h]=e;if(hit[MILES[MILES.length-1]]!==undefined)break;continue;}
+  if(PACE){const e=effNow();for(const m of MILES)if(e>=m&&hit[m]===undefined)hit[m]=+(clock/3600).toFixed(1);for(const h of AT)if(clock>=h*3600&&atH[h]===undefined){atH[h]=e;tierH[h]=tier;}if(hit[MILES[MILES.length-1]]!==undefined)break;continue;}
   while(li<LOG.length&&clock>=LOG[li]*3600){
     const mt=Object.keys(tierBest).map(Number).filter(t=>tierBest[t]>0).reduce((a,b)=>Math.max(a,b),1);
     const p=id=>save.perm[id]||0;
@@ -723,12 +726,12 @@ while(clock<HOURS*3600){
 }
 if(DAYS)logDay();
 // a checkpoint passed during a mastery-farm run (those skip the PACE bookkeeping) still gets its value
-if(PACE)for(const h of AT)if(h<=HOURS&&clock>=h*3600&&atH[h]===undefined)atH[h]=effNow();
+if(PACE)for(const h of AT)if(h<=HOURS&&clock>=h*3600&&atH[h]===undefined){atH[h]=effNow();tierH[h]=tier;}
 // where the gems and coins came from (and went), and the whole collection at the end
 const econ=EC?{days:day,gems:GEM,spent:SPENT,coins:Object.fromEntries(Object.entries(CX).map(([k,v])=>[k,+v.toPrecision(3)])),afkHours:+(afkClock/3600).toFixed(1),
   slots:save.tatSlots,equipped:save.equipped.map(id=>id+':'+G.tatOf(id).lv),owned:owned().length,pity:save.pity}:undefined;
 if(DAYS)console.log('DAYS '+JSON.stringify({build:BUILD,type:process.env.SIM_TYPE||'',dayH:DAYH,ads:ADS,afkH:AFKH,playH:+(clock/3600).toFixed(1),maxSlots:G.MAX_SLOTS,tatTotal:G.TAT_TYPES.length,days:dayLog,econ}));
-if(PACE)console.log('PACE '+JSON.stringify({build:BUILD,hours:HOURS,hit,at:atH,econ}));
+if(PACE)console.log('PACE '+JSON.stringify({build:BUILD,hours:HOURS,hit,at:atH,tier:tierH,econ}));
 else if(EC){const tg=Object.values(GEM).reduce((a,x)=>a+x,0),tc=Object.values(CX).reduce((a,x)=>a+x,0);
   console.log(`after ${day} days (${DAYH} h play a day): gems earned ${tg} = `+Object.entries(GEM).map(([k,v])=>`${k} ${v} (${Math.round(v/tg*100)}%)`).join(' · '));
   console.log(`gems spent: slots ${SPENT.slot} · inks ${SPENT.ink} (${SPENT.ink/ECO.pullCost|0}+ inks) · left ${save.gems}`);

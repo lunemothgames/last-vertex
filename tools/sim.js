@@ -194,6 +194,7 @@ function run0(tier,maxW,o){
       if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
       if(!e.boss&&Math.random()<st.kbChance){e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);qe('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(!(e.slow>0))qe('slow');e.slow=ECO.slowTime;}
+      if(!e.boss&&st.freeze>0&&Math.random()<st.freeze)e.stun=Math.max(e.stun||0,ECO.freezeT);   // game: SLOW CHANCE above its cap freezes
       const carry=e.hp<=0&&d>before?1-before/d:0;   // share of the damage left over after a kill (a BURST pellet flies on with it)
       if(e.hp<=0)dead(e);
       return carry;
@@ -223,7 +224,7 @@ function run0(tier,maxW,o){
         if(pd<pr){pd++;qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
-          if(nx&&!nx.ph){bounces++;ox=e.x;oy=e.y;e=nx;continue;}}
+          if(nx&&!nx.ph){bounces++;m*=st.bounceM||1;ox=e.x;oy=e.y;e=nx;continue;}}
         return;
       }
     };
@@ -256,7 +257,7 @@ function run0(tier,maxW,o){
             if(carry>0){p.m*=carry;continue;}
             if(Math.random()<st.pierce){qe('pierce');continue;}
             if(st.chain>0&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||p.hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
-              if(nx&&!nx.ph)follow(nx,p.m,e.x,e.y,p.hits,1);}
+              if(nx&&!nx.ph)follow(nx,p.m*(st.bounceM||1),e.x,e.y,p.hits,1);}
             gone=true;break;}
           if(!gone&&(p.left<=0||p.y<-.05||p.x<-.1||p.x>GWH+.1)){gone=true;if(!p.hit)BUL.m++;}}
         if(gone)P.splice(i,1);}

@@ -1281,6 +1281,10 @@ const ECO={
   bossThornsOver:.5,                    // ...plus half of the thorns above 100% (shop 50% + tattoo 72% = 36% a touch: a boss dies in 3)
   blockK:.05,                           // ARMOR also stops a flat amount of every hit: max health x this x ARMOR's share (so it keeps up with your health)
   parryBack:8,    parryStun:1.2,        // PARRY: a parried enemy is pushed back this hard (a hit one 3.5) and stands still this many seconds (not bosses)
+  // above a cap nothing is wasted (like crit): PARRY over 50% → +this many s stun per 1.0 over · SLOW CHANCE over 80% → x this = chance a hit
+  // freezes the enemy freezeT s (not bosses) · SLOW POWER over 50% still adds to the damage slowed enemies take · RICOCHET over 85% →
+  // a bounced bullet gets +this x the excess damage · RANGE past its line limit → +this x the excess bullet damage
+  parryOverStun:10, freezeK:.5, freezeT:1, bounceOverDmg:3, rangeOverDmg:1.5,
   salvZone:.12,   salvBoss:10,          // SALVAGE: kills this close above the perimeter (share of screen height) heal; a boss heals x10
   salvZoneT:.4,                         // the SALVAGE tattoo's own, much wider zone (about the lower half of the field)
   critSplashR:.09,                      // CRIT DMG tattoo: a crit splashes onto enemies within this share of the screen width
@@ -1432,13 +1436,13 @@ const PERM_UPGRADES=[
   {id:'pierce',    cat:'atk', name:'PIERCE',     icon:'pierce',base:250, g:1.2,  max:50,   start:0,  step:.01,  fx:v=>pc(v),
    info:'Chance that a bullet goes through the enemy it hits and flies on in a straight line, hitting whatever is behind. Max 50%.'},
   {id:'bounce',    cat:'atk', name:'RICOCHET',   icon:'bounce',base:125, g:1.13, max:120,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop.'},
+   info:'Chance that a bullet bounces to the nearest other enemy after a hit. One bounce; the RICOCHET tattoo adds more. Max 60% from the shop, 85% in total; above that, bounced bullets hit harder.'},
   {id:'bossDmg',   cat:'atk', name:'BOSS HUNTER',icon:'boss', base:300, g:1.04, max:167,  start:0,  step:.03,  fx:v=>'+'+pc(v),
    info:'Extra damage against bosses (every 10th wave), and half as much against elites and big enemies (TANK, ARMORED), from bullets, lightning and blasts.'},
   {id:'execute',   cat:'atk', name:'REAPER',     icon:'skull', base:250, g:1.05, max:100,  start:0,  step:.04,  fx:v=>'+'+pc(v),
    info:'Extra bullet damage against enemies below half of their health, to finish off wounded enemies faster.'},
   {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
-   info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier.'},
+   info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier. Once the line is as high as it goes, the rest adds bullet damage.'},
   {id:'cooldown',  cat:'atk', name:'COOLDOWN',   icon:'clock', base:400, g:1.09, max:100,  start:0,  step:.0025,fx:v=>'-'+pc(v),
    info:'Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.'},
   // ── defense
@@ -1451,15 +1455,15 @@ const PERM_UPGRADES=[
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
    info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
-   info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo.'},
+   info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo; above that, a parried enemy stands still longer.'},
   {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'salvage',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
    info:'Every enemy that dies close to the perimeter (from thorns, bullets or anything else) heals you this share of your max health. A boss heals 10 times as much.'},
   {id:'knockback', cat:'def', name:'KNOCKBACK',  icon:'kb',  base:20,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
   {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
-   info:'Chance that a bullet slows the enemy it hits for 4 seconds. How much it slows is set by SLOW POWER. Max 80%.'},
+   info:'Chance that a bullet slows the enemy it hits for 4 seconds. How much it slows is set by SLOW POWER. Max 80%; slow chance from tattoos above that can freeze the enemy for 1 second (not bosses).'},
   {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:83,  start:0,  step:.006, fx:v=>pc(v),
-   info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage.'},
+   info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage. Slow power from tattoos above 50% still adds damage.'},
   // ── utility
   {id:'coinMult',  cat:'util',name:'COIN BONUS', icon:'coins', base:60,  p:2.6,  max:4500, start:1,  step:.02,  fx:v=>'x'+v.toFixed(2),
    info:'Multiplies every coin you earn: kills, bosses, wave bounty, coin drops and idle income.'},
@@ -1503,7 +1507,7 @@ const TAT_TYPES=[
   // ── rare: build pieces + defensive actives
   {id:'crit_chance', name:'CRIT %',   icon:'target',rar:1,w:6,  v:{c:[.04,.2]},            desc:x=>T('+{0} crit chance · above the 80% cap it turns into crit power',pc(x.c))},
   {id:'crit_mult',   name:'CRIT BLAST', icon:'burst', rar:1,w:6,  v:{m:[.25,1.3],s:[.25,.6]}, desc:x=>T('+x{0} crit power · a critical hit splashes {1} of its damage onto the enemies around it',x.m.toFixed(2),pc(x.s))},
-  {id:'dodge',       name:'PARRY',    icon:'parry',  rar:1,w:6,  v:{d:[.15,.5],s:[1.5,5]},     desc:x=>T('+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max) · a parried enemy stands still {1} s longer',pc(x.d),x.s.toFixed(1))},
+  {id:'dodge',       name:'PARRY',    icon:'parry',  rar:1,w:6,  v:{d:[.15,.5],s:[1.5,5]},     desc:x=>T('+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max, the rest makes it stand still longer) · a parried enemy stands still {1} s longer',pc(x.d),x.s.toFixed(1))},
   {id:'reach',       name:'OVERKILL',    icon:'overkill', rar:1,w:5,  v:{r:[.06,.2],s:[.3,.75]}, desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner · a bullet that kills flies on to the nearest enemy with {1} of the damage it had left',(x.r*100).toFixed(1),pc(x.s))},
   {id:'mend',        name:'RAMPART',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],guard:[6,12],cd:[42,25]},
    desc:x=>T('ACTIVE · heals {0} of your max health at once, then for {1}s every enemy that touches the perimeter is destroyed (bosses still hit)',pc(x.heal),x.guard.toFixed(1))+cdTxt(x)},
@@ -1642,7 +1646,12 @@ function stats(){
   const critRaw=v('critChance')+tb('crit_chance').c+(T.focus?.08:0);
   const reduce=1-(1-armorRed(v('defense')))*(1-tb('defense').red);
   const lk=tb('luck'),rk=tb('ricochet'),sw=tb('shockwave'),arc=tb('arc'),B=isBurst();
-  const dmg=v('damage')*(T.power?1.5:1)*(T.berserk?1.25:1)*(1+tb('attack_power').dmg)*(1+stars*STAR.dmg)*M.dmg;
+  // caps: what goes above one turns into a related bonus (ECO.parryOverStun ...)
+  const dodgeRaw=v('dodge')+tb('dodge').d,bounceRaw=v('bounce')+rk.c;
+  const slowCRaw=v('slowChance')+tb('frost').c+(tb('shatter').c||0),slowARaw=v('slowAmt')+tb('frost').a+(tb('shatter').a||0);
+  const rangeRaw=v('range')+tb('reach').r;
+  const rangeOver=B?Math.max(0,BURST.rangeMin-(BURST.range-rangeRaw*BURST.rangeUp))/BURST.rangeUp:Math.max(0,ECO.rangeMin-(ECO.rangeBase-rangeRaw));
+  const dmg=v('damage')*(T.power?1.5:1)*(T.berserk?1.25:1)*(1+tb('attack_power').dmg)*(1+stars*STAR.dmg)*M.dmg*(1+rangeOver*ECO.rangeOverDmg);
   return{
     dmg,
     rate:      v('fireRate')*(T.rapid?1.25:1)*(T.berserk?1.2:1)*(1+tb('attack_speed').rate)*(runFx.odT>0?runFx.odM:1)*(B?BURST.rate:1),
@@ -1663,22 +1672,24 @@ function stats(){
     thornBoss: Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn)*ECO.bossThorns+Math.max(0,(v('thorns')+tb('thorns').t)*M.thorn-1)*ECO.bossThornsOver,   // share a boss loses
     crit:      Math.min(.8,critRaw),
     critM:     v('critMult')+tb('crit_mult').m+Math.max(0,critRaw-.8)*3,
-    dodge:     Math.min(.5,v('dodge')+tb('dodge').d),
-    parryStun: ECO.parryStun+(tb('dodge').s||0),
+    dodge:     Math.min(.5,dodgeRaw),
+    parryStun: ECO.parryStun+(tb('dodge').s||0)+Math.max(0,dodgeRaw-.5)*ECO.parryOverStun,
     salv:      (v('lifesteal')+(B?BURST.heal||0:0))*M.ls,
     salvT:     tb('lifesteal').l*M.ls,   // SALVAGE tattoo: same heal, wider zone (ECO.salvZoneT)   // SALVAGE (+ BURST's own): share of max health healed per kill near the perimeter
     multiChance:Math.min(.6,v('multishot')),
-    bounce:    Math.min(.85,v('bounce')+rk.c),
+    bounce:    Math.min(.85,bounceRaw),
+    bounceM:   1+Math.max(0,bounceRaw-.85)*ECO.bounceOverDmg,   // damage x of a bounced bullet
     chain:     rk.n?Math.round(rk.n):1,
     bossDmg:   1+v('bossDmg')+tb('boss_slayer').b,
     bigDmg:    1+v('bossDmg')*ECO.bigHunt+tb('boss_slayer').b,   // BOSS HUNTER (at ECO.bigHunt strength) and SLAYER also hit elites and big types (vsDmg)
     splash:    tb('crit_mult').s||0,     // CRIT DMG tattoo: a crit splashes this share of its damage around
     execute:   1+v('execute'),
     reap:      tb('reaper').k,
-    slowChance:Math.min(.8,v('slowChance')+tb('frost').c+(tb('shatter').c||0)),
-    slowAmt:   Math.min(.5,v('slowAmt')+tb('frost').a+(tb('shatter').a||0)),
+    slowChance:Math.min(.8,slowCRaw),
+    freeze:    Math.max(0,slowCRaw-.8)*ECO.freezeK,   // chance a hit freezes a normal enemy for ECO.freezeT s
+    slowAmt:   Math.min(.5,slowARaw),
     // slowed / frozen enemies take extra bullet damage: the slow power itself, plus the FROST tattoo
-    frostVuln: 1+Math.min(.5,v('slowAmt')+tb('frost').a+(tb('shatter').a||0))+tb('frost').vuln,
+    frostVuln: 1+slowARaw+tb('frost').vuln,
     rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
     pierce:    v('pierce'),
     pierceP:   tb('piercer').p||0,               // PIERCER tattoo: chance that a bullet is a piercing round...
@@ -2507,6 +2518,7 @@ function updatePlay(dt){
       dmgText(e,dmg,isCrit);
       if(!e.boss&&Math.random()<st.kbChance){e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush);qEvent('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(e.slowT<=0)qEvent('slow');e.slowT=ECO.slowTime;}
+      if(!e.boss&&st.freeze>0&&Math.random()<st.freeze)e.stunT=Math.max(e.stunT||0,ECO.freezeT);   // SLOW CHANCE above its cap
       if(e.hp<=0){killEnemy(e,st);enemies.splice(enemies.indexOf(e),1);}
       // BURST: a pellet that kills flies on with the damage it had left
       if(pel&&e.hp<=0&&dmg>hpBefore){b.dmg*=1-hpBefore/dmg;(b.hits||(b.hits=new Set())).add(e);continue;}
@@ -2528,7 +2540,7 @@ function updatePlay(dt){
         let nx=null,nd=Infinity;
         for(const o of enemies){if(o===e||hits.has(o)||o.hp<=0)continue;const d=(o.x-hx)**2+(o.y-hy)**2;if(d<nd){nd=d;nx=o;}}
         if(nx){const sp=Math.hypot(b.vx,b.vy),dx=nx.x-hx,dy=nx.y-hy,l=Math.hypot(dx,dy)||1;
-          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;delete b.left;break;}
+          b.vx=dx/l*sp;b.vy=dy/l*sp;b.bounces++;b.dmg*=st.bounceM;b.x=b.px=hx;b.y=b.py=hy;b.tgt=nx;delete b.left;break;}
       }
       hit=true;break;
     }
@@ -4529,6 +4541,7 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
   {id:'0.7.1',date:'2026-11-02',name:'UPDATE 0.7.1',lines:[
+    {text:'Nothing above a limit is wasted any more: extra PARRY keeps parried enemies still longer, extra SLOW CHANCE can freeze enemies, extra SLOW POWER and RANGE add damage, and extra RICOCHET makes bounced bullets hit harder.'},
     {text:'REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.'},
     {text:'A gift: the next boss you beat leaves you one free ink in TATTOOS.'},
     {text:'FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.'},

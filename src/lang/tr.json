@@ -5,7 +5,6 @@
  "+{0} COINS": "+{0} ALTIN",
  "+{0} GEM": "+{0} ELMAS",
  "+{0} bullet damage": "+{0} mermi hasarı",
- "+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max)": "savuşturma şansı +{0}: savuşturulan vuruş hasar vermez ve düşmanı uzağa fırlatır (en fazla %50)",
  "+{0} coins from every source": "her kaynaktan +{0} altın",
  "+{0} crit chance · above the 80% cap it turns into crit power": "+{0} kritik şansı · %80 sınırının üstü kritik gücüne dönüşür",
  "+{0} fire rate": "+{0} atış hızı",
@@ -691,5 +690,10 @@
  "The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.": "Tur içindeki OTO tuşu kısaldı ve artık boss can çubuğunu kapatmıyor; OTO TEKRAR'ın açık olup olmadığını rengi gösterir.",
  "UPDATE 0.7.1": "GÜNCELLEME 0.7.1",
  "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Her aktif dövme ve bomba 3 saniye daha hızlı doluyor; hazır olduğu anda basmasan bile işe yarıyor.",
- "NOVA recharges much faster on top of that.": "NOVA bunun üstüne çok daha hızlı doluyor."
+ "NOVA recharges much faster on top of that.": "NOVA bunun üstüne çok daha hızlı doluyor.",
+ "+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max) · a parried enemy stands still {1} s longer": "savuşturma şansı +{0}: savuşturulan vuruş hasar vermez ve düşmanı uzağa fırlatır (en fazla %50) · savuşturulan düşman {1} sn daha uzun yerinde kalır",
+ "BOSS DOWN · ONE FREE INK IN TATTOOS": "BOSS DÜŞTÜ · DÖVMELER'DE 1 BEDAVA MÜREKKEP",
+ "The boss left you a FREE INK. Open TATTOOS: tattoos change how you play.": "Boss sana BEDAVA MÜREKKEP bıraktı. DÖVMELER'i aç: dövmeler oyununu değiştirir.",
+ "A gift: the next boss you beat leaves you one free ink in TATTOOS.": "Hediye: yeneceğin bir sonraki boss, DÖVMELER'de sana bir bedava mürekkep bırakır.",
+ "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP ve PARRY çok daha güçlü. Savuşturulan düşman artık birkaç saniye daha uzun yerinde kalıyor."
 }

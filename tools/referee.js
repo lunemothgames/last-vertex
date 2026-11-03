@@ -45,6 +45,7 @@ if(fs.statSync(path.join(root,'src','index.src.html')).mtimeMs>fs.statSync(path.
 function pageRun(cfg){
   let r=cfg.seed>>>0||1;Math.random=()=>{r^=r<<13;r^=r>>>17;r^=r<<5;r>>>=0;return r/4294967296;};
   save=Object.assign(defaultSave(),JSON.parse(cfg.save));
+  save.life.runs=99;   // not a new player: no rookie runs (ECO.rookieRuns)
   if(cfg.weekly)weeklyKeys=()=>cfg.weekly;
   startRun(!!cfg.weekly);runTier=cfg.tier;
   const acts=activeIds();let frames=0,pickCoins=0,gems=save.gems,c0=save.coins;

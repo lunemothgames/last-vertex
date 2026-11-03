@@ -169,7 +169,7 @@ function run0(tier,maxW,o){
       if(A.mend&&A.mend.left>0&&!e.boss){tdealt+=e.hp;e.hp=0;tcontacts++;return 3.5;}
       let taken=0,back=3.5;   // how hard it is pushed back (game contactHit)
       // PARRY: pushed back ECO.parryBack and stands still ECO.parryStun seconds (not bosses)
-      if(Math.random()<st.dodge){back=ECO.parryBack||2;if(ECO.parryStun&&!e.boss)e.stun=ECO.parryStun;qe('dodge');}
+      if(Math.random()<st.dodge){back=ECO.parryBack||2;const ps=st.parryStun??ECO.parryStun;if(ps&&!e.boss)e.stun=ps;qe('dodge');}
       // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
       else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0));hp-=taken;tdmg+=taken;tdAll+=taken;}

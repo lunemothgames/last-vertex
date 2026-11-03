@@ -5,7 +5,6 @@
  "+{0} COINS": "+{0} MOEDAS",
  "+{0} GEM": "+{0} GEMA",
  "+{0} bullet damage": "+{0} de dano por bala",
- "+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max)": "+{0} de chance de aparar: um golpe aparado não causa dano e joga o inimigo para longe (máx. 50%)",
  "+{0} coins from every source": "+{0} moedas de todas as fontes",
  "+{0} crit chance · above the 80% cap it turns into crit power": "+{0} de chance crítica · acima de 80% vira poder crítico",
  "+{0} fire rate": "+{0} de cadência",
@@ -691,5 +690,10 @@
  "The AUTO button in a run is shorter and no longer covers the boss health bar; its colour shows whether AUTO RETRY is on.": "O botão AUTO na partida ficou mais curto e não cobre mais a barra de vida do chefe; a cor mostra se REPETIR AUTO está ligado.",
  "UPDATE 0.7.1": "ATUALIZAÇÃO 0.7.1",
  "Every active tattoo and bomb recharges 3 seconds faster, so they pay off even when you do not tap them the very moment they are ready.": "Cada tatuagem ativa e cada bomba recarregam 3 segundos mais rápido, então valem a pena mesmo se você não tocar no exato momento em que ficam prontas.",
- "NOVA recharges much faster on top of that.": "Além disso, NOVA recarrega muito mais rápido."
+ "NOVA recharges much faster on top of that.": "Além disso, NOVA recarrega muito mais rápido.",
+ "+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max) · a parried enemy stands still {1} s longer": "+{0} de chance de aparar: um golpe aparado não causa dano e joga o inimigo para longe (máx. 50%) · um inimigo aparado fica parado {1} s a mais",
+ "BOSS DOWN · ONE FREE INK IN TATTOOS": "CHEFE DERRUBADO · UMA TINTA GRÁTIS EM TATUAGENS",
+ "The boss left you a FREE INK. Open TATTOOS: tattoos change how you play.": "O chefe deixou uma TINTA GRÁTIS. Abra TATUAGENS: as tatuagens mudam seu jeito de jogar.",
+ "A gift: the next boss you beat leaves you one free ink in TATTOOS.": "Um presente: o próximo chefe que você derrotar deixa uma tinta grátis em TATUAGENS.",
+ "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP e PARRY estão muito mais fortes. Um inimigo aparado agora também fica parado alguns segundos a mais."
 }

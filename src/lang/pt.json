@@ -9,7 +9,6 @@
  "+{0} crit chance · above the 80% cap it turns into crit power": "+{0} de chance crítica · acima de 80% vira poder crítico",
  "+{0} fire rate": "+{0} de cadência",
  "+{0} max health": "+{0} de vida máxima",
- "+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health": "+{0} de reciclagem: cada inimigo que morre perto do perímetro cura essa parte da sua vida máxima",
  "+{0} ricochet chance · a bullet can bounce up to {1} times": "+{0} de chance de ricochete · uma bala pode quicar até {1} vezes",
  "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage": "+{0} de chance de lentidão, +{1} de potência · inimigos lentos ou congelados sofrem +{2} de dano por bala",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health": "+{0} de espinhos: o inimigo que atinge o perímetro perde essa parte da vida máxima",
@@ -548,7 +547,6 @@
  "Your progress syncs by itself.": "Seu progresso sincroniza sozinho.",
  "Your reward for today is ready. Missing a day never resets your progress.": "Sua recompensa de hoje está pronta. Perder um dia nunca reinicia seu progresso.",
  "Your triangle's health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.": "A vida do seu triângulo. Cada inimigo que chega ao perímetro vermelho causa seu ataque como dano e quica de volta. A cada 200 níveis (até 5000) o total também é multiplicado por 1,1.",
- "a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "um inimigo lento ou congelado que morre explode em gelo: inimigos próximos perdem {0} da vida máxima dele e ficam lentos (chefes sofrem um quarto) · as explosões se encadeiam",
  "bullets instantly kill normal enemies (not bosses) that drop below {0} health": "balas matam na hora inimigos normais (não chefes) que caem abaixo de {0} de vida",
  "classic terminal": "terminal clássico",
  "cold vector glow": "brilho vetorial frio",
@@ -695,5 +693,8 @@
  "BOSS DOWN · ONE FREE INK IN TATTOOS": "CHEFE DERRUBADO · UMA TINTA GRÁTIS EM TATUAGENS",
  "The boss left you a FREE INK. Open TATTOOS: tattoos change how you play.": "O chefe deixou uma TINTA GRÁTIS. Abra TATUAGENS: as tatuagens mudam seu jeito de jogar.",
  "A gift: the next boss you beat leaves you one free ink in TATTOOS.": "Um presente: o próximo chefe que você derrotar deixa uma tinta grátis em TATUAGENS.",
- "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP e PARRY estão muito mais fortes. Um inimigo aparado agora também fica parado alguns segundos a mais."
+ "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP e PARRY estão muito mais fortes. Um inimigo aparado agora também fica parado alguns segundos a mais.",
+ "{1} of your hits slow the enemy · a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "{1} dos seus tiros deixam o inimigo lento · um inimigo lento ou congelado que morre explode em gelo: inimigos próximos perdem {0} da vida máxima dele e ficam lentos (chefes sofrem um quarto) · as explosões se encadeiam",
+ "REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.": "REGEN cura muito mais rápido, a tatuagem SALVAGE funciona em toda a metade de baixo do campo e cura mais, e SHATTER agora deixa parte dos seus tiros lentos sozinha, então funciona sem FROST também.",
+ "+{0} salvage: every enemy that dies in the lower half of the field heals that share of your max health": "+{0} de reciclagem: cada inimigo que morre na metade de baixo do campo cura essa parte da sua vida máxima"
 }

@@ -151,7 +151,7 @@ function run0(tier,maxW,o){
     const gooBurst=e=>{const R=G.GRENADE.goo.r*GWH;e.gooT=0;for(const o of E)if(o.hp>0&&(o===e||inBlast(o,e.x,e.y,R)))hit(o,e.gooD*vul(o));};
     // game killEnemy(): GOO bursts, VIRUS jumps to the neighbours, SHATTER queues a burst, coins, SPLITTER leaves 2 shards
     // SALVAGE (game killEnemy): an enemy dying within ECO.salvZone above the perimeter heals st.salv of max health (bosses x ECO.salvBoss)
-    const kill=e=>{const c0=coins;ky+=e.y;kn++;if(st.salv&&e.y+e.h/2>LINE-ECO.salvZone){hp=Math.min(st.maxHp,hp+st.maxHp*st.salv*(e.boss?ECO.salvBoss:1));SALV.n++;}if(TRACE&&e.boss)console.log('  boss down in wave '+w+', '+(left>0?(dur-left).toFixed(1)+' s in':'in the break'));
+    const kill=e=>{const c0=coins;ky+=e.y;kn++;{const y=e.y+e.h/2,s=(y>LINE-ECO.salvZone?st.salv:0)+(ECO.salvZoneT&&y>LINE-ECO.salvZoneT?st.salvT||0:0);if(s>0){hp=Math.min(st.maxHp,hp+st.maxHp*s*(e.boss?ECO.salvBoss:1));SALV.n++;}}if(TRACE&&e.boss)console.log('  boss down in wave '+w+', '+(left>0?(dur-left).toFixed(1)+' s in':'in the break'));
       if(e.gooT>0)gooBurst(e);
       if(e.virT>0){const R=G.GRENADE.virus.spread*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R)){o.virT=Math.max(o.virT||0,e.virT);o.virD=Math.max(o.virD||0,e.virD);}}
       if(st.shatter>0&&(e.slow>0||e.frz>0)&&!e.boss)SQ.push({x:e.x,y:e.y,d:e.max*st.shatter});

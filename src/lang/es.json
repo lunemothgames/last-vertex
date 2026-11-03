@@ -9,7 +9,6 @@
  "+{0} crit chance · above the 80% cap it turns into crit power": "+{0} de probabilidad crítica · por encima del 80% se convierte en poder crítico",
  "+{0} fire rate": "+{0} de cadencia",
  "+{0} max health": "+{0} de vida máxima",
- "+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health": "+{0} de reciclaje: cada enemigo que muere cerca del perímetro te cura esa parte de tu vida máxima",
  "+{0} ricochet chance · a bullet can bounce up to {1} times": "+{0} de probabilidad de rebote · una bala puede rebotar hasta {1} veces",
  "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage": "+{0} de probabilidad de ralentizar, +{1} de potencia · los enemigos ralentizados o congelados reciben +{2} de daño por bala",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health": "+{0} de espinas: el enemigo que golpea el perímetro pierde esa parte de su vida máxima",
@@ -548,7 +547,6 @@
  "Your progress syncs by itself.": "Tu progreso se sincroniza solo.",
  "Your reward for today is ready. Missing a day never resets your progress.": "Tu recompensa de hoy está lista. Perder un día nunca reinicia tu progreso.",
  "Your triangle's health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.": "La vida de tu triángulo. Cada enemigo que llega al perímetro rojo hace su ataque en daño y rebota. Cada 200 niveles (hasta 5000) el total también se multiplica por 1,1.",
- "a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "un enemigo ralentizado o congelado que muere estalla en hielo: los enemigos cercanos pierden un {0} de su vida máxima y se ralentizan (los jefes reciben un cuarto) · los estallidos se encadenan",
  "bullets instantly kill normal enemies (not bosses) that drop below {0} health": "las balas matan al instante a los enemigos normales (no jefes) que bajan del {0} de vida",
  "classic terminal": "terminal clásico",
  "cold vector glow": "brillo vectorial frío",
@@ -695,5 +693,8 @@
  "BOSS DOWN · ONE FREE INK IN TATTOOS": "JEFE DERRIBADO · UNA TINTA GRATIS EN TATUAJES",
  "The boss left you a FREE INK. Open TATTOOS: tattoos change how you play.": "El jefe te dejó una TINTA GRATIS. Abre TATUAJES: los tatuajes cambian tu forma de jugar.",
  "A gift: the next boss you beat leaves you one free ink in TATTOOS.": "Un regalo: el próximo jefe que derrotes te deja una tinta gratis en TATUAJES.",
- "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP y PARRY son mucho más fuertes. Un enemigo desviado ahora también se queda quieto unos segundos más."
+ "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP y PARRY son mucho más fuertes. Un enemigo desviado ahora también se queda quieto unos segundos más.",
+ "{1} of your hits slow the enemy · a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "{1} de tus disparos ralentizan al enemigo · un enemigo ralentizado o congelado que muere estalla en hielo: los enemigos cercanos pierden un {0} de su vida máxima y se ralentizan (los jefes reciben un cuarto) · los estallidos se encadenan",
+ "REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.": "REGEN cura mucho más rápido, el tatuaje SALVAGE funciona en toda la mitad inferior del campo y cura más, y SHATTER ahora ralentiza por sí solo parte de tus disparos, así que también funciona sin FROST.",
+ "+{0} salvage: every enemy that dies in the lower half of the field heals that share of your max health": "+{0} de reciclaje: cada enemigo que muere en la mitad inferior del campo te cura esa parte de tu vida máxima"
 }

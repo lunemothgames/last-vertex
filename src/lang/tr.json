@@ -9,7 +9,6 @@
  "+{0} crit chance · above the 80% cap it turns into crit power": "+{0} kritik şansı · %80 sınırının üstü kritik gücüne dönüşür",
  "+{0} fire rate": "+{0} atış hızı",
  "+{0} max health": "+{0} maksimum can",
- "+{0} salvage: every enemy that dies close to the perimeter heals that share of your max health": "geri dönüşüm +{0}: sınıra yakın ölen her düşman maksimum canının bu kadarını iyileştirir",
  "+{0} ricochet chance · a bullet can bounce up to {1} times": "+{0} sekme şansı · bir mermi en fazla {1} kez sekebilir",
  "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage": "+{0} yavaşlatma şansı, +{1} yavaşlatma gücü · yavaşlayan ya da donan düşmanlar +{2} mermi hasarı alır",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health": "+{0} diken: sınıra vuran düşman maksimum canının o kadarını kaybeder",
@@ -548,7 +547,6 @@
  "Your progress syncs by itself.": "İlerlemen kendiliğinden eşitlenir.",
  "Your reward for today is ready. Missing a day never resets your progress.": "Bugünkü ödülün hazır. Bir günü kaçırmak ilerlemeni asla sıfırlamaz.",
  "Your triangle's health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.": "Üçgeninin canı. Kırmızı sınıra ulaşan her düşman saldırısı kadar hasar verir, sonra geri seker. Her 200 seviyede (5000'e kadar) toplam ayrıca 1.1 ile çarpılır.",
- "a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "ölen yavaşlamış ya da donmuş düşman buza dönüşüp patlar: yakındaki düşmanlar onun maksimum canının {0} kadarını kaybeder ve yavaşlar (bosslar dörtte birini alır) · patlamalar zincirlenebilir",
  "bullets instantly kill normal enemies (not bosses) that drop below {0} health": "mermiler canı {0} altına düşen normal düşmanları (boss hariç) anında öldürür",
  "classic terminal": "klasik terminal",
  "cold vector glow": "soğuk vektör ışıltısı",
@@ -695,5 +693,8 @@
  "BOSS DOWN · ONE FREE INK IN TATTOOS": "BOSS DÜŞTÜ · DÖVMELER'DE 1 BEDAVA MÜREKKEP",
  "The boss left you a FREE INK. Open TATTOOS: tattoos change how you play.": "Boss sana BEDAVA MÜREKKEP bıraktı. DÖVMELER'i aç: dövmeler oyununu değiştirir.",
  "A gift: the next boss you beat leaves you one free ink in TATTOOS.": "Hediye: yeneceğin bir sonraki boss, DÖVMELER'de sana bir bedava mürekkep bırakır.",
- "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP ve PARRY çok daha güçlü. Savuşturulan düşman artık birkaç saniye daha uzun yerinde kalıyor."
+ "FROST, MAX HP and PARRY are much stronger. A parried enemy now also stands still for a few seconds longer.": "FROST, MAX HP ve PARRY çok daha güçlü. Savuşturulan düşman artık birkaç saniye daha uzun yerinde kalıyor.",
+ "{1} of your hits slow the enemy · a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain": "vuruşlarının {1} kadarı düşmanı yavaşlatır · ölen yavaşlamış ya da donmuş düşman buza dönüşüp patlar: yakındaki düşmanlar onun maksimum canının {0} kadarını kaybeder ve yavaşlar (bosslar dörtte birini alır) · patlamalar zincirlenebilir",
+ "REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.": "REGEN çok daha hızlı iyileştiriyor, SALVAGE dövmesi artık ekranın bütün alt yarısında ve daha çok iyileştirerek çalışıyor, SHATTER da vuruşlarının bir kısmını kendisi yavaşlatıyor; artık FROST olmadan da işe yarıyor.",
+ "+{0} salvage: every enemy that dies in the lower half of the field heals that share of your max health": "geri dönüşüm +{0}: ekranın alt yarısında ölen her düşman maksimum canının bu kadarını iyileştirir"
 }

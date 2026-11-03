@@ -1,4 +1,5 @@
 {
+ "ARMOR's flat block now also grows with the enemies of each tier, so defense keeps up when you move to a higher tier.": "El bloqueo fijo de ARMOR ahora también crece con los enemigos de cada nivel, así tu defensa no se queda atrás al subir de nivel.",
  "!! BOSS INCOMING !!": "!! SE ACERCA UN JEFE !!",
  "!! NEW TATTOO !!": "!! NUEVO TATUAJE !!",
  "+8% crit chance": "+8% de probabilidad crítica",
@@ -94,7 +95,7 @@
  "BURST": "ESTALLIDO",
  "BUY?": "¿COMPRAR?",
  "Back up your progress online and continue on another device. Nothing is uploaded until you turn this on.": "Guarda tu progreso en línea y continúa en otro dispositivo. No se sube nada hasta que lo actives.",
- "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health, so weak hits do nothing.": "Bloquea parte de cada golpe en el perímetro. Cada nivel añade algo menos: 100 niveles bloquean el 50%, 200 el 67%, 600 el 74%. Funciona igual en cada oleada. Por encima del 70%, toda la reducción de daño junta cuenta solo una cuarta parte (77,5% como máximo). Además frena una pequeña cantidad fija de cada golpe que crece con tu vida máxima, así que los golpes débiles no hacen nada.",
+ "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing.": "Bloquea parte de cada golpe en el perímetro. Cada nivel añade algo menos: 100 niveles bloquean el 50%, 200 el 67%, 600 el 74%. Funciona igual en cada oleada. Por encima del 70%, toda la reducción de daño junta cuenta solo una cuarta parte (77,5% como máximo). Además frena una pequeña cantidad fija de cada golpe que crece con tu vida máxima y con los enemigos de cada nivel y oleada, así que los golpes débiles no hacen nada.",
  "Breaks into two small SHARDS when it dies.": "Se rompe en dos FRAGMENTOS pequeños al morir.",
  "Buy 10 shop levels": "Compra 10 niveles en la tienda",
  "Buy DAMAGE: every level makes each bullet hit harder. Tap any icon to see what an upgrade does.": "Compra DAÑO: cada nivel hace que cada bala golpee más fuerte. Toca un icono para ver qué hace una mejora.",

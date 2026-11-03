@@ -1279,7 +1279,8 @@ const ECO={
   reduceKnee:.7,  reduceAbove:.25,      // damage reduction above 70% counts a quarter (77.5% at most), so thorns tanks can't become untouchable
   bossThorns:.25,                       // bosses take a quarter of thorns
   bossThornsOver:.5,                    // ...plus half of the thorns above 100% (shop 50% + tattoo 72% = 36% a touch: a boss dies in 3)
-  blockK:.05,                           // ARMOR also stops a flat amount of every hit: max health x this x ARMOR's share (so it keeps up with your health)
+  blockK:.03,                           // ARMOR also stops a flat amount of every hit: max health x this x ARMOR's share (so it keeps up with your health)
+  blockA:.05,                           // ...plus a basic enemy's attack at this wave x this x ARMOR's share (so it keeps up with the enemies in every tier)
   parryBack:8,    parryStun:1.2,        // PARRY: a parried enemy is pushed back this hard (a hit one 3.5) and stands still this many seconds (not bosses)
   // above a cap nothing is wasted (like crit): PARRY over 50% → +this many s stun per 1.0 over · SLOW CHANCE over 80% → x this = chance a hit
   // freezes the enemy freezeT s (not bosses) · SLOW POWER over 50% still adds to the damage slowed enemies take · RICOCHET over 85% →
@@ -1451,7 +1452,7 @@ const PERM_UPGRADES=[
   {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
    info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
-   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health, so weak hits do nothing.'},
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing.'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
    info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
@@ -1663,6 +1664,7 @@ function stats(){
     regenT:    maxHp*tb('regen').pct*M.regen,   // REGEN tattoo: this per second at full health, up to (1+ECO.regenLow)x as health runs out
     dmgTaken:  (1-cutRed(reduce))*M.taken,
     block:     maxHp*ECO.blockK*armorRed(v('defense')),   // ARMOR's flat part: cut from every hit after the share above
+    blockA:    ECO.blockA*armorRed(v('defense')),          // ...plus this x atkAt(effWave()) at the moment of the hit (blockNow)
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
     coinChance:Math.min(1,ECO.coinChance+v('lootChance')),
     jackpot:   lk.jack,
@@ -2301,6 +2303,9 @@ function evSpeedMul(e){
   return m;
 }
 // one touch of the perimeter (a first contact, or a tick of a clinging enemy): parry, AEGIS or damage, then thorns
+// ARMOR's flat cut of one hit: a share of max health plus a share of a basic enemy's attack at this wave
+const atkAt=ew=>ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1);
+const blockNow=st=>st.block+(st.blockA||0)*atkAt(effWave());
 function contactHit(e,st,mul){
   const LINE_Y=GH*LINE_FRAC;
   // MEND's guard: a normal enemy touching the perimeter is destroyed (bosses hit as usual)
@@ -2320,7 +2325,7 @@ function contactHit(e,st,mul){
     for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,GW*ECO.aegisPushR))knock(o,1.5);
     novas.push({x:e.x,y:LINE_Y,life:1,col:C.a2,r:GW*ECO.aegisPushR});
   }else{
-    const dmg=Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-st.block);
+    const dmg=Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-blockNow(st));
     hp-=dmg;runDmgTaken+=dmg;{const k=e.boss?'boss:'+(e.kind||'classic'):e.type;runHitBy[k]=(runHitBy[k]||0)+dmg;}snd('breach');hint('breach');
     burst(e.x,LINE_Y,C.hot,8,GH*.06);
     if(mul===1){screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.2};}
@@ -2597,7 +2602,7 @@ function updatePlay(dt){
         e.pulseT=ECO.bossPulseEvery*(e.enraged?.65:1);e.pulse=1;burst(e.x,e.y,C.hot,14,GH*.1);const bm={x1:e.x,y1:e.y,x2:triX,y2:TRI_Y,life:1,col:C.hot};beams.push(bm);
         if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('PARRY'),C.a2);}
         else if(st.aegisCD>0&&aegisT<=0){bm.col=C.a2;aegisT=st.aegisCD;snd('block');spawnText(triX,LINE_Y-GH*.05,T('BLOCK'),C.a2);}
-        else{const d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-st.block);hp-=d;runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
+        else{const d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-blockNow(st));hp-=d;runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
@@ -3478,7 +3483,8 @@ $('mBoosts').addEventListener('click',e=>{
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
 const shopShows=u=>!u.from||maxUnlockedTier()>=u.from||(save.perm[u.id]||0)>0;   // AUTO RETRY is sold from Tier 2
 // ARMOR's flat part at this level with your max health now (the shop row shows it, stats().block uses the same formula)
-const armorFlat=lv=>{const f=stats().maxHp*ECO.blockK*armorRed(uVal(PU.defense,lv));return f<10?f.toFixed(1):fmtN(f);};
+// shown for the first wave of the chosen tier (the attack part grows with the wave)
+const armorFlat=lv=>{const f=(stats().maxHp*ECO.blockK+ECO.blockA*atkAt(1+(save.tier-1)*TIERS.offset))*armorRed(uVal(PU.defense,lv));return f<10?f.toFixed(1):fmtN(f);};
 function openShop(tab){if(tab)shopTab=tab;pendingTheme=null;snd('click');renderShop();$('shopPanel').classList.add('open');$('shopPanel').querySelector('.scroll').scrollTop=0;}
 function closeShop(){snd('click');$('shopPanel').classList.remove('open');renderMenu();}
 $('shopBack').addEventListener('click',closeShop);
@@ -4541,6 +4547,7 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
   {id:'0.7.1',date:'2026-11-02',name:'UPDATE 0.7.1',lines:[
+    {text:'ARMOR\'s flat block now also grows with the enemies of each tier, so defense keeps up when you move to a higher tier.'},
     {text:'Nothing above a limit is wasted any more: extra PARRY keeps parried enemies still longer, extra SLOW CHANCE can freeze enemies, extra SLOW POWER and RANGE add damage, and extra RICOCHET makes bounced bullets hit harder.'},
     {text:'REGEN heals much faster, the SALVAGE tattoo works in the whole lower half of the field with bigger heals, and SHATTER now slows some of your hits by itself, so it works without FROST too.'},
     {text:'A gift: the next boss you beat leaves you one free ink in TATTOOS.'},

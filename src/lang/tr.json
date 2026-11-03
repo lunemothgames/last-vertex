@@ -1,4 +1,5 @@
 {
+ "ARMOR's flat block now also grows with the enemies of each tier, so defense keeps up when you move to a higher tier.": "ARMOR'un sabit engellediği kısım artık her seviyenin düşmanlarıyla birlikte de büyüyor; daha yüksek bir seviyeye geçtiğinde savunman geride kalmıyor.",
  "!! BOSS INCOMING !!": "!! BOSS GELİYOR !!",
  "!! NEW TATTOO !!": "!! YENİ DÖVME !!",
  "+8% crit chance": "+%8 kritik şansı",
@@ -94,7 +95,7 @@
  "BURST": "PATLAMA",
  "BUY?": "AL?",
  "Back up your progress online and continue on another device. Nothing is uploaded until you turn this on.": "İlerlemeni çevrimiçi yedekle ve başka bir cihazda devam et. Sen açana kadar hiçbir şey yüklenmez.",
- "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health, so weak hits do nothing.": "Sınıra gelen her vuruşun bir kısmını engeller. Her seviye biraz daha az ekler: 100 seviye %50, 200 seviye %67, 600 seviye %74 engeller. Her dalgada aynı çalışır. Tüm hasar azaltmanın %70'in üstündeki kısmı yalnızca dörtte bir sayılır (en fazla %77,5). Ayrıca her vuruştan, maksimum canınla birlikte büyüyen küçük ve sabit bir miktarı durdurur; zayıf vuruşlar hiç hasar vermez.",
+ "Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing.": "Sınıra gelen her vuruşun bir kısmını engeller. Her seviye biraz daha az ekler: 100 seviye %50, 200 seviye %67, 600 seviye %74 engeller. Her dalgada aynı çalışır. Tüm hasar azaltmanın %70'in üstündeki kısmı yalnızca dörtte bir sayılır (en fazla %77,5). Ayrıca her vuruştan küçük ve sabit bir miktarı durdurur; bu miktar maksimum canınla ve her seviyenin ve dalganın düşmanlarıyla birlikte büyür, zayıf vuruşlar hiç hasar vermez.",
  "Breaks into two small SHARDS when it dies.": "Ölünce iki küçük PARÇAYA bölünür.",
  "Buy 10 shop levels": "Mağazadan 10 seviye al",
  "Buy DAMAGE: every level makes each bullet hit harder. Tap any icon to see what an upgrade does.": "HASAR al: her seviye her mermiyi daha sert vurdurur. Bir geliştirmenin ne yaptığını görmek için ikonuna dokun.",

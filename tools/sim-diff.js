@@ -28,7 +28,8 @@ const hours=+A.hours||168,days=+A.days||30;
 const builds=(A.builds||(cmd==='pace'?'offense,swarm,tank,thornsTank,bruiser,active,control,shatter,chillNoKb,reaper,farm,greedy':'offense,active,tank')).split(',');
 const types=(A.types||'short,normal').split(',');
 const ROWS=cmd==='pace'?builds.map(b=>[b]):types.flatMap(t=>builds.map(b=>[t,b]));
-const res={};   // res[side][row key][seed] = parsed PACE / DAYS line
+const res={};   // res[side][row key][seed] = parsed PACE / DAYS line (every side exists even when all its runs fail)
+for(const [side] of SIDES)res[side]={};
 const jobs=[];for(const [side,file] of SIDES)for(const row of ROWS)for(let s=1;s<=REPS;s++)jobs.push({side,file,row,seed:s});
 let running=0,idx=0;const t0=Date.now();
 function next(){

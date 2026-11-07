@@ -5,6 +5,7 @@
 // Both sides run with the SAME seeds (SIM_REPS, default 3), so a change is read per seed (paired): mean change ± half-range of the
 // per-seed changes. `*` = real: every seed moved the same way and by more than the noise (and 2+ waves / 1+ day). Other SIM_* settings
 // pass through to both sides (SIM_ECON=1, SIM_MODE=burst, SIM_TLV…).
+//   beforeEnv=K:V;K:V / afterEnv=…: extra SIM_* settings for one side only (same game on both sides = a sim what-if, e.g. before=now afterEnv=SIM_ALLSLOW:1)
 //   pace: effective wave after 42/84/168/336 h (up to hours) per build, the pace check's builds (tools/sim-pace.js).
 //   wall: player types on the calendar (tools/sim-types.js): day Tier 2 opens, the Tier 1 wall (longest stretch of days without a
 //         higher effective wave while still in Tier 1), the longest wall of the whole stretch, effective wave on the last day.
@@ -35,7 +36,7 @@ let running=0,idx=0;const t0=Date.now();
 function next(){
   while(running<6&&idx<jobs.length){
     const j=jobs[idx++];running++;
-    const env={...process.env,SIM_SEED:String(j.seed)};delete env.SIM_SRC;if(j.file)env.SIM_SRC=j.file;
+    const env={...process.env,SIM_SEED:String(j.seed)};delete env.SIM_SRC;if(j.file)env.SIM_SRC=j.file;if(A[j.side+"Env"])for(const kv of A[j.side+"Env"].split(";")){const i=kv.indexOf(":");env[kv.slice(0,i)]=kv.slice(i+1);}
     if(cmd==='pace')Object.assign(env,{SIM_PACE:'1',SIM_TLV:process.env.SIM_TLV||'5'});else Object.assign(env,{SIM_TYPE:j.row[0],SIM_DAYS:String(days)});
     const p=spawn('node',['tools/sim.js',cmd==='pace'?String(hours):'0',j.row[j.row.length-1]],{cwd:ROOT,env});
     let out='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>out+=d);

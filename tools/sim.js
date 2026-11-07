@@ -86,6 +86,8 @@ const BUILDS={
 };
 // SIM_BUILD='{"shatter":{"tat":["frost","attack_power"]}}'  replace parts of a build, or add a new one
 for(const [n,o] of Object.entries(JSON.parse(process.env.SIM_BUILD||'{}')))BUILDS[n]=Object.assign(BUILDS[n]||{shop:BUILDS.swarm.shop,tat:[]},o);
+// SIM_ALLSLOW=1: every build also buys the shop SLOW pair (a real player does: capped and cheap late)
+if(process.env.SIM_ALLSLOW)for(const b in BUILDS)BUILDS[b].shop={...BUILDS[b].shop,slowChance:BUILDS[b].shop.slowChance||2,slowAmt:BUILDS[b].shop.slowAmt||2};
 function equip(b,lv){
   save.tatCol={};save.equipped=[];
   for(const id of BUILDS[b].tat){save.tatCol[id]={lv,copies:0};save.equipped.push(id);}
@@ -116,8 +118,9 @@ function run(tier,maxW=1e9,o={}){
   if(G.setMods)G.setMods(o.mods||null);
   try{return run0(tier,maxW,o);}finally{if(G.setMods)G.setMods(null);}
 }
+// what-ifs for the shop SLOW pair: SIM_NODMG=1 (no extra damage on slowed enemies), SIM_NOSPD=1 (slow does not slow), SIM_VULN=k (extra damage x k)
 function run0(tier,maxW,o){
-  setTier(tier);const st=stats();const AUTO=!!o.auto,WM=o.mods||null;
+  setTier(tier);const st=stats();if(process.env.SIM_NODMG)st.frostVuln=1;if(process.env.SIM_VULN)st.frostVuln=1+(st.frostVuln-1)*+process.env.SIM_VULN;if(process.env.SIM_NOSPD)st.slowSpd0=1;const AUTO=!!o.auto,WM=o.mods||null;
   const pay=c=>AUTO&&c>0?Math.max(1,Math.round(c*G.AUTO_RETRY.share)):c;   // game runPay()
   // QE = the quest events of this run, counted where the game calls qEvent() / qReach() (kill_<type>, crit, knockback, slow, pierce,
   // multishot, dodge; wave = the last wave whose timer ran out)
@@ -341,7 +344,7 @@ function run0(tier,maxW,o){
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
         }
         if(e.stun>0)e.stun-=dt;
-        const sp=e.clOn||e.stun>0?0:e.sp*(e.slow>0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
+        const sp=e.clOn||e.stun>0?0:e.sp*(e.slow>0&&!st.slowSpd0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
         // the perimeter is touched by the enemy's front edge; it is put back just in front of the line
         if(e.clOn){
           if(e.hp>0){e.kb=0;e.y=LINE-e.h/2-.003;e.clT-=dt;

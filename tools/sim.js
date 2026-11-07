@@ -27,7 +27,7 @@ const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an old
 // the economy outside the runs (SIM_ECON=1): inks, quests, achievements and the daily reward, taken from the game itself
 const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
   opt('// ── LIFETIME STATS','function achCheck'),opt('const DAILY=','function renderDailyDot')].join('\n');
-const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','makeQuest','QUEST','DAILY','dailyCoins',
+const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','MAX_ACTIVE','makeQuest','QUEST','DAILY','dailyCoins',
   'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
@@ -108,6 +108,8 @@ function shop(b,bank,skip){
 const DROP={t:0,coin:0,gem:0};
 const ETYPE=new Map(Object.entries(ENEMY_TYPES).map(([k,T])=>[T,k]));   // enemy type → its id (game e.type), for the kill_<type> quests
 const SHATTER_R=+(src.match(/const SHATTER_R=([\d.]+)/)||[0,.2])[1];
+const FROZEN_KB=src.includes('e.y+=(spd+e.kbVy)*dt');   // since 2026-11-06 knockback moves frozen (STASIS) enemies too; an older game (SIM_SRC) did not
+
 // o.auto: an AUTO RETRY run with nobody watching (game runAuto): every coin pays AUTO_RETRY.share, no actives, no bombs, drops not tapped
 // o.mods: a WEEKLY OP run with these mutators (game combineMods(weeklyKeys())): they hold for the whole run, no wave events
 function run(tier,maxW=1e9,o={}){
@@ -123,7 +125,8 @@ function run0(tier,maxW,o){
     fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps,qe:QE});
   const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
-  const A={};for(const id of save.equipped)if(TT[id].act)A[id]={...tb(id),cd:0,left:0};
+  const A={};for(const id of save.equipped)if(TT[id].act||TT[id].auto)A[id]={...tb(id),cd:0,left:0};
+  let lanceC=0,novaC=0;   // game lanceCount / novaCharge
   const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
   const TRACE=process.env.SIM_TRACE==='1';const SALV={n:0};let tkills=0,tdmg=0,tcontacts=0,tdealt=0,tc0=0;
   // the field lives across waves, like the game's: when the wave timer runs out the next wave starts and the leftovers stay
@@ -157,6 +160,7 @@ function run0(tier,maxW,o){
       if(st.shatter>0&&(e.slow>0||e.frz>0)&&!e.boss)SQ.push({x:e.x,y:e.y,d:e.max*st.shatter});
       if(e.T===ENEMY_TYPES.splitter&&!e.cx)for(const s of[-1,1]){const m=mk(ENEMY_TYPES.mini,e.y,e.x+s*e.h*.45);m.sc=1;m.kb=e.kb;E.push(m);}
       if(e.boss)TOT.b++;
+      if(st.novaK)novaC++;   // game killEnemy: every kill charges NOVA
       qe('kill_'+(e.boss?'boss':ETYPE.get(e.T)));
       if(e.boss||e.coin&&Math.random()<st.coinChance)coins+=pay(cv*e.coin*midas()*(Math.random()<st.jackpot?3:1));
       ck+=coins-c0;};   // the x3 jackpot can hit a boss too (game killEnemy)
@@ -191,7 +195,8 @@ function run0(tier,maxW,o){
       HN.n++;HN.d+=d;
       // CRIT DMG tattoo (game): a crit splashes st.splash of its damage onto the enemies around (they die at the end of the step)
       if(cr&&st.splash){const R=ECO.critSplashR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,d*st.splash*vsD(o));}
-      if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap)e.hp=0;
+      // EXECUTE (game): the health it had left bursts onto the enemies close by (bosses take ECO.execBoss)
+      if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap){const L=e.hp;e.hp=0;if(ECO.execR){const R=ECO.execR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,L*(o.boss?ECO.execBoss:1));}}
       if(!e.boss&&Math.random()<st.kbChance){e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);qe('knockback');}
       if(st.slowAmt>0&&Math.random()<st.slowChance){if(!(e.slow>0))qe('slow');e.slow=ECO.slowTime;}
       if(!e.boss&&st.freeze>0&&Math.random()<st.freeze)e.stun=Math.max(e.stun||0,ECO.freezeT);   // game: SLOW CHANCE above its cap freezes
@@ -214,13 +219,13 @@ function run0(tier,maxW,o){
     const towards=(ox,oy,px,py,from,hits)=>{const L=Math.hypot(px-ox,py-oy)||1;return along(ox,oy,(px-ox)/L,(py-oy)/L,from,Infinity,hits);};
     // a bullet that reached e, coming from (ox,oy). Game order: pierce first (it flies on along its line), else maybe a ricochet
     // to the nearest other enemy from the hit point (it homes in on that one)
-    const follow=(e,m,ox,oy,hits,bounces)=>{let pd=0;const pr=st.pierceP&&Math.random()<st.pierceP?st.pierceN:0;
+    const follow=(e,m,ox,oy,hits,bounces,pr=0)=>{let pd=0;if(st.pierceP)pr=Math.random()<st.pierceP?st.pierceN:0;   // pr = LANCE's pierces (an older game: PIERCER's chance)
       for(;;){
         const c=bulletHit(e,m);hits.add(e);
         // REACH (game): a bullet that kills turns to the nearest other enemy with st.carry of the damage it had left
         if(c>0&&st.carry){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||o.ph||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
           if(nx){m*=c*st.carry;ox=e.x;oy=e.y;e=nx;continue;}}
-        // PIERCER (game): a piercing round (st.pierceP chance) goes straight through its first st.pierceN enemies, then shop PIERCE's chance
+        // LANCE (game): goes straight through its first pr enemies, then shop PIERCE's chance
         if(pd<pr){pd++;qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(Math.random()<st.pierce){qe('pierce');const n=towards(ox,oy,e.x,e.y,Math.hypot(e.x-ox,e.y-oy),hits);if(n){e=n;continue;}return;}
         if(bounces<st.chain&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
@@ -237,8 +242,9 @@ function run0(tier,maxW,o){
     const burstSalvo=vis=>{
       const mu=Math.random()<st.multiChance;if(mu)qe('multishot');
       const tg=vis[0],n=st.pellets*(mu?2:1),S=BU.spread,base=Math.atan2(tg.y-BY,tg.x-triX);
+      const lance=st.lanceEvery&&++lanceC%st.lanceEvery===0?n>>1:-1;   // game: every Nth salvo the middle pellet is a lance
       for(let k=0;k<n;k++){const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-        const len=(BY-st.rangeY)*BU.reach;P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:len,len,m:st.pellet,hits:new Set(),tg});PEL.n++;BUL.n++;}
+        const len=(BY-st.rangeY)*BU.reach;P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:len,len,m:st.pellet,hits:new Set(),tg,pr:k===lance?st.lanceN:0,pd:0});PEL.n++;BUL.n++;}
     };
     // game pointBlank(): a pellet hits x near at the muzzle, falling to x far at the end of its way (x1 in a game without it)
     const PB=(d,len)=>BU.near===undefined?1:BU.near+(BU.far-BU.near)*Math.min(1,Math.max(0,d/len)),BARE=!!(BU&&BU.bare);
@@ -257,6 +263,7 @@ function run0(tier,maxW,o){
             if(!p.hit){p.hit=1;PEL.h++;if(e===p.tg)PEL.f++;}
             const f=PB(p.len-p.left-(1-tb)*L,p.len),carry=bulletHit(e,p.m*f,BARE);p.hits.add(e);
             if(carry>0){p.m*=carry;continue;}
+            if(p.pd<p.pr){p.pd++;qe('pierce');continue;}
             if(Math.random()<st.pierce){qe('pierce');continue;}
             if(st.chain>0&&Math.random()<st.bounce){let nx=null,nd=Infinity;for(const o of E){if(o.hp<=0||p.hits.has(o))continue;const d=d2(o,e.x,e.y);if(d<nd){nd=d;nx=o;}}
               if(nx&&!nx.ph)follow(nx,p.m*(st.bounceM||1),e.x,e.y,p.hits,1);}
@@ -290,10 +297,12 @@ function run0(tier,maxW,o){
         if(tg)triX=Math.max(GWH*.06,Math.min(GWH*.94,triX+(tg.x-triX)*Math.min(1,dt*1.8)));}
       // active tattoos, cast as soon as they are useful (same rules as the referee's player)
       // SIM_HUMAN=s: the player taps an active s real seconds after it is ready (s x game speed in game time), not at once
-      if(!AUTO)for(const id in A){const a=A[id];a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0)continue;
-        if(HUMAN){if(a.rdy==null)a.rdy=t+HUMAN*st.speed;if(t<a.rdy)continue;}
+      // automatic tattoos (game autoTattoos, also in AUTO RETRY runs): NOVA blasts once kills filled it, MIDAS starts when ready with 3+ enemies
+      if(st.novaK>0&&novaC>=st.novaK&&E.some(e=>e.hp>0&&e.y>=.1-e.h)){novaC=0;for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*st.novaM*vsD(e));push(e,1.5);}}
+      for(const id in A){const a=A[id];if(AUTO&&!TT[id].auto)continue;a.cd=Math.max(0,a.cd-dt);a.left=Math.max(0,a.left-dt);if(a.cd>0||id==='nova')continue;
+        if(HUMAN&&!TT[id].auto){if(a.rdy==null)a.rdy=t+HUMAN*st.speed;if(t<a.rdy)continue;}
         const live=E.filter(e=>e.hp>0&&e.y>.1);
-        if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*vsD(e));push(e,1.5);}}
+        if(id==='nova'&&live.length>=3){for(const e of E)if(e.hp>0&&e.y>=.1-e.h){hit(e,HD*a.m*vsD(e));push(e,1.5);}}   // an older game (SIM_SRC): NOVA was an active
         else if(TT[id].gren&&!NOBOMB){   // the player puts the bomb on the enemy with the most others inside its circle, if 3+
           if(live.length<3)continue;
           const R=TT[id].r*GWH;let best=null,bn=0;
@@ -316,7 +325,7 @@ function run0(tier,maxW,o){
         // GOO and VIRUS keep ticking on a frozen enemy (game updatePlay)
         if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e);}
         if(e.virT>0&&e.hp>0){e.virT-=dt;e.virA=(e.virA||0)+dt;if(e.virA>=.5-1e-9){hit(e,e.virD*e.virA);e.virA=0;}}
-        if(e.frz>0){e.frz-=dt;continue;}
+        if(e.frz>0){e.frz-=dt;if(FROZEN_KB)e.y+=kb0*KI;continue;}   // game: knockback moves frozen enemies too
         if(e.rg&&e.hp>0)e.hp=Math.min(e.max,e.hp+e.max*e.rg*dt);
         if(e.bz&&!e.bzOn&&e.hp>0&&e.hp<e.max*EVT.berserkAt){e.bzOn=1;e.atk*=EVT.berserkAtk;}
         if(e.heal&&e.hp>0){e.ht-=dt;if(e.ht<=0){e.ht=1;const r2=(.25*GWH)**2;for(const o of E)if(o.hp>0&&d2(o,e.x,e.y)<r2)o.hp=Math.min(o.max,o.hp+o.max*e.heal);}}
@@ -326,7 +335,7 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{const d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);hp-=d;tdmg+=d;tdAll+=d;}}}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);hp-=d;tdmg+=d;tdAll+=d;}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
@@ -349,19 +358,20 @@ function run0(tier,maxW,o){
         const b=Q[q];if(b.at>t){q++;continue;}Q.splice(q,1);
         let e=b.e;const hits=new Set();
         if(!(e.hp>0&&!e.ph)){e=towards(b.ox,BY,e.x,e.y,Math.min(Math.hypot(e.x-b.ox,e.y-BY)-e.h*.55,BSP*((e.td??t)-b.t0)),hits);if(!e){BUL.m++;continue;}}
-        follow(e,b.m,b.ox,BY,hits,0);
+        follow(e,b.m,b.ox,BY,hits,0,b.pr);
+
       }
       // game: one volley per frame at most, and the cooldown restarts at 1/rate, so the rate is rounded up to whole frames
       const rate=frames(st.rate*(A.overdrive&&A.overdrive.left>0?A.overdrive.m:1));
       while(cd<=0){
         const vis=E.filter(e=>e.y>=st.rangeY&&e.hp>0&&!e.ph).sort((a,b)=>b.y-a.y);if(!vis.length){cd=0;break;}
         // main bullet, multishot extras and twin go to the next enemies in line
-        const B=BU?[]:[[0,1]];
+        const B=BU?[]:[[0,1,st.lanceEvery&&++lanceC%st.lanceEvery===0?st.lanceN:0]];   // [enemy index, damage x, LANCE pierces]
         if(BU)burstSalvo(vis);
         else if(Math.random()<st.multiChance){qe('multishot');for(let k=1;k<=ECO.multiExtra;k++)if(vis[k])B.push([k,1]);}
         if(st.twin)B.push([vis[1]?1:0,st.twin*st.pellet]);
         // flight: 0.95 screen heights a second from just above the triangle, the enemy walking into it
-        for(const [i0,m] of B){const e=vis[i0];Q.push({e,m,ox:triX,t0:t,at:t+Math.max(0,Math.hypot(e.x-triX,BY-e.y)-e.h*.55)/(BSP+e.sp)});BUL.n++;}
+        for(const [i0,m,pr] of B){const e=vis[i0];Q.push({e,m,pr:pr||0,ox:triX,t0:t,at:t+Math.max(0,Math.hypot(e.x-triX,BY-e.y)-e.h*.55)/(BSP+e.sp)});BUL.n++;}
         // ARC: lightning from the target to the nearest enemies, each within 0.4 screen widths of the last
         if(st.arcEvery&&++shots%st.arcEvery===0){const hs=[vis[0]];let cur=vis[0];const r2=(.4*GWH)**2;
           while(hs.length<st.arcN){let nx=null,nd=r2;for(const o of E){if(o.hp<=0||hs.includes(o))continue;const d=d2(o,cur.x,cur.y);if(d<nd){nd=d;nx=o;}}if(!nx)break;hs.push(nx);cur=nx;}
@@ -629,7 +639,9 @@ const owned=()=>G.TAT_TYPES.filter(t=>G.tatOf(t.id).lv>0).map(t=>t.id);
 // what goes in the slots: the build's own tattoos first (in its order), then the best of the rest (rarer and higher level first)
 const equipBest=()=>{const own=owned(),want=BUILDS[BUILD].tat.filter(id=>own.includes(id));
   const sc=id=>G.tatOf(id).lv*(1+G.TT[id].rar*.5),rest=own.filter(id=>!want.includes(id)).sort((a,b)=>sc(b)-sc(a));
-  save.equipped=[...want,...rest].slice(0,save.tatSlots);};
+  // game toggleEquip: at most MAX_ACTIVE ACTIVE tattoos (buttons, bombs) at once (an older game: no limit)
+  let na=0;const MA=G.MAX_ACTIVE||Infinity;
+  save.equipped=[...want,...rest].filter(id=>!G.TT[id].act||++na<=MA).slice(0,save.tatSlots);};
 // gems: the next slot first as long as there is a tattoo to put in it (SIM_GEMPLAN=slot), else inks 10 at a time (cheaper each);
 // one at a time only while a slot is still empty. The pity counter and the pool work as in the game's doPull().
 const spendGems=()=>{

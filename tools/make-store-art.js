@@ -54,7 +54,7 @@ const THEME_FAN=['amber','green','pink'];   // left, centre, right on the themes
     // the boss at half health, caught in a NOVA blast
     await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo){bo.hp=bo.maxHp*100;}actCD={};waveTimer=Math.max(waveTimer,10);});await sleep(700);await clean();
     // the blast must not kill the boss: put its health back right after
-    await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo)bo.hp=bo.maxHp*100;useActive('nova');if(bo)bo.hp=bo.maxHp*.45;textParticles=textParticles.slice(-1);});
+    await p.evaluate(()=>{const bo=enemies.find(e=>e.boss);if(bo)bo.hp=bo.maxHp*100;novaBlast(stats());if(bo)bo.hp=bo.maxHp*.45;textParticles=textParticles.slice(-1);});
     await p.evaluate(()=>{const t=$('toast');t.className='';$('hint').classList.remove('show');});
     await sleep(90);await p.screenshot({path:raw('boss')});
     await p.evaluate(()=>{state=ST.MENU;});await sleep(500);

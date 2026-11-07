@@ -86,15 +86,17 @@ const BUILDS={
 };
 // SIM_BUILD='{"shatter":{"tat":["frost","attack_power"]}}'  replace parts of a build, or add a new one
 for(const [n,o] of Object.entries(JSON.parse(process.env.SIM_BUILD||'{}')))BUILDS[n]=Object.assign(BUILDS[n]||{shop:BUILDS.swarm.shop,tat:[]},o);
-// SIM_ALLSLOW=1: every build also buys the shop SLOW pair (a real player does: capped and cheap late)
-if(process.env.SIM_ALLSLOW)for(const b in BUILDS)BUILDS[b].shop={...BUILDS[b].shop,slowChance:BUILDS[b].shop.slowChance||2,slowAmt:BUILDS[b].shop.slowAmt||2};
+// a real player buys the capped, cheap shop SLOW pair in any build once the game gets hard: in the calendar sim (shopL) every build
+// adds it from Tier SIM_SLOWFROM (default 3) on. SIM_ALLSLOW=0 turns it off (the old sim: only the SLOW builds buy it)
+const ALLSLOW=process.env.SIM_ALLSLOW!=='0',SLOWFROM=+process.env.SIM_SLOWFROM||3;let shopTier=0;   // shopTier: set by shopL, 0 = not the calendar sim
 function equip(b,lv){
   save.tatCol={};save.equipped=[];
   for(const id of BUILDS[b].tat){save.tatCol[id]={lv,copies:0};save.equipped.push(id);}
 }
 // spend `bank` on the build's list: always the level with the lowest price/weight
 function shop(b,bank,skip){
-  const W=(process.env.SIM_SHOP&&BUILDS[process.env.SIM_SHOP]?BUILDS[process.env.SIM_SHOP]:BUILDS[b]).shop;   // SIM_SHOP=swarm: every build spends like that one, so only the tattoos differ
+  let W=(process.env.SIM_SHOP&&BUILDS[process.env.SIM_SHOP]?BUILDS[process.env.SIM_SHOP]:BUILDS[b]).shop;
+  if(ALLSLOW&&shopTier>=SLOWFROM)W={...W,slowChance:W.slowChance||2,slowAmt:W.slowAmt||2};   // SIM_SHOP=swarm: every build spends like that one, so only the tattoos differ
   for(;;){let best=null;
     for(const id in W){if(skip&&skip[id])continue;const u=PU[id];if(!u)continue;const l=save.perm[id]||0;if(l>=u.max)continue;   // !u: an older game (SIM_SRC) without this upgrade
       const c=upCost(u,l);if(c<=bank&&(!best||c/W[id]<best[1]/W[best[0]]))best=[id,c];}
@@ -124,8 +126,8 @@ function run0(tier,maxW,o){
   const pay=c=>AUTO&&c>0?Math.max(1,Math.round(c*G.AUTO_RETRY.share)):c;   // game runPay()
   // QE = the quest events of this run, counted where the game calls qEvent() / qReach() (kill_<type>, crit, knockback, slow, pierce,
   // multishot, dodge; wave = the last wave whose timer ran out)
-  const TOT={k:0,b:0,d:0,bombs:0,taps:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
-    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,bombs:TOT.bombs,taps:TOT.taps,qe:QE});
+  const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
+    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE});
   const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act||TT[id].auto)A[id]={...tb(id),cd:0,left:0};
@@ -181,7 +183,7 @@ function run0(tier,maxW,o){
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
       else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;}
       tcontacts++;
-      const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;
+      const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;
       // B6-2 test: ECO.contactDie = share of its max health an enemy loses per perimeter hit (like free thorns, pays coins); 1 = it is spent
       // (no coins, no shards) unless ECO.contactPay
       if(ECO.contactDie>=1&&!ECO.contactPay&&!e.boss){e.coin=0;e.hp=0;e.cx=1;}else if(ECO.contactDie&&!e.boss){const d=Math.min(e.hp,e.max*ECO.contactDie);e.hp-=d;tdealt+=d;}
@@ -678,7 +680,7 @@ const afterRun=(r,src)=>{if(!EC)return;const L=save.life;L.runs++;L.kills+=r.kil
 // AUTO RETRY: a shop item from Tier 2 (game PU.autoRetry, bought first once the tier is open and the coins are there); an older game: free from AUTO_RETRY.tier
 const autoOwned=()=>PU.autoRetry?(save.perm.autoRetry||0)>=1:G.maxUnlockedTier()>=G.AUTO_RETRY.tier;
 const buyAuto=b=>{if(EC&&AFKH>0&&PU.autoRetry&&!save.perm.autoRetry&&G.maxUnlockedTier()>=(PU.autoRetry.from||1)){const c=upCost(PU.autoRetry,0);if(b>=c){save.perm.autoRetry=1;b-=c;}}return b;};
-const shopL=b=>{b=buyAuto(b);const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
+const shopL=b=>{shopTier=tier;b=buyAuto(b);const lv=()=>Object.values(save.perm).reduce((a,x)=>a+x,0),n=lv(),left=shop(BUILD,b);if(EC)save.life.levels+=lv()-n;return left;};
 // the weekly op, one tier below the highest, this week's two mutators; gems at waves 10/20/30 once a week (not a tier record, not idle income).
 // The game lets it be played again and again all week (its menu dot stays while a reward is left): one try a day until all three are got.
 const WK={got:[]};
@@ -715,7 +717,7 @@ const newDay=()=>{
 const TRACE=process.env.SIM_TRACE==='1';
 const trace=r=>{setTier(tier);const st=stats(),nx=id=>upCost(PU[id],save.perm[id]||0)/Math.max(1,r.coins);
   const dps=st.hitDmg*st.pellets*st.rate*(1+st.crit*(st.critM-1))*(1+st.multiChance*ECO.multiExtra);
-  console.log('TRACE '+JSON.stringify({t:r.tier||tier,w:r.w,e:effNow(),c:Math.round(r.coins),h:+(clock/3600).toFixed(2),d:day,dps:+dps.toPrecision(4),hp:Math.round(st.maxHp),
+  console.log('TRACE '+JSON.stringify({th:r.dealt?+(r.thorns/r.dealt).toFixed(2):0,t:r.tier||tier,w:r.w,e:effNow(),c:Math.round(r.coins),h:+(clock/3600).toFixed(2),d:day,dps:+dps.toPrecision(4),hp:Math.round(st.maxHp),
     nd:+nx('damage').toFixed(2),nf:+nx('fireRate').toFixed(2),o:owned().length,s:save.tatSlots}));};
 while(clock<HOURS*3600){
   if(EC)while(clock>=day*DAYH*3600)newDay();

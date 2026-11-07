@@ -1,4 +1,6 @@
 {
+ "SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.": "SLOW POWER de la tienda ahora llega hasta 20% (antes 50%): al final del juego hacía mucho más fuerte cualquier build casi sin coste. Tus niveles se convirtieron y se te devolvieron las monedas de todo lo que superaba el nuevo límite. El tatuaje FROST sigue ralentizando más encima.",
+ "UPDATE 0.7.3": "ACTUALIZACIÓN 0.7.3",
  "SLAYER deals much more damage to bosses, elites and big enemies.": "SLAYER hace mucho más daño a jefes, élites y enemigos grandes.",
  "ARC and RICOCHET no longer waste hits when no other enemy is around: they strike the same one again at half damage. The REGEN tattoo no longer counts the MAX HP tattoo, so the two together no longer run far ahead of every other build.": "ARC y RICOCHET ya no desperdician golpes cuando no hay otro enemigo cerca: golpean de nuevo al mismo con la mitad de daño. El tatuaje REGEN ya no cuenta el tatuaje MAX HP, así que juntos ya no se adelantan muchísimo a todas las demás combinaciones.",
  "ARMOR's flat block now also grows with the enemies of each tier, so defense keeps up when you move to a higher tier.": "El bloqueo fijo de ARMOR ahora también crece con los enemigos de cada nivel, así tu defensa no se queda atrás al subir de nivel.",
@@ -252,7 +254,7 @@
  "Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.": "Vida recuperada cada segundo durante la partida. Cada 200 niveles (hasta 5000) el total también se multiplica por 1,1.",
  "How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.": "Cuántas balas dispara tu triángulo por segundo. La tienda llega a 3,00/s; los tatuajes e impulsos pueden subirla más.",
  "How much a critical hit multiplies a bullet's damage: x1.50 means +50%.": "Cuánto multiplica un crítico el daño de una bala: x1,50 significa +50%.",
- "How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage. Slow power from tattoos above 50% still adds damage.": "Cuánto más lento se mueve un enemigo ralentizado, máx. 50%. También recibe ese daño extra de bala: 30% más lento = +30% de daño. La potencia de los tatuajes por encima del 50% sigue sumando daño.",
+ "How much slower a slowed enemy moves, max 20%. Slowed enemies also take that much extra bullet damage: 20% slower = +20% damage. The FROST tattoo adds more on top (up to 50% slower), and slow power above 50% still adds damage.": "Cuánto más lento se mueve un enemigo ralentizado, máx. 20%. También recibe ese daño extra de bala: 20% más lento = +20% de daño. El tatuaje FROST suma más encima (hasta 50% más lento), y la potencia por encima del 50% sigue sumando daño.",
  "ICE BLUE": "AZUL HIELO",
  "IDLE INCOME": "INGRESOS PASIVOS",
  "IDLE INCOME FULL": "INGRESOS PASIVOS LLENOS",

@@ -1474,8 +1474,8 @@ const PERM_UPGRADES=[
    info:'Chance that a bullet shoves the enemy it hits back up the field, buying you time. Bosses can\'t be pushed. Max 80%.'},
   {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet slows the enemy it hits for 4 seconds. How much it slows is set by SLOW POWER. Max 80%; slow chance from tattoos above that can freeze the enemy for 1 second (not bosses).'},
-  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:83,  start:0,  step:.006, fx:v=>pc(v),
-   info:'How much slower a slowed enemy moves, max 50%. Slowed enemies also take that much extra bullet damage: 30% slower = +30% damage. Slow power from tattoos above 50% still adds damage.'},
+  {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:40,  start:0,  step:.005, fx:v=>pc(v),   // v0.7.3: max 50% → 20% (every build bought it late: x1.27 pace)
+   info:'How much slower a slowed enemy moves, max 20%. Slowed enemies also take that much extra bullet damage: 20% slower = +20% damage. The FROST tattoo adds more on top (up to 50% slower), and slow power above 50% still adds damage.'},
   // ── utility
   {id:'coinMult',  cat:'util',name:'COIN BONUS', icon:'coins', base:60,  p:2.6,  max:4500, start:1,  step:.02,  fx:v=>'x'+v.toFixed(2),
    info:'Multiplies every coin you earn: kills, bosses, wave bounty, coin drops and idle income.'},
@@ -1620,6 +1620,14 @@ if(!save.defV7){
   }
   if(save.perm.waveHeal)save.coins=(save.coins||0)+spent({base:400,g:1.2},save.perm.waveHeal);
   delete save.perm.waveHeal;save.defV7=1;
+}
+// v0.7.3: SLOW POWER 83 levels x 0.6% (max 50%) → 40 x 0.5% (max 20%): levels converted with the value kept up to the new max,
+// coins for what was paid above it refunded
+if(!save.slowV73){
+  const lv=save.perm.slowAmt||0;
+  if(lv){const cost=n=>{let c=0;for(let i=0;i<n;i++)c+=Math.ceil(30*Math.pow(1.1,i));return c;},nl=Math.min(40,Math.round(lv*.006/.005));
+    save.coins=(save.coins||0)+Math.max(0,cost(lv)-cost(nl));save.perm.slowAmt=nl;}
+  save.slowV73=1;
 }
 // RANGE left the shop in 0.7.0 (levels refunded then) and came back in 0.7.1: saves that skipped 0.7.0 simply keep their levels
 if(save.perm.slow){save.perm.slowAmt=(save.perm.slowAmt||0)+save.perm.slow;}
@@ -4661,6 +4669,9 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
+    {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
+  ]},
   {id:'0.7.2',date:'2026-11-07',name:'UPDATE 0.7.2',lines:[
     {text:'Bosses have twice the health and thorns hurt them much less, so every build fights them for a while. Their beam comes a little more often, but one beam takes at most a quarter of your health: no more dying to a single beam.'},
     {text:'12 tattoo slots, and slots cost far fewer gems. Up to 5 ACTIVE tattoos can be equipped at once. INK x10 now costs 200 gems, the same as 10 single inks. Because you can wear many more tattoos, every tattoo is a bit weaker than before, and enemies get tougher a little faster in later waves.'},
@@ -4832,7 +4843,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.7.2';
+const GAME_VERSION='0.7.3';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

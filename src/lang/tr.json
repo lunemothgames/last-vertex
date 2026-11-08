@@ -730,5 +730,21 @@
  "ATK SPD is about twice as strong, FROST adds much less damage, EXECUTE's victim bursts onto the enemies around it, DEFENSE makes every heal stronger the more you block, and REGEN now counts the MAX HP tattoo (with lower values). Frozen enemies can now be pushed back.": "ATK HIZI yaklaşık iki kat güçlü, BUZ çok daha az hasar ekliyor, İNFAZ edilen düşman etrafındakilere patlıyor, SAVUNMA ne kadar engellersen her iyileşmeyi o kadar güçlendiriyor ve CAN YENİLEME artık MAKS CAN dövmesini de sayıyor (daha düşük değerlerle). Donmuş düşmanlar artık geri itilebiliyor.",
  "The RANGE line can no longer go above the top third of the field: range beyond that turns into damage. The shop's SALVAGE now heals for kills in the whole lower half of the field.": "MENZİL çizgisi artık alanın üst üçte birinin üstüne çıkamıyor: bunun ötesindeki menzil hasara dönüşüyor. Dükkândaki GERİ DÖNÜŞÜM artık alanın tüm alt yarısındaki öldürmelerde iyileştiriyor.",
  "The result screen is shorter. VIEW ALL shows every number of the run, and damage is split by source (main shot, MULTISHOT, TWIN, RICOCHET, crits and more). Tap the coin bonus under the tier: MIDAS and the weekly op are listed too, and every bonus multiplies the others.": "Sonuç ekranı kısaldı. TÜMÜNÜ GÖR oyunun bütün sayılarını gösteriyor ve hasar kaynağına göre ayrılıyor (ana atış, ÇOKLU ATIŞ, İKİZ, SEKME, kritikler ve daha fazlası). Seviyenin altındaki altın bonusuna dokun: MIDAS ve HAFTALIK OP da listede, ve her bonus diğerlerini çarpar.",
- "UPDATE 0.7.2": "GÜNCELLEME 0.7.2"
+ "UPDATE 0.7.2": "GÜNCELLEME 0.7.2",
+ "Every new tier you open gives one free tattoo of your choice": "Açtığın her yeni tier, seçtiğin bir dövmeyi bedava verir",
+ "GIFT": "HEDİYE",
+ "NO WISH SET · TAP TO PICK ONE": "DİLEK YOK · SEÇMEK İÇİN DOKUN",
+ "Pick an epic or mythic tattoo: the guaranteed ink gives you that one": "Epik ya da destansı bir dövme seç: garanti dövme o olur",
+ "Pick one tattoo, it is free": "Bir dövme seç, bedava",
+ "TAKE": "AL",
+ "TIER {0} GIFT": "TIER {0} HEDİYESİ",
+ "TIER {0} GIFT · PICK A TATTOO": "TIER {0} HEDİYESİ · DÖVME SEÇ",
+ "Tap a tattoo to see what it does": "Ne yaptığını görmek için bir dövmeye dokun",
+ "WISH": "DİLEK",
+ "WISH: {0}": "DİLEK: {0}",
+ "WISH: {0} · TAP TO CHANGE": "DİLEK: {0} · DEĞİŞTİRMEK İÇİN DOKUN",
+ "Your guaranteed ink gives this tattoo": "Garanti dövmen bu olur",
+ "UPDATE 0.7.4": "GÜNCELLEME 0.7.4",
+ "Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.": "Açtığın her yeni tier artık seçtiğin bir dövmeyi bedava veriyor. Tier 2'de sende olmayan bütün epik dövmeler arasından seçersin, böylece istediğin tarzı çok daha erken oynarsın. Daha önce açtığın tierlar da sayılır: hediyeleri DÖVMELER'de seni bekliyor.",
+ "WISH: under the ink buttons, pick one epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.": "DİLEK: dövme yaptırma düğmelerinin altından epik ya da destansı bir dövme seç. Garanti dövmen (50 içinde) o olur."
 }

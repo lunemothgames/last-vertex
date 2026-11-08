@@ -292,6 +292,20 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .gc .new{position:absolute;top:-7px;right:0;background:var(--hot);color:var(--ink);font-family:'VT323',monospace;font-size:12px;padding:0 3px;text-shadow:none}
 .gc.r2,.gc.r3{box-shadow:0 0 12px rgba(var(--rc-rgb),0.55)}
 .gacha-overlay .btn{width:220px}
+/* tier gift / wish picker: tap a card to read it, then TAKE / WISH */
+.gcards.pick .gc{cursor:pointer}
+.gcards.three{grid-template-columns:repeat(3,88px);justify-content:center}
+.gc.sel{background:rgba(var(--rc-rgb),0.3);box-shadow:0 0 16px rgba(var(--rc-rgb),0.9),inset 0 0 0 2px var(--rc)}
+.p-sub{font-size:11px;color:var(--mute);margin:-10px 0 16px;text-align:center;letter-spacing:.06em;text-shadow:none}
+.p-desc{font-size:11px;line-height:1.5;color:var(--a);min-height:52px;margin:-10px 4px 16px;text-align:center;text-shadow:none}
+.p-desc b{color:var(--a2);font-weight:400}
+.p-btns{display:flex;flex-direction:column;gap:8px;align-items:center}
+.p-btns .btn.no{opacity:.35;pointer-events:none}
+.giftbar{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:12px 14px 0;min-height:44px;padding:6px 10px;line-height:1.05;text-align:center;border:1px solid var(--r2);color:var(--r2);
+  background:rgba(var(--r2-rgb),0.12);font-family:'VT323',monospace;font-size:19px;letter-spacing:.06em;box-shadow:0 0 12px rgba(var(--r2-rgb),0.5);animation:blink 1.2s steps(1) 3}
+.giftbar svg.i{width:20px;height:20px;stroke:var(--r2)}
+.wishbtn{display:block;margin:6px auto 0;background:none;border:0;font-family:inherit;color:var(--mute);cursor:pointer;text-decoration:underline dotted}
+.wishbtn b{color:var(--r2);font-weight:400}
 
 /* ── settings ── */
 .srow{margin:10px 14px 0;padding:12px;border:1px dashed var(--dim)}
@@ -698,7 +712,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <nav class="bnav">
       <button id="mShop"><svg class="i"><use href="#i-bag"/></svg><span>SHOP</span></button>
       <button id="mQuest"><svg class="i"><use href="#i-list"/></svg><span>QUESTS</span><i class="dot" id="mQuestDot"></i></button>
-      <button id="mTat"><svg class="i"><use href="#i-spark"/></svg><span>TATTOOS</span></button>
+      <button id="mTat"><svg class="i"><use href="#i-spark"/></svg><span>TATTOOS</span><i class="dot" id="mTatDot" style="display:none"></i></button>
     </nav>
     <div id="mVer"></div>
   </div>
@@ -768,6 +782,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="tatGems">0</b></div>
     </div>
     <div class="scroll">
+      <button class="giftbar" id="giftBar" style="display:none"></button>
       <div class="portal">
         <svg viewBox="-100 -100 200 200" width="150" height="150">
           <g class="spin"><circle r="76" fill="none" class="st" stroke-opacity=".5" stroke-width="2" stroke-dasharray="1 7"/></g>
@@ -782,6 +797,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       </div>
       <div class="odds" id="oddsBox"></div>
       <div class="note pity" id="pityNote"></div>
+      <button class="note wishbtn" id="wishBtn"></button>
       <div class="lab">EQUIPPED <span id="eqCount">0/1</span></div>
       <div class="slots" id="equippedSlots"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
@@ -793,6 +809,8 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
         <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
         <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
+        <b>WISH</b><span>Pick an epic or mythic tattoo: the guaranteed ink gives you that one</span>
+        <b>GIFT</b><span>Every new tier you open gives one free tattoo of your choice</span>
         <b>◆</b><span>Active tattoo: adds a button in runs</span>
         <b>SLOTS</b><span>Unlock more slots with gems</span>
       </div>
@@ -857,6 +875,13 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="g-title" id="gachaResultTitle">&gt;&gt; INK RESULTS</div>
     <div class="gcards" id="gachaCards"></div>
     <button class="btn pri" id="gachaCollect">COLLECT</button>
+  </div>
+  <div class="gacha-overlay" id="pickOverlay">
+    <div class="g-title rare" id="pickTitle"></div>
+    <div class="p-sub" id="pickSub"></div>
+    <div class="gcards pick" id="pickCards"></div>
+    <div class="p-desc" id="pickDesc"></div>
+    <div class="p-btns"><button class="btn pri" id="pickOk"></button><button class="btn" id="pickBack">BACK</button></div>
   </div>
 
   <div id="hint"></div>
@@ -3337,7 +3362,7 @@ function renderMenu(){
   setTimeout(offerLowFx,600);
   $('mCoins').textContent=fmtC(save.coins);
   $('mGems').textContent=fmtN(save.gems);
-  renderTierSel();renderModeLine();achCheck();renderMenuAd();renderDailyDot();renderInboxDot();renderBoostStrip();menuHints();
+  renderTierSel();renderModeLine();achCheck();renderMenuAd();renderDailyDot();renderInboxDot();renderTatDot();renderBoostStrip();menuHints();
 }
 // attack mode: the line under the triangle names the mode, the cards switch it (BURST opens at Tier 2)
 const MODES=[
@@ -3745,10 +3770,33 @@ function setTheme(id){
 // ── TATTOOS & GACHA ──────────────────────────────────────────────────────────
 // maxed tattoos can't be summoned again
 const tatPool=()=>TAT_TYPES.filter(t=>tatOf(t.id).lv<TAT_MAX);
+// WISH (v0.7.4): one epic or mythic tattoo the player picks (save.wish); the guaranteed (pity) ink gives that one instead of a random one
+const wishOk=id=>!!id&&!!TT[id]&&TT[id].rar>=2&&tatOf(id).lv<TAT_MAX;
+// TIER GIFT (v0.7.4): every tier the player opens (2 and up) gives one free tattoo of their choice. save.tgDone = the last tier whose gift
+// was taken (1 = none yet; old saves get one gift for every tier they already opened), save.tgOpts = the open gift's choices, kept so
+// reopening the picker does not draw new ones. Tier 2: every epic not owned yet. Later tiers: 3 at random, tattoos not owned yet
+// first (epic and mythic before rare before common); once all are owned the pick adds a copy (a level) of one of 3 epics or mythics.
+const giftLeft=()=>Math.max(0,maxUnlockedTier()-(save.tgDone||1));
+const giftTier=()=>(save.tgDone||1)+1;
+function giftOpts(t){
+  const pool=tatPool(),un=pool.filter(x=>!tatOf(x.id).lv),mix=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  if(t===2){const e=un.filter(x=>x.rar===2);if(e.length)return e.map(x=>x.id);}
+  const out=[];
+  for(const src of [un.filter(x=>x.rar>=2),un.filter(x=>x.rar===1),un.filter(x=>x.rar===0),pool.filter(x=>x.rar>=2),pool])
+    for(const x of mix(src))if(out.length<3&&!out.includes(x.id))out.push(x.id);
+  return out;
+}
+function giftOptsNow(){
+  const t=giftTier();
+  if(!save.tgOpts||save.tgOpts.t!==t||!save.tgOpts.ids.length||save.tgOpts.ids.some(id=>!TT[id]||tatOf(id).lv>=TAT_MAX))save.tgOpts={t,ids:giftOpts(t)};
+  if(!save.tgOpts.ids.length){save.tgDone=maxUnlockedTier();save.tgOpts=null;return [];}   // every tattoo maxed: nothing left to give
+  return save.tgOpts.ids;
+}
 function rollType(){
   const pool=tatPool();if(!pool.length)return null;
-  // pity: the PITY-th summon without an epic is always the rarest tier still in the pool
+  // pity: the PITY-th summon without an epic is always the rarest tier still in the pool, or the WISH tattoo when one is set
   if((save.pity||0)>=PITY-1){
+    if(wishOk(save.wish))return TT[save.wish];
     const top=Math.max(...pool.map(t=>t.rar)),src=pool.filter(t=>t.rar===top);
     return pickW(src);
   }
@@ -3770,8 +3818,8 @@ function doPull(count){
   save.gems-=cost;if(freeOne)save.freeInk=2;LIFE().pulls+=count;snd('summon');track('summon',{count});
   const results=[];
   for(let i=0;i<count;i++){
-    const top=pityRar(),t=rollType();if(!t)break;   // the pity counter resets on the rarest tier still in the pool (epics may all be maxed late on)
-    save.pity=t.rar===top?0:(save.pity||0)+1;
+    const top=pityRar(),hit=(save.pity||0)>=PITY-1,t=rollType();if(!t)break;   // the pity counter resets on the rarest tier still in the pool (epics may all be maxed late on) and on the guaranteed ink itself (a WISH epic)
+    save.pity=hit||t.rar===top?0:(save.pity||0)+1;
     const r=addTatCopy(t.id);results.push({t,...r,lv:tatOf(t.id).lv});
   }
   persist();achCheck();
@@ -3795,6 +3843,42 @@ $('gachaCollect').addEventListener('click',()=>{snd('click');$('gachaOverlay').c
 $('gachaSingle').addEventListener('click',()=>doPull(1));
 $('gachaMulti').addEventListener('click',()=>doPull(10));
 
+// the picker for the TIER GIFT and the WISH: tap a card to read what it does, then TAKE / WISH
+let pickMode=null,pickSel=null;
+const pickIds=()=>pickMode==='gift'?giftOptsNow():TAT_TYPES.filter(t=>wishOk(t.id)).map(t=>t.id);
+function openPick(mode){
+  pickMode=mode;pickSel=mode==='wish'&&wishOk(save.wish)?save.wish:null;
+  const ids=pickIds();if(!ids.length){renderTattoos();return;}
+  snd('click');
+  $('pickTitle').textContent=mode==='gift'?T('TIER {0} GIFT',giftTier()):T('WISH');
+  $('pickSub').textContent=mode==='gift'?T('Pick one tattoo, it is free'):T('Your guaranteed ink gives this tattoo');
+  const cards=$('pickCards');cards.className='gcards pick'+(ids.length<=3?' three':'');
+  cards.innerHTML=ids.map((id,i)=>{const t=TT[id],c=tatOf(id);return `<div class="gc r${t.rar}" data-id="${id}" style="--rc:var(--r${t.rar});--rc-rgb:var(--r${t.rar}-rgb);animation-delay:${(i*.06).toFixed(2)}s">
+      <span class="new">${c.lv?'LV'+c.lv:T('NEW')}</span>${I(t.icon)}<span class="n">${T(t.name)}</span><span class="lv">${T(RAR_NAMES[t.rar])}</span></div>`;}).join('');
+  $('pickOk').textContent=mode==='gift'?T('TAKE'):T('WISH');
+  pickShow();$('pickOverlay').classList.add('show');
+}
+function pickShow(){
+  $('pickCards').querySelectorAll('.gc').forEach(d=>d.classList.toggle('sel',d.dataset.id===pickSel));
+  const t=TT[pickSel],esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  $('pickDesc').innerHTML=t?`<b>${T(t.name)} · LV${Math.max(1,tatOf(t.id).lv)}</b><br>${esc(t.desc(tatFx(t,Math.max(1,tatOf(t.id).lv))))}`:T('Tap a tattoo to see what it does');
+  $('pickOk').classList.toggle('no',!t);
+}
+$('pickCards').addEventListener('click',e=>{const d=e.target.closest('.gc');if(!d)return;pickSel=d.dataset.id;snd('blip');pickShow();});
+$('pickBack').addEventListener('click',()=>{snd('click');$('pickOverlay').classList.remove('show');});
+$('pickOk').addEventListener('click',()=>{
+  if(!pickSel)return;const t=TT[pickSel];$('pickOverlay').classList.remove('show');
+  if(pickMode==='wish'){save.wish=pickSel;persist();snd('buy');toast(T('WISH: {0}',T(t.name)));renderTattoos();return;}
+  if(!pickIds().includes(pickSel))return;
+  const r=addTatCopy(pickSel);save.tgDone=giftTier();save.tgOpts=null;
+  // a new tattoo goes straight into a free slot (within the ACTIVE limit)
+  if(r.isNew&&save.equipped.length<save.tatSlots&&!(t.act&&activeIds().length>=MAX_ACTIVE))save.equipped.push(t.id);
+  track('tier_gift',{tier:save.tgDone,id:t.id});persist();achCheck();renderTatDot();
+  showGachaResults([{t,...r,lv:tatOf(t.id).lv}]);
+});
+$('giftBar').addEventListener('click',()=>openPick('gift'));
+$('wishBtn').addEventListener('click',()=>openPick('wish'));
+function renderTatDot(){$('mTatDot').style.display=giftLeft()?'':'none';}
 let pendingSlot=false;
 function openTattoos(){snd('click');pendingSlot=false;renderTattoos();$('tatPanel').classList.add('open');$('tatPanel').querySelector('.scroll').scrollTop=0;}
 function closeTattoos(){snd('click');$('tatPanel').classList.remove('open');renderMenu();}
@@ -3858,8 +3942,12 @@ function renderTattoos(){
   const fi=save.freeInk===1;$('pull1Cost').textContent=fi?T('FREE'):ECO.pullCost;$('gachaSingle').querySelector('.c svg').style.display=fi?'none':'';$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
   $('oddsBox').innerHTML=oddsGrid();
-  const pr=T(RAR_NAMES[pityRar()]);
+  const pr=wishOk(save.wish)?T(TT[save.wish].name):T(RAR_NAMES[pityRar()]);
   $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT INK: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} INKS',pr,`<b>${left}</b>`));
+  $('wishBtn').style.display=done?'none':'';
+  $('wishBtn').innerHTML=wishOk(save.wish)?T('WISH: {0} · TAP TO CHANGE','<b>'+T(TT[save.wish].name)+'</b>'):T('NO WISH SET · TAP TO PICK ONE');
+  const gl=giftLeft();$('giftBar').style.display=gl?'':'none';
+  if(gl)$('giftBar').innerHTML=I('gift')+T('TIER {0} GIFT · PICK A TATTOO',giftTier())+(gl>1?' (+'+(gl-1)+')':'');
   $('gachaSingle').classList.toggle('no',!fi&&save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
   $('eqCount').textContent=`${save.equipped.length}/${save.tatSlots}`;
@@ -4669,6 +4757,9 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.4',date:'2026-11-08',name:'UPDATE 0.7.4',lines:[
+    {text:'Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.'},
+    {text:'WISH: under the ink buttons, pick one epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},
@@ -4843,7 +4934,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.7.3';
+const GAME_VERSION='0.7.4';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

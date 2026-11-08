@@ -730,5 +730,21 @@
  "ATK SPD is about twice as strong, FROST adds much less damage, EXECUTE's victim bursts onto the enemies around it, DEFENSE makes every heal stronger the more you block, and REGEN now counts the MAX HP tattoo (with lower values). Frozen enemies can now be pushed back.": "VEL ATQ es casi el doble de fuerte, HIELO añade mucho menos daño, la víctima de EJECUCIÓN estalla sobre los enemigos de alrededor, DEFENSA hace que cada curación cure más cuanto más bloqueas, y REGENERACIÓN ahora cuenta el tatuaje VIDA MÁX (con valores más bajos). Los enemigos congelados ya pueden ser empujados.",
  "The RANGE line can no longer go above the top third of the field: range beyond that turns into damage. The shop's SALVAGE now heals for kills in the whole lower half of the field.": "La línea de ALCANCE ya no puede subir por encima del tercio superior del campo: el alcance de más se convierte en daño. El RECICLAJE de la tienda ahora cura por las bajas en toda la mitad inferior del campo.",
  "The result screen is shorter. VIEW ALL shows every number of the run, and damage is split by source (main shot, MULTISHOT, TWIN, RICOCHET, crits and more). Tap the coin bonus under the tier: MIDAS and the weekly op are listed too, and every bonus multiplies the others.": "La pantalla de resultados es más corta. VER TODO muestra cada número de la partida, y el daño se separa por fuente (disparo principal, DISPARO MÚLTIPLE, GEMELO, REBOTE, críticos y más). Toca el bonus de monedas bajo el nivel: MIDAS y la OP SEMANAL también aparecen, y cada bonus multiplica a los demás.",
- "UPDATE 0.7.2": "ACTUALIZACIÓN 0.7.2"
+ "UPDATE 0.7.2": "ACTUALIZACIÓN 0.7.2",
+ "Every new tier you open gives one free tattoo of your choice": "Cada tier nuevo que abres te da gratis un tatuaje a tu elección",
+ "GIFT": "REGALO",
+ "NO WISH SET · TAP TO PICK ONE": "SIN DESEO · TOCA PARA ELEGIR",
+ "Pick an epic or mythic tattoo: the guaranteed ink gives you that one": "Elige un tatuaje épico o mítico: el tatuaje garantizado será ese",
+ "Pick one tattoo, it is free": "Elige un tatuaje, es gratis",
+ "TAKE": "TOMAR",
+ "TIER {0} GIFT": "REGALO DEL TIER {0}",
+ "TIER {0} GIFT · PICK A TATTOO": "REGALO DEL TIER {0} · ELIGE UN TATUAJE",
+ "Tap a tattoo to see what it does": "Toca un tatuaje para ver qué hace",
+ "WISH": "DESEO",
+ "WISH: {0}": "DESEO: {0}",
+ "WISH: {0} · TAP TO CHANGE": "DESEO: {0} · TOCA PARA CAMBIAR",
+ "Your guaranteed ink gives this tattoo": "Tu tatuaje garantizado será este",
+ "UPDATE 0.7.4": "ACTUALIZACIÓN 0.7.4",
+ "Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.": "Cada tier nuevo que abres ahora te regala un tatuaje a tu elección. En el Tier 2 eliges entre todos los tatuajes épicos que aún no tienes, así juegas el estilo que quieres mucho antes. Los tiers que ya abriste también cuentan: sus regalos te esperan en TATUAJES.",
+ "WISH: under the ink buttons, pick one epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.": "DESEO: bajo los botones de tatuar, elige un tatuaje épico o mítico. Tu tatuaje garantizado (en 50) será ese."
 }

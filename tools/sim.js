@@ -28,7 +28,7 @@ const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an old
 const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
   opt('// ── LIFETIME STATS','function achCheck'),opt('const DAILY=','function renderDailyDot')].join('\n');
 const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','MAX_ACTIVE','makeQuest','QUEST','DAILY','dailyCoins',
-  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY','slotSync','slotPrice','pourPig','PIG_VAL'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
+  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY','slotSync','slotPrice','pourPig','PIG_VAL','pourCost','tatMelted','TAT_MAX'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
   "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice,crowdK:typeof crowdK===\"undefined\"?null:crowdK};"].join('\n'))(save,1,1);
@@ -722,7 +722,12 @@ const spendGems=()=>{
 const NOPIG=!!process.env.SIM_NOPIG;
 const pigment=()=>{if(!G.pourPig||NOPIG)return;const want=BUILDS[BUILD].tat;save.tatMelt={};
   for(const id of owned())if(!save.equipped.includes(id)&&!want.includes(id))save.tatMelt[id]=1;
-  let any=false;for(const id of want){while(G.pourPig(id))any=true;}
+  // a real player spreads it: one copy at a time into the build's own owned tattoo with the lowest level (ties: list order), saving up
+  // when that one costs more than the pigment in hand (else rare ones never get any). SIM_PIGFIRST=1 = the old rule (all into the first listed)
+  let any=false;
+  if(process.env.SIM_PIGFIRST)for(const id of want){while(G.pourPig(id))any=true;}
+  else for(;;){const c=want.filter(id=>{const t=G.tatOf(id);return t.lv&&t.lv<G.TAT_MAX&&!G.tatMelted(id);})
+    .sort((x,y)=>G.tatOf(x).lv-G.tatOf(y).lv||want.indexOf(x)-want.indexOf(y));if(!c.length||!G.pourPig(c[0]))break;any=true;}
   if(any)equipBest();};
 // quests sit on the board (game: refreshQuests) until the runs fill them (game: qEvent / qReach); AUTO RETRY and weekly runs count too.
 // Every kind is counted in run() where the game counts it (r.qe); kills, bombs, drops and coins come from the run's totals.

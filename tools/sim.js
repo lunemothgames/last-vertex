@@ -28,7 +28,7 @@ const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an old
 const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
   opt('// ── LIFETIME STATS','function achCheck'),opt('const DAILY=','function renderDailyDot')].join('\n');
 const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','MAX_ACTIVE','makeQuest','QUEST','DAILY','dailyCoins',
-  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
+  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY','slotSync','slotPrice','pourPig','PIG_VAL'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
   "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice,crowdK:typeof crowdK===\"undefined\"?null:crowdK};"].join('\n'))(save,1,1);
@@ -682,7 +682,7 @@ const ADS_FIT=SESS*(Math.floor(DAYH*3600/SESS/ECO.adCooldown)+1),ADS=Math.min(EC
 let day=0,afkClock=0;
 // idle income is worth buying once the time away pays (every build buys it like a coin upgrade)
 if(EC)for(const b in BUILDS)BUILDS[b].shop={...BUILDS[b].shop,offline:BUILDS[b].shop.offline||1};
-if(EC)Object.assign(save,{tatCol:{},equipped:[],tatSlots:1,pity:0,gems:0,quests:[],achClaimed:[],daily:{n:0,last:''},
+if(EC)Object.assign(save,{tatCol:{},tatMelt:{},pig:0,equipped:[],tatSlots:1,slotGem:0,slotTier:0,pity:0,gems:0,quests:[],achClaimed:[],daily:{n:0,last:''},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0}});
 const owned=()=>G.TAT_TYPES.filter(t=>G.tatOf(t.id).lv>0).map(t=>t.id);
 // what goes in the slots: the build's own tattoos first (in its order), then the best of the rest (rarer and higher level first)
@@ -692,27 +692,38 @@ const equipBest=()=>{const own=owned(),want=BUILDS[BUILD].tat.filter(id=>own.inc
   let na=0;const MA=G.MAX_ACTIVE||Infinity;
   save.equipped=[...want,...rest].filter(id=>!G.TT[id].act||++na<=MA).slice(0,save.tatSlots);};
 // v0.7.4 TIER GIFT: every tier opened gives one free pick (the build's own tattoos first, else the rarest offered); WISH: the build's first
-// epic/mythic tattoo that is not maxed (the guaranteed ink gives it). An older game (SIM_SRC) has neither. SIM_NOGIFT=1 / SIM_NOWISH=1 turn them off.
+// own tattoo the game lets it wish for (epic/mythic; rare too since 0.7.4b) that it does not own yet, else the first one not maxed (the
+// guaranteed ink gives it). An older game (SIM_SRC) has neither. SIM_NOGIFT=1 / SIM_NOWISH=1 turn them off.
 const NOGIFT=!!process.env.SIM_NOGIFT,NOWISH=!!process.env.SIM_NOWISH;
 const gifts=()=>{
-  if(G.wishOk&&!NOWISH)save.wish=BUILDS[BUILD].tat.find(id=>G.wishOk(id))||null;
+  if(G.wishOk&&!NOWISH){const ok=BUILDS[BUILD].tat.filter(id=>G.wishOk(id));save.wish=ok.find(id=>!G.tatOf(id).lv)||ok[0]||null;}
   if(!G.giftLeft||NOGIFT)return;
   while(G.giftLeft()>0){const ids=G.giftOptsNow();if(!ids.length)break;const want=BUILDS[BUILD].tat;
     const pick=want.find(id=>ids.includes(id))||ids.slice().sort((a,b)=>G.TT[b].rar-G.TT[a].rar)[0];
     G.addTatCopy(pick);save.tgDone=G.giftTier();save.tgOpts=null;}};
 // gems: the next slot first as long as there is a tattoo to put in it (SIM_GEMPLAN=slot), else inks 10 at a time (cheaper each);
 // one at a time only while a slot is still empty. The pity counter and the pool work as in the game's doPull().
+// v0.7.4: slots 9-12 open with tiers 3-6 (game slotSync / slotPrice); an older game (SIM_SRC) sells all 11 for gems.
+const slotP=()=>G.slotPrice?(G.slotSync(),G.slotPrice()):save.tatSlots<G.MAX_SLOTS?G.TAT_SLOT_PRICES[save.tatSlots-1]:null;
 const spendGems=()=>{
   gifts();
-  for(;;){const own=owned().length,sp=G.TAT_SLOT_PRICES[save.tatSlots-1],slotNext=save.tatSlots<G.MAX_SLOTS&&own>save.tatSlots;
-    if(slotNext&&save.gems>=sp){save.gems-=sp;SPENT.slot+=sp;save.tatSlots++;continue;}
+  for(;;){const own=owned().length,sp=slotP(),slotNext=sp!==null&&own>save.tatSlots;
+    if(slotNext&&save.gems>=sp){save.gems-=sp;SPENT.slot+=sp;if(G.slotPrice){save.slotGem++;G.slotSync();}else save.tatSlots++;continue;}
     if(slotNext&&PLAN==='slot')break;
     const n=save.gems>=ECO.pull10Cost?10:save.gems>=ECO.pullCost&&own<save.tatSlots?1:0;
     if(!n||!G.tatPool().length)break;
     const c=n===10?ECO.pull10Cost:ECO.pullCost;save.gems-=c;SPENT.ink+=c;save.life.pulls+=n;
     for(let i=0;i<n;i++){const top=G.pityRar(),hit=(save.pity||0)>=G.PITY-1,t=G.rollType();if(!t)break;save.pity=hit||t.rar===top?0:(save.pity||0)+1;G.addTatCopy(t.id);}
   }
-  equipBest();};
+  equipBest();pigment();};
+// v0.7.4 PIGMENT (game pourPig): every owned tattoo that is neither equipped nor one of the build's own is marked MELT (its later copies
+// become pigment); pigment is poured into the build's own owned tattoos, first one first, while it pays for a copy. An older game: nothing.
+// SIM_NOPIG=1 turns it off (a player who never uses it).
+const NOPIG=!!process.env.SIM_NOPIG;
+const pigment=()=>{if(!G.pourPig||NOPIG)return;const want=BUILDS[BUILD].tat;save.tatMelt={};
+  for(const id of owned())if(!save.equipped.includes(id)&&!want.includes(id))save.tatMelt[id]=1;
+  let any=false;for(const id of want){while(G.pourPig(id))any=true;}
+  if(any)equipBest();};
 // quests sit on the board (game: refreshQuests) until the runs fill them (game: qEvent / qReach); AUTO RETRY and weekly runs count too.
 // Every kind is counted in run() where the game counts it (r.qe); kills, bombs, drops and coins come from the run's totals.
 // A finished quest is claimed at once.

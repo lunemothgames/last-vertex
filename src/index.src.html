@@ -304,6 +304,12 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .giftbar{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:12px 14px 0;min-height:44px;padding:6px 10px;line-height:1.05;text-align:center;border:1px solid var(--r2);color:var(--r2);
   background:rgba(var(--r2-rgb),0.12);font-family:'VT323',monospace;font-size:19px;letter-spacing:.06em;box-shadow:0 0 12px rgba(var(--r2-rgb),0.5);animation:blink 1.2s steps(1) 3}
 .giftbar svg.i{width:20px;height:20px;stroke:var(--r2)}
+.pigrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.pigb{flex:1;min-width:0;background:none;border:1px solid var(--mute);color:var(--ink);font-family:inherit;padding:6px 4px;cursor:pointer}
+.pigb.on{border-color:var(--a2);color:var(--a2)}.pigb.no{opacity:.45}
+.pignote{font-size:.85em;color:var(--mute);margin-bottom:4px}
+.ctile.melt{opacity:.55}
+.pill.pig{color:var(--a)}
 .wishbtn{display:block;margin:6px auto 0;background:none;border:0;font-family:inherit;color:var(--mute);cursor:pointer;text-decoration:underline dotted}
 .wishbtn b{color:var(--r2);font-weight:400}
 
@@ -779,7 +785,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="ph">
       <button class="back" id="tatBack" aria-label="Back"><svg class="i"><use href="#i-back"/></svg></button>
       <h2>TATTOOS</h2>
-      <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="tatGems">0</b></div>
+      <div class="pill gem"><svg class="i"><use href="#i-gem"/></svg><b id="tatGems">0</b></div><div class="pill pig" id="tatPigPill" style="display:none"><svg class="i"><use href="#i-spark"/></svg><b id="tatPig">0</b></div>
     </div>
     <div class="scroll">
       <button class="giftbar" id="giftBar" style="display:none"></button>
@@ -809,7 +815,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
         <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
         <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
-        <b>WISH</b><span>Pick an epic or mythic tattoo: the guaranteed ink gives you that one</span>
+        <b>WISH</b><span>Pick a rare, epic or mythic tattoo: the guaranteed ink gives you that one</span>
         <b>GIFT</b><span>Every new tier you open gives one free tattoo of your choice</span>
         <b>◆</b><span>Active tattoo: adds a button in runs</span>
         <b>SLOTS</b><span>Unlock more slots with gems</span>
@@ -923,7 +929,7 @@ function defaultSave(){return{
   coins:0,gems:0,
   perm:{autoRetry:0,damage:0,fireRate:0,maxHp:0,regen:0,defense:0,coinMult:0,knockback:0,thorns:0,
         critChance:0,critMult:0,dodge:0,lifesteal:0,multishot:0,slowChance:0,slowAmt:0,cooldown:0,pierce:0,gameSpeed:0},
-  temp:{},autoBoost:{},autoRetry:false,autoView:'full',tatCol:{},tatSlots:1,equipped:[],pity:0,
+  temp:{},autoBoost:{},autoRetry:false,autoView:'full',tatCol:{},tatMelt:{},pig:0,tatSlots:1,equipped:[],pity:0,
   settings:{lang:'',sfxVol:80,sfxOn:true,musVol:55,musOn:true,fx:'high',showDmgNums:true,statOverlay:false,shopCat:'atk'},
   life:{kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0,bombs:0},achClaimed:[],hints:{},adDay:'',adCount:0,
   adLastUsed:0,lastGemPickup:0,lastCoinPickup:0,
@@ -1464,9 +1470,9 @@ const PERM_UPGRADES=[
    info:'Damage of every bullet your triangle fires. Every 200 levels (up to level 5000) the total is also multiplied by 1.1.'},
   {id:'fireRate',  cat:'atk', name:'FIRE RATE',  icon:'stream',  base:40,  g:1.12, max:100,  start:1,  step:.02,  fx:v=>v.toFixed(2)+'/s',
    info:'How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.'},
-  {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.09, max:160,  start:0,  step:.005, fx:v=>pc(v),
-   info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. Max 80%; crit chance from tattoos above that turns into crit power.'},
-  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:150,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
+  {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.09, max:100,  start:0,  step:.005, fx:v=>pc(v),
+   info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. The shop goes up to 50%; tattoos can take it to 80%, and crit chance above that turns into crit power.'},
+  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:100,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
    info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
   {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.17, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.'},
@@ -1579,9 +1585,27 @@ const TAT_TYPES=[
 ];
 const TT=Object.fromEntries(TAT_TYPES.map(t=>[t.id,t]));
 const RAR_NAMES=['COMMON','RARE','EPIC','MYTHIC'];
-// gems for slot 2 … 12: cheap and rising, every slot reachable in weeks (the real limit is owning tattoos to put in them)
-const TAT_SLOT_PRICES=[30,50,80,110,150,190,240,300,360,430,500];
+// gems for slot 2 … 8: cheap and rising (the real limit is owning tattoos to put in them). Slots 9 … 12 are not sold (v0.7.4): each opens by
+// itself with a tier (SLOT_TIERS). Saving 300-500 gems a slot for them stopped every ink for 5-6 weeks mid-game, and the fastest way to
+// play was the dullest one. save.slotGem = slots bought with gems, save.slotTier = tier slots given; tatSlots = 1 + both.
+const TAT_SLOT_PRICES=[30,50,80,110,150,190,240];
+const SLOT_TIERS=[4,5,6,7];   // Tier 3-6 made mid-game 10-30% faster (gems all went to inks sooner)
+const OLD_SLOT_PRICES=[30,50,80,110,150,190,240,300,360,430,500];   // what older saves paid for slots 9-12 (refunded when the tier gives it)
 const MAX_SLOTS=12;
+// gives the tier slots the player has earned; a save that bought more gem slots than the 7 now sold turns its dearest bought slot into
+// a tier slot instead and gets those gems back (so the slot count never drops and nobody pays for a slot that is now free)
+function slotSync(){
+  if(save.slotGem===undefined){save.slotGem=Math.max(0,(save.tatSlots||1)-1);save.slotTier=0;}
+  const want=SLOT_TIERS.filter(t=>maxUnlockedTier()>=t).length,t0=save.slotTier||0,was=save.tatSlots||1;let back=0;
+  while((save.slotTier||0)<want){save.slotTier=(save.slotTier||0)+1;if(save.slotGem>TAT_SLOT_PRICES.length){save.slotGem--;back+=OLD_SLOT_PRICES[save.slotGem];}}
+  save.slotGem=Math.min(save.slotGem,MAX_SLOTS-1-save.slotTier);
+  save.tatSlots=1+save.slotGem+save.slotTier;
+  if(save.tatSlots>was&&save.slotTier>t0)save.slotMsg=save.tatSlots;   // a tier slot opened: renderTatDot tells the player
+  if(back){save.gems=(save.gems||0)+back;save.slotBackMsg=(save.slotBackMsg||0)+back;}   // renderTatDot tells the player
+  return back;
+}
+// the gem price of the next slot (null: no gem slot left to buy)
+const slotPrice=()=>save.slotGem<TAT_SLOT_PRICES.length&&save.tatSlots<MAX_SLOTS?TAT_SLOT_PRICES[save.slotGem]:null;
 const MAX_ACTIVE=5;   // ACTIVE tattoos (buttons, bombs included) equipped at once: the button row above the perimeter holds 5
 const tatLerp=(r,lv)=>r[0]+(r[1]-r[0])*(lv-1)/(TAT_MAX-1);
 // effect values of tattoo `t` at level `lv` (all zero at lv 0)
@@ -1592,9 +1616,21 @@ function tatFx(t,lv){const o={},p=ECO.tatPow;for(const k in t.v){let x=lv?tatLer
   if(lv&&p!==1&&!TAT_FIXED.has(k)&&!(t.id==='nova'&&k==='k'))x=TAT_XMUL[t.id]&&k==='m'?1+(x-1)*p:x*p;o[k]=x;}return o;}
 const tatCopiesTo=lv=>{let c=1;for(let l=1;l<lv;l++)c+=tatReq(l);return c;};
 function tatOf(type){return save.tatCol[type]||{lv:0,copies:0};}
-function addTatCopy(type){
+// PIGMENT (v0.7.4): the player marks tattoos they do not want (save.tatMelt[id]=1); every later copy of a marked tattoo melts into
+// pigment (save.pig) instead, and pigment pours into any other tattoo as copies. A melted copy gives PIG_VAL[rarity] (about the inverse of
+// how often one specific tattoo of that rarity comes out of an ink); a poured copy costs PIG_POUR times that. Pouring 1:1 let every junk
+// copy land on one core (FROST Lv7 by ~day 80, 168 h pace x1.11, control/shatter x1.5); x2 with the weaker shop crit pair keeps the pace (x1.005).
+const PIG_VAL=[1,2,3,8],PIG_POUR=2;
+const pourCost=id=>PIG_VAL[TT[id].rar]*PIG_POUR;
+const tatMelted=id=>!!(save.tatMelt&&save.tatMelt[id]);
+// one copy of pigment into tattoo `id` (owned, not marked, not maxed); returns addTatCopy's result or null
+function pourPig(id){const c=tatOf(id),v=pourCost(id);
+  if(!c.lv||c.lv>=TAT_MAX||tatMelted(id)||(save.pig||0)<v)return null;
+  save.pig-=v;return addTatCopy(id,true);}
+function addTatCopy(type,pour){
   const t=save.tatCol[type]||(save.tatCol[type]={lv:0,copies:0});
   if(t.lv===0){t.lv=1;t.copies=0;return{isNew:true,leveled:false};}
+  if(!pour&&tatMelted(type)){const v=PIG_VAL[TT[type].rar];save.pig=(save.pig||0)+v;return{isNew:false,leveled:false,pig:v};}
   t.copies++;let leveled=false;
   while(t.lv<TAT_MAX&&t.copies>=tatReq(t.lv)){t.copies-=tatReq(t.lv);t.lv++;leveled=true;}
   if(t.lv>=TAT_MAX)t.copies=0;
@@ -1654,6 +1690,13 @@ if(!save.slowV73){
     save.coins=(save.coins||0)+Math.max(0,cost(lv)-cost(nl));save.perm.slowAmt=nl;}
   save.slowV73=1;
 }
+// v0.7.4: the shop crit pair stops lower (CRIT CHANCE 80% → 50%, CRIT POWER x4.5 → x3.5; crit was the top damage source of every build):
+// levels above the new max are taken back and their coins refunded
+if(!save.critV74){
+  for(const id of ['critChance','critMult']){const u=PERM_UPGRADES.find(x=>x.id===id),lv=save.perm[id]||0;
+    if(lv>u.max){let c=0;for(let i=u.max;i<lv;i++)c+=upCost(u,i);save.coins=(save.coins||0)+c;save.perm[id]=u.max;}}
+  save.critV74=1;
+}
 // RANGE left the shop in 0.7.0 (levels refunded then) and came back in 0.7.1: saves that skipped 0.7.0 simply keep their levels
 if(save.perm.slow){save.perm.slowAmt=(save.perm.slowAmt||0)+save.perm.slow;}
 delete save.perm.slow;
@@ -1661,6 +1704,7 @@ if(!save.tierBest||typeof save.tierBest!=='object')save.tierBest={};
 if(!save.tierBest[1]&&save.bestWave)save.tierBest[1]=save.bestWave;
 // v0.7: unlock wave 30 → 50: tiers already open under the old rule stay open
 if(!save.tierV7){let t=1;while(t<30&&(save.tierBest[t]||0)>=30)t++;save.tierOpen=t;save.tierV7=1;}
+slotSync();   // v0.7.4 tier slots (needs tierBest / tierOpen from above)
 if(!save.tier||!tierUnlocked(save.tier))save.tier=1;
 if(save.mode!=='burst'||maxUnlockedTier()<BURST.tier)save.mode='rapid';
 if(!['full','save','eco'].includes(save.autoView))save.autoView='full';
@@ -3770,8 +3814,9 @@ function setTheme(id){
 // ── TATTOOS & GACHA ──────────────────────────────────────────────────────────
 // maxed tattoos can't be summoned again
 const tatPool=()=>TAT_TYPES.filter(t=>tatOf(t.id).lv<TAT_MAX);
-// WISH (v0.7.4): one epic or mythic tattoo the player picks (save.wish); the guaranteed (pity) ink gives that one instead of a random one
-const wishOk=id=>!!id&&!!TT[id]&&TT[id].rar>=2&&tatOf(id).lv<TAT_MAX;
+// WISH (v0.7.4): one rare, epic or mythic tattoo the player picks (save.wish); the guaranteed (pity) ink gives that one instead of a random one
+// (rare since 0.7.4b: rare style cores such as FROST, THORNS, REAPER came 2-3 months late; wishing a rare gives up the guaranteed epic)
+const wishOk=id=>!!id&&!!TT[id]&&TT[id].rar>=1&&tatOf(id).lv<TAT_MAX&&!tatMelted(id);
 // TIER GIFT (v0.7.4): every tier the player opens (2 and up) gives one free tattoo of their choice. save.tgDone = the last tier whose gift
 // was taken (1 = none yet; old saves get one gift for every tier they already opened), save.tgOpts = the open gift's choices, kept so
 // reopening the picker does not draw new ones. Tier 2: every epic not owned yet. Later tiers: 3 at random, tattoos not owned yet
@@ -3779,7 +3824,7 @@ const wishOk=id=>!!id&&!!TT[id]&&TT[id].rar>=2&&tatOf(id).lv<TAT_MAX;
 const giftLeft=()=>Math.max(0,maxUnlockedTier()-(save.tgDone||1));
 const giftTier=()=>(save.tgDone||1)+1;
 function giftOpts(t){
-  const pool=tatPool(),un=pool.filter(x=>!tatOf(x.id).lv),mix=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const pool=tatPool().filter(x=>!tatMelted(x.id)),un=pool.filter(x=>!tatOf(x.id).lv),mix=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
   if(t===2){const e=un.filter(x=>x.rar===2);if(e.length)return e.map(x=>x.id);}
   const out=[];
   for(const src of [un.filter(x=>x.rar>=2),un.filter(x=>x.rar===1),un.filter(x=>x.rar===0),pool.filter(x=>x.rar>=2),pool])
@@ -3832,7 +3877,7 @@ function showGachaResults(results){
   title.className='g-title'+(hot?' rare':'');
   cards.className='gcards'+(results.length===1?' one':'');
   cards.innerHTML=results.map((r,i)=>`<div class="gc r${r.t.rar}" style="--rc:var(--r${r.t.rar});--rc-rgb:var(--r${r.t.rar}-rgb);animation-delay:${(i*.09).toFixed(2)}s">
-      <span class="new">${r.isNew?T('NEW'):r.lv>=TAT_MAX&&r.leveled?T('MAX'):r.leveled?T('LV UP'):'+1'}</span>${I(r.t.icon)}<span class="n">${T(r.t.name)}</span><span class="lv">LV${r.lv}</span></div>`).join('');
+      <span class="new">${r.isNew?T('NEW'):r.pig?'+'+r.pig+' '+T('PIGMENT'):r.lv>=TAT_MAX&&r.leveled?T('MAX'):r.leveled?T('LV UP'):'+1'}</span>${I(r.t.icon)}<span class="n">${T(r.t.name)}</span><span class="lv">LV${r.lv}</span></div>`).join('');
   $('gachaOverlay').classList.add('show');
   // a sound per card; the best card of the pull gets the big one at the end
   const top=results.some(r=>r.t.rar===3)?'epic':results.some(r=>r.leveled||r.isNew)?'levelup':'';
@@ -3878,7 +3923,9 @@ $('pickOk').addEventListener('click',()=>{
 });
 $('giftBar').addEventListener('click',()=>openPick('gift'));
 $('wishBtn').addEventListener('click',()=>openPick('wish'));
-function renderTatDot(){$('mTatDot').style.display=giftLeft()?'':'none';}
+function renderTatDot(){slotSync();
+  if(save.slotBackMsg){toast(T('+{0} GEMS BACK: TATTOO SLOTS 9-12 NOW OPEN WITH TIERS 4-7',save.slotBackMsg));save.slotBackMsg=0;save.slotMsg=0;persist();}
+  else if(save.slotMsg){toast(T('TATTOO SLOT {0} OPENED',save.slotMsg));save.slotMsg=0;persist();}$('mTatDot').style.display=giftLeft()?'':'none';}
 let pendingSlot=false;
 function openTattoos(){snd('click');pendingSlot=false;renderTattoos();$('tatPanel').classList.add('open');$('tatPanel').querySelector('.scroll').scrollTop=0;}
 function closeTattoos(){snd('click');$('tatPanel').classList.remove('open');renderMenu();}
@@ -3924,10 +3971,21 @@ function tatInfo(t){
   const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('INK CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
   if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Ink to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
   const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE INK POOL');
-  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('EQUIPPED')})</b>`:'')+odds+tatChart(t,c.lv);
+  const melt=tatMelted(t.id),v=PIG_VAL[t.rar],pcost=pourCost(t.id);
+  // MELT switch (every later copy becomes pigment) and POUR (pigment → one copy); taps on these do not close the window
+  const pig=`<div class="pigrow"><button class="pigb${melt?' on':''}" data-pig="melt">${melt?T('MELT: ON'):T('MELT: OFF')}</button>`+
+    (c.lv<TAT_MAX&&!melt?`<button class="pigb${(save.pig||0)<pcost?' no':''}" data-pig="pour">${T('+1 COPY · {0} PIGMENT',pcost)}</button>`:'')+
+    `</div><div class="pignote">${melt?T('New copies of this tattoo melt into {0} pigment each.',v):T('Melt ON: new copies of this tattoo become {0} pigment each, to pour into other tattoos.',v)} ${T('PIGMENT: {0}',fmtN(save.pig||0))}</div>`;
+  const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('EQUIPPED')})</b>`:'')+odds+pig+tatChart(t,c.lv);
+  pigFor=t;
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):t.auto?' · '+T('AUTOMATIC'):''}
  · ${status}`,true);
 }
+let pigFor=null;
+$('tipBody').addEventListener('click',e=>{const b=e.target.closest('[data-pig]');if(!b||!pigFor)return;e.stopPropagation();const t=pigFor;
+  if(b.dataset.pig==='melt'){save.tatMelt=save.tatMelt||{};if(save.tatMelt[t.id])delete save.tatMelt[t.id];else save.tatMelt[t.id]=1;persist();snd('blip');}
+  else{const r=pourPig(t.id);if(!r){snd('deny');toast(T('NOT ENOUGH PIGMENT'),true);return;}persist();snd(r.leveled?'levelup':'buy');if(r.leveled)toast(T('{0} LV{1}',T(t.name),tatOf(t.id).lv));}
+  tatInfo(t);renderTattoos();});
 function toggleEquip(t){
   const c=tatOf(t.id);
   if(!c.lv){snd('deny');toast(T('NOT DISCOVERED YET'),true);return;}
@@ -3938,7 +3996,9 @@ function toggleEquip(t){
   persist();snd('blip');renderTattoos();achCheck();
 }
 function renderTattoos(){
+  slotSync();
   $('tatGems').textContent=fmtN(save.gems);
+  $('tatPig').textContent=fmtN(save.pig||0);$('tatPigPill').style.display=save.pig||Object.keys(save.tatMelt||{}).length?'':'none';
   const fi=save.freeInk===1;$('pull1Cost').textContent=fi?T('FREE'):ECO.pullCost;$('gachaSingle').querySelector('.c svg').style.display=fi?'none':'';$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
   $('oddsBox').innerHTML=oddsGrid();
@@ -3962,15 +4022,20 @@ function renderTattoos(){
         d.className='slot f';d.style.setProperty('--rc',rc);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);d.innerHTML=`${I(t.icon)}<b>${c.lv}</b>`;
         attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
       }else{d.className='slot';d.textContent='+';}
-    }else if(i===save.tatSlots){
-      const price=TAT_SLOT_PRICES[i-1];
+    }else if(i===save.tatSlots&&slotPrice()!==null){
+      const price=slotPrice();
       d.className='slot buy-slot'+(pendingSlot?' ask':'');
       d.innerHTML=pendingSlot?`<span>${T('BUY?')}</span>`:`${I('lock')}<span>${I('gem')}${price}</span>`;
       d.addEventListener('click',()=>{
         if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
         if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
-        save.gems-=price;save.tatSlots++;pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
+        save.gems-=price;save.slotGem++;slotSync();pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
       });
+    }else if(i>=MAX_SLOTS-(SLOT_TIERS.length-(save.slotTier||0))){
+      // the last slots open with a tier: each shows which one (tap: a hint)
+      const tn=SLOT_TIERS[(save.slotTier||0)+i-(MAX_SLOTS-(SLOT_TIERS.length-(save.slotTier||0)))];
+      d.className='slot locked';d.innerHTML=`${I('lock')}<span>T${tn}</span>`;
+      d.addEventListener('click',()=>{snd('blip');toast(T('OPENS WITH TIER {0}',tn));});
     }else{d.className='slot locked';d.innerHTML=I('lock');}
     eq.appendChild(d);
   }
@@ -3982,7 +4047,7 @@ function renderTattoos(){
     if(c.lv){
       found++;
       const isEq=save.equipped.includes(t.id),maxed=c.lv>=TAT_MAX,p=maxed?100:c.copies/tatReq(c.lv)*100;
-      d.className='ctile'+(isEq?' eq':'');d.dataset.id=t.id;d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
+      d.className='ctile'+(isEq?' eq':'')+(tatMelted(t.id)?' melt':'');d.dataset.id=t.id;d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
       d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${T(t.name)}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
     }else{
       d.className='ctile locked';
@@ -4759,7 +4824,10 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 const INBOX=[
   {id:'0.7.4',date:'2026-11-08',name:'UPDATE 0.7.4',lines:[
     {text:'Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.'},
-    {text:'WISH: under the ink buttons, pick one epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.'}]},
+    {text:'WISH: under the ink buttons, pick one rare, epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.'},
+    {text:'Tattoo slots 9 to 12 are no longer bought with gems: each one opens by itself when you open Tier 4, 5, 6 and 7, so your gems can go to inks. If you already bought them, the gems came back to you.'},
+    {text:'PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.'},
+    {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},

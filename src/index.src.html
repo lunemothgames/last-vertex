@@ -1309,7 +1309,8 @@ const ECO={
   spitStop:.62,   spitSpd:.9,  spitN:3, // SPITTER: stops at this share of the screen height (inside the base range), spits every ENEMY_TYPES.spitter.spit s, a spit flies this many screen heights a second; after spitN spits from there it walks on (still spitting)
   spitK:.2,       spitCap:.015,          // ...a spit hits for its attack x spitK (ARMOR, DEFENSE cut it like a hit; parry and AEGIS do not), at most this share of max health
   burnT:4,        burnK:.5,   burnCap:.06,   // SCORCHER: a touch that gets through lights a fire: its attack x burnK (DEFENSE share cuts it, flat ARMOR does not), at most burnCap of max health, over burnT s; fires add up
-  shatterMax:6,   shatterSlow:1,        // an ice burst hurts at most shatterMax enemies (the nearest), so chains cannot snowball in a crowd, and slows them for shatterSlow x slowTime
+  slayWard:.5,   execShield:2,         // SLAYER also hits WARDEN at slayWard of its bonus · EXECUTE breaks a shield (bosses' too) worn below execShield x its line (0.7.4: WARDEN killed most bullet builds late)
+  shatterMax:6,   shatterSlow:0,        // an ice burst hurts at most shatterMax enemies (the nearest), so chains cannot snowball in a crowd, and slows them for shatterSlow x slowTime (0.7.4: 0, was 1; SHATTER led every build)
   gemPickupCooldown:1200,               // …and a gem drop (about 2.6 gems an hour of play: field gems must not outweigh quests, the weekly op and ads)
   gemDropPerSec:.006, coinDropPerSec:.008,
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
@@ -1559,13 +1560,13 @@ const TAT_TYPES=[
   {id:'reach',       name:'OVERKILL',    icon:'overkill', rar:1,w:5,  v:{r:[.06,.2],s:[.3,.75]}, desc:x=>T('moves the RANGE line {0}% of the screen higher, so you shoot sooner · a bullet that kills flies on to the nearest enemy with {1} of the damage it had left',(x.r*100).toFixed(1),pc(x.s))},
   {id:'mend',        name:'RAMPART',     icon:'mend',  rar:1,w:5,  act:1,v:{heal:[.4,.9],guard:[6,12],cd:[42,25]},
    desc:x=>T('ACTIVE · heals {0} of your max health at once, then for {1}s every enemy that touches the perimeter is destroyed (bosses still hit)',pc(x.heal),x.guard.toFixed(1))+cdTxt(x)},
-  {id:'piercer',     name:'LANCE',    icon:'pierce',rar:1,w:5,  v:{every:[8,3],n:[2,5]}, desc:x=>T('every {0}th shot is a lance: it goes straight through the first {1} enemies it hits and flies on',Math.round(x.every),Math.round(x.n))},
-  {id:'reaper',      name:'EXECUTE',  icon:'exec',  rar:1,w:5,  v:{k:[.28,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health · the health it had left bursts onto the enemies close by (bosses take a quarter)',pc(x.k))},
+  {id:'piercer',     name:'LANCE',    icon:'pierce',rar:1,w:5,  v:{every:[8,3],n:[2,5],m:[4.4,5.8]}, desc:x=>T('every {0}th shot is a lance: it hits x{2} as hard, goes straight through the first {1} enemies it hits and flies on',Math.round(x.every),Math.round(x.n),x.m.toFixed(1))},
+  {id:'reaper',      name:'EXECUTE',  icon:'exec',  rar:1,w:5,  v:{k:[.28,.4]},           desc:x=>T('bullets instantly kill normal enemies (not bosses) that drop below {0} health · the health it had left bursts onto the enemies close by (bosses take a quarter) · a shield worn below {1} breaks at once, a boss\'s too',pc(x.k),pc(Math.min(1,x.k*ECO.execShield)))},
   {id:'aegis',       name:'AEGIS',    icon:'aegis', rar:1,w:5,  v:{cd:[4.5,2]},             desc:x=>T('a barrier around the triangle blocks one perimeter hit completely: that enemy is destroyed (a boss is pushed back) and the ones next to it are pushed back · recharges in {0}s',x.cd.toFixed(1))},
-  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:1,w:5,  v:{b:[.5,3]},              desc:x=>T('+{0} damage to bosses, elites and big enemies (TANK, ARMORED)',pc(x.b))},
+  {id:'boss_slayer', name:'SLAYER',   icon:'boss', rar:1,w:5,  v:{b:[.5,3]},              desc:x=>T('+{0} damage to bosses, elites and big enemies (TANK, ARMORED) · +{1} to WARDEN',pc(x.b),pc(x.b*ECO.slayWard))},
   {id:'lifesteal',   name:'SALVAGE',  icon:'salvage',  rar:1,w:5,  v:{l:[.025,.12]},          desc:x=>T('+{0} salvage: every enemy that dies in the lower half of the field heals that share of your max health',pc2(x.l))},
-  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:1,w:5,  v:{p:[.05,.12],c:[.1,.25],a:[.15,.25]},
-   desc:x=>T('{1} of your hits slow the enemy · a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health and get slowed (bosses take a quarter) · bursts can chain',pc(x.p),pc(x.c))},
+  {id:'shatter',     name:'SHATTER',  icon:'shatter',rar:1,w:5,  v:{p:[.02,.05],c:[.1,.25],a:[.15,.25]},
+   desc:x=>T('{1} of your hits slow the enemy · a slowed or frozen enemy that dies bursts into ice: enemies close by lose {0} of its max health (bosses take a quarter) · bursts can chain',pc(x.p),pc(x.c))},
   // ── epic: build cores + offensive actives
   {id:'thorns',      name:'THORNS',   icon:'spikes',rar:2,w:3.5, v:{t:[.45,.72]},            desc:x=>T('+{0} thorns: an enemy that hits the perimeter loses that share of its max health',pc(x.t))},
   {id:'nova',        name:'NOVA',     icon:'nova',  rar:2,w:3,  auto:1,v:{m:[8,22],k:[120,70]},
@@ -1616,7 +1617,7 @@ const tatLerp=(r,lv)=>r[0]+(r[1]-r[0])*(lv-1)/(TAT_MAX-1);
 // effect values of tattoo `t` at level `lv` (all zero at lv 0)
 // ECO.tatPow scales every tattoo's strength (12 slots hold more tattoos than the old 5); cooldowns, counts and durations keep their values,
 // and x-multipliers that start at 1 (OVERDRIVE fire rate, MIDAS coins) only scale the part above x1
-const TAT_FIXED=new Set(['cd','every','n','dur','guard']),TAT_XMUL={overdrive:1,midas:1};
+const TAT_FIXED=new Set(['cd','every','n','dur','guard']),TAT_XMUL={overdrive:1,midas:1,piercer:1};
 function tatFx(t,lv){const o={},p=ECO.tatPow;for(const k in t.v){let x=lv?tatLerp(t.v[k],lv):0;
   if(lv&&p!==1&&!TAT_FIXED.has(k)&&!(t.id==='nova'&&k==='k'))x=TAT_XMUL[t.id]&&k==='m'?1+(x-1)*p:x*p;o[k]=x;}return o;}
 const tatCopiesTo=lv=>{let c=1;for(let l=1;l<lv;l++)c+=tatReq(l);return c;};
@@ -1803,7 +1804,9 @@ function stats(){
     rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
     pierce:    v('pierce'),
     lanceEvery:Math.round(tb('piercer').every||0),   // LANCE tattoo (id piercer): every Nth shot is a lance...
-    lanceN:    Math.round(tb('piercer').n||0),       // ...that goes straight through this many enemies (then shop PIERCE's chance)
+    lanceN:    Math.round(tb('piercer').n||0),
+    lanceM:    tb('piercer').m||1,                    // ...and hits this many times as hard (0.7.4)
+    wardDmg:   1+tb('boss_slayer').b*ECO.slayWard,    // SLAYER on WARDEN (0.7.4)       // ...that goes straight through this many enemies (then shop PIERCE's chance)
     carry:     tb('reach').s||0,       // REACH tattoo: a bullet that kills flies on to the nearest enemy with this share of the damage it had left
     waveHeal:  (T.invincible?.15:0)+M.waveHealAdd,
     bounty:    v('bounty'),
@@ -2267,7 +2270,7 @@ function hurt(e,dmg,quiet,src){dmgBy(src,Math.min(dmg,Math.max(0,e.hp)));e.hp-=d
 // blast push (NOVA, SHOCKWAVE, LOGIC BOMB): bosses are not pushed, a stronger push already running is kept
 const knock=(e,m)=>{if(!e.boss)e.kbVy=Math.min(e.kbVy,-e.spd*ECO.kbPush*m);};
 // extra damage against bosses (BOSS HUNTER + SLAYER) and against elites and big types (SLAYER, BOSS HUNTER at half)
-const vsDmg=(e,st)=>e.boss?st.bossDmg:e.big?st.bigDmg:1;
+const vsDmg=(e,st)=>e.boss?st.bossDmg:e.big?st.bigDmg:e.type==='warden'?st.wardDmg:1;
 // inside a blast circle of radius R around (x,y), counting the enemy's own size
 const inBlast=(o,x,y,R)=>{const dx=o.x-x,dy=o.y-y,r=R+o.sz*.5;return dx*dx+dy*dy<=r*r;};
 
@@ -2300,7 +2303,7 @@ function fireBullets(st){
     const lance=st.lanceEvery&&++lanceCount%st.lanceEvery===0?n>>1:-1;
     for(let k=0;k<n;k++){
       const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg,sz:bSize*.8,bounces:0,tgt:null,left,len:left,src:k>=st.pellets?'multishot':'shot',...(k===lance?{pr:st.lanceN,lance:1}:{})});
+      bullets.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg,sz:bSize*.8,bounces:0,tgt:null,left,len:left,src:k>=st.pellets?'multishot':'shot',...(k===lance?{pr:st.lanceN,lance:1,dmg:st.hitDmg*st.lanceM}:{})});
     }
   }else{
     // LANCE: every Nth shot the main bullet is a lance that goes straight through st.lanceN enemies
@@ -2311,7 +2314,7 @@ function fireBullets(st){
   if(st.twin>0)shots.push({e:order[1]||target,m:st.twin,twin:true,src:'twin'});
   for(const s of shots){
     const x0=bx+(s.twin?GW*.025:0),a=s.e?Math.atan2(s.e.y-by,s.e.x-x0):base+s.ang;
-    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg*s.m,sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null,src:s.src||'shot',...(s.lance?{pr:st.lanceN,lance:1}:{})});
+    bullets.push({x:x0,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,trail:[],dmg:st.hitDmg*s.m*(s.lance?st.lanceM:1),sz:s.twin?bSize*.75:bSize,bounces:0,tgt:s.e||null,src:s.src||'shot',...(s.lance?{pr:st.lanceN,lance:1}:{})});
   }
   if(st.arcEvery&&++shotCount%st.arcEvery===0)arcStrike(target,st);
   if(st.pellets>1){muzzle.push({x:triX,y:TRI_Y-GH*.06,life:1,big:1});shake={x:0,y:0,t:Math.max(shake.t,.06)};snd('blast');}
@@ -2664,7 +2667,10 @@ function updatePlay(dt){
       // result screen: the bullet's own kind (main, MULTISHOT, TWIN, RICOCHET, PIERCE, LANCE, OVERKILL), and the extra a crit and a slowed / frozen enemy add apart
       {const c=e.shield>0&&!bare?Math.min(dmg*.5,e.shield):Math.min(dmg,Math.max(0,e.hp)),r=c/(e.slowT>0||e.frozenT>0?st.frostVuln:1);
        dmgBy(b.src||'shot',isCrit?r/st.critM:r);if(isCrit)dmgBy('crit',r-r/st.critM);dmgBy('chill',c-r);}
-      if(e.shield>0&&!bare){e.shield-=dmg*.5;if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
+      if(e.shield>0&&!bare){e.shield-=dmg*.5;
+        // EXECUTE: a shield (a BULWARK boss's too) worn below execShield x its line breaks at once
+        if(e.shield>0&&st.reap>0&&e.shield<e.maxShield*st.reap*ECO.execShield){dmgBy('reaper',e.shield);e.shield=0;spawnText(e.x,e.y-e.sz,T('SHIELD BROKEN'),C.r[3]);}
+        if(e.shield<=0){e.shield=0;burst(e.x,e.y,C.a2,10,GH*.08);}}
       else e.hp-=dmg;
       runDmgDealt+=dmg;e.hitFlash=.18;e.wobble=.3;if(dmg>runSt.big)runSt.big=dmg;
       if(!e.boss&&e.hp>0&&e.hp<e.maxHp*st.reap){
@@ -3974,7 +3980,7 @@ const TAT_COLS={
   stasis:[['dur','FREEZE','s'],['cd','COOLDOWN','s']],mend:[['heal','HEAL','%'],['guard','GUARD','s'],['cd','COOLDOWN','s']],
   aegis:[['cd','RECHARGE','s']],boss_slayer:[['b','BOSS DMG','+%']],
 
-  lifesteal:[['l','HEAL / KILL','%2']],piercer:[['every','EVERY','1/n'],['n','PIERCES','n']],reaper:[['k','KILLS BELOW','%']],
+  lifesteal:[['l','HEAL / KILL','%2']],piercer:[['every','EVERY','1/n'],['n','PIERCES','n'],['m','DAMAGE','x']],reaper:[['k','KILLS BELOW','%']],
   nova:[['m','BLAST','x'],['k','KILLS','n']],overdrive:[['m','FIRE RATE','x'],['dur','LASTS','s'],['cd','COOLDOWN','s']],
   ricochet:[['c','CHANCE','+%'],['n','CHAINS','n']],shatter:[['p','BURST','%']],shockwave:[['m','BLAST','x'],['cd','COOLDOWN','s']],
   twin:[['m','TWIN DMG','%']],arc:[['every','EVERY','1/n'],['n','TARGETS','n'],['m','DMG EACH','%']],
@@ -4862,7 +4868,9 @@ const INBOX=[
     {text:'WISH: under the ink buttons, pick one rare, epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.'},
     {text:'Tattoo slots 9 to 12 are no longer bought with gems: each one opens by itself when you open Tier 4, 5, 6 and 7, so your gems can go to inks. If you already bought them, the gems came back to you.'},
     {text:'PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.'},
-    {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'}]},
+    {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'},
+    {text:'SHATTER\'s ice bursts are smaller and no longer slow the enemies around them: it was far ahead of every other style.'},
+    {text:'LANCE hits about four times as hard. SLAYER also deals extra damage to WARDEN, and EXECUTE breaks a worn shield at once, a boss\'s too: shields stopped most styles late in the game.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},

@@ -165,7 +165,7 @@ function run0(tier,maxW,o){
     const hit=(e,d,k)=>{book(k||SRC,Math.min(d,Math.max(0,e.hp)));e.hp-=d;tdealt+=d;};   // blasts, ARC, NOVA, SHOCKWAVE, GOO, VIRUS: no lifesteal (game hurt())
     const push=(e,m)=>{if(!e.boss)e.kb=Math.min(e.kb,-e.sp*ECO.kbPush*m);};   // same rule as the game's knock()
     // game vsDmg(): BOSS HUNTER + SLAYER on bosses, SLAYER alone on elites and big types (e.big)
-    var vsD=e=>e.boss?st.bossDmg:e.big?(st.bigDmg||1):1;
+    var vsD=e=>e.boss?st.bossDmg:e.big?(st.bigDmg||1):e.T===ENEMY_TYPES.warden?(st.wardDmg||1):1;   // 0.7.4: SLAYER on WARDEN
     const HD=st.dmg*st.pellet,vul=e=>vsD(e)*(e.slow>0||e.frz>0?st.frostVuln:1);   // game: st.hitDmg, bombVuln()
     const gooBurst=e=>{const R=G.GRENADE.goo.r*GWH;e.gooT=0;for(const o of E)if(o.hp>0&&(o===e||inBlast(o,e.x,e.y,R)))hit(o,e.gooD*vul(o),'goo_bomb');};
     // game killEnemy(): GOO bursts, VIRUS jumps to the neighbours, SHATTER queues a burst, coins, SPLITTER leaves 2 shards
@@ -213,7 +213,7 @@ function run0(tier,maxW,o){
         if(sl&&st.frostVuln>1){book('chill',r*(1-1/st.frostVuln));r/=st.frostVuln;}
         if(A.overdrive&&A.overdrive.left>0&&A.overdrive.m>1){book('overdrive',r*(1-1/A.overdrive.m));r/=A.overdrive.m;}
         book(SRC,r);}
-      if(e.sh>0&&!bare){e.sh-=d*.5;tdealt+=d;}else{e.hp-=d;tdealt+=d;}
+      if(e.sh>0&&!bare){if(e.sh0===undefined)e.sh0=e.sh;e.sh-=d*.5;tdealt+=d;if(ECO.execShield&&st.reap&&e.sh>0&&e.sh<e.sh0*st.reap*ECO.execShield){book('reaper',e.sh);e.sh=0;}}else{e.hp-=d;tdealt+=d;}
       HN.n++;HN.d+=d;
       // CRIT DMG tattoo (game): a crit splashes st.splash of its damage onto the enemies around (they die at the end of the step)
       if(cr&&st.splash){const R=ECO.critSplashR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,d*st.splash*vsD(o),'crit_mult');}
@@ -241,7 +241,7 @@ function run0(tier,maxW,o){
     const towards=(ox,oy,px,py,from,hits)=>{const L=Math.hypot(px-ox,py-oy)||1;return along(ox,oy,(px-ox)/L,(py-oy)/L,from,Infinity,hits);};
     // a bullet that reached e, coming from (ox,oy). Game order: pierce first (it flies on along its line), else maybe a ricochet
     // to the nearest other enemy from the hit point (it homes in on that one)
-    const follow=(e,m,ox,oy,hits,bounces,pr=0,src='shot')=>{let pd=0;if(st.pierceP)pr=Math.random()<st.pierceP?st.pierceN:0;   // pr = LANCE's pierces (an older game: PIERCER's chance)
+    const follow=(e,m,ox,oy,hits,bounces,pr=0,src='shot')=>{let pd=0;if(st.pierceP)pr=Math.random()<st.pierceP?st.pierceN:0;else if(pr>0)m*=st.lanceM||1;   // LANCE hits x lanceM (0.7.4)   // pr = LANCE's pierces (an older game: PIERCER's chance)
       for(;;){
         SRC=src;const c=bulletHit(e,m);hits.add(e);
         // REACH (game): a bullet that kills turns to the nearest other enemy with st.carry of the damage it had left
@@ -266,7 +266,7 @@ function run0(tier,maxW,o){
       const tg=vis[0],n=st.pellets*(mu?2:1),S=BU.spread,base=Math.atan2(tg.y-BY,tg.x-triX);
       const lance=st.lanceEvery&&++lanceC%st.lanceEvery===0?n>>1:-1;   // game: every Nth salvo the middle pellet is a lance
       for(let k=0;k<n;k++){const a=base+S*(k/(n-1)-.5)+(Math.random()-.5)*S/n;
-        const len=(BY-st.rangeY)*BU.reach;P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:len,len,m:st.pellet,hits:new Set(),tg,pr:k===lance?st.lanceN:0,pd:0});PEL.n++;BUL.n++;}
+        const len=(BY-st.rangeY)*BU.reach;P.push({x:triX,y:BY,ux:Math.cos(a),uy:Math.sin(a),left:len,len,m:st.pellet*(k===lance?st.lanceM||1:1),hits:new Set(),tg,pr:k===lance?st.lanceN:0,pd:0});PEL.n++;BUL.n++;}
     };
     // game pointBlank(): a pellet hits x near at the muzzle, falling to x far at the end of its way (x1 in a game without it)
     const PB=(d,len)=>BU.near===undefined?1:BU.near+(BU.far-BU.near)*Math.min(1,Math.max(0,d/len)),BARE=!!(BU&&BU.bare);

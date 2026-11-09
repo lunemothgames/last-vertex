@@ -1306,7 +1306,10 @@ const ECO={
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
   pickupCooldown:300,                   // seconds after collecting a coin drop
-  shatterMax:6,                         // an ice burst hurts at most this many enemies (the nearest), so chains cannot snowball in a crowd
+  spitStop:.62,   spitSpd:.9,  spitN:3, // SPITTER: stops at this share of the screen height (inside the base range), spits every ENEMY_TYPES.spitter.spit s, a spit flies this many screen heights a second; after spitN spits from there it walks on (still spitting)
+  spitK:.2,       spitCap:.015,          // ...a spit hits for its attack x spitK (ARMOR, DEFENSE cut it like a hit; parry and AEGIS do not), at most this share of max health
+  burnT:4,        burnK:.5,   burnCap:.06,   // SCORCHER: a touch that gets through lights a fire: its attack x burnK (DEFENSE share cuts it, flat ARMOR does not), at most burnCap of max health, over burnT s; fires add up
+  shatterMax:6,   shatterSlow:1,        // an ice burst hurts at most shatterMax enemies (the nearest), so chains cannot snowball in a crowd, and slows them for shatterSlow x slowTime
   gemPickupCooldown:1200,               // …and a gem drop (about 2.6 gems an hour of play: field gems must not outweigh quests, the weekly op and ads)
   gemDropPerSec:.006, coinDropPerSec:.008,
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
@@ -1439,6 +1442,8 @@ const ENEMY_TYPES={
   splitter:{name:'SPLITTER',hp:1.4,spd:.9,  atk:1,  sz:.052,coin:1,  from:20,      w:3,  ci:2},
   armored: {name:'ARMORED', hp:1.5,spd:.7,  atk:1.3,sz:.058,coin:1.8,from:30,      w:2,  ci:3,armor:.1},      // bullets weaker than 10% of its health are cut in proportion
   ghost:   {name:'GHOST',   hp:.8, spd:.95, atk:1.1,sz:.046,coin:1.5,from:45,      w:1.5,ci:1,ghost:3},       // fades out for a moment: bullets pass through it (blasts do not)
+  spitter: {name:'SPITTER', hp:.8, spd:.9,  atk:.8, sz:.046,coin:.9, from:40,      w:2,  ci:2,spit:2.5},   // stops mid-field and spits at the triangle (steady small damage: REGEN's job)
+  scorcher:{name:'SCORCHER',hp:1.1,spd:.85, atk:1,  sz:.05, coin:1.1,from:80,      w:2,  ci:3,burn:1},     // its touch sets the triangle on fire (damage over time, flat ARMOR does not stop it)
   mini:    {name:'SHARD',   hp:.35,spd:1.25,atk:.5, sz:.03, coin:0,  from:Infinity,w:0,  ci:0},
   // later tier bands: a shield that halves bullets, a healer, a teleporter
   warden:  {name:'WARDEN',  hp:1.2,spd:.8,  atk:1.2,sz:.056,coin:1.5,from:60,      w:2,  ci:2,shield:1.2},   // shield starts at half strength and reaches full by wave 150 (see makeEnemy)
@@ -1839,6 +1844,7 @@ let runPrevBest=0,runPrevMaxTier=1,runEarned=0,runPlayT=0,shotCount=0,aegisT=0,a
 let lanceCount=0,novaCharge=0,lanceSparks=[];   // LANCE: shots since the last lance · NOVA: kills since its last blast · sparks where a lance pierced
 let actCD={};                           // active tattoo id → seconds until ready
 let armed=null,bombs=[];                // grenade waiting for a tap on the field · grenades in the air
+let spits=[],burns=[];                                // SPITTER spits in flight · SCORCHER fires burning on the triangle
 let shatterQ=[],runUnlockSnd=0;                        // SHATTER bursts waiting to go off (from slowed/frozen kills this step)
 const SHATTER_R=.2;                     // burst radius, share of screen width
 
@@ -1863,7 +1869,7 @@ function initRun(){
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
   runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;runDmgBy={};runHitBy={};runSt=newRunSt();
-  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];runUnlockSnd=0;lanceCount=0;novaCharge=0;lanceSparks=[];
+  runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];spits=[];burns=[];runUnlockSnd=0;lanceCount=0;novaCharge=0;lanceSparks=[];
   cancelArm();bombs=[];
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
 }
@@ -2209,6 +2215,7 @@ function makeEnemy(type,x,y,boss){
   if(!boss&&(M.dive||M.rise||M.berserk||M.cling)){e.ev={dive:M.dive,rise:M.rise,berserk:M.berserk,cling:M.cling};e.evWave=waveNum;}
   if(!boss&&T.heal)e.healT=1;
   if(!boss&&T.blink)e.blinkT=T.blink*(.5+Math.random()*.5);
+  if(!boss&&T.spit)e.spitT=T.spit*(.5+Math.random()*.5);
   if(!boss&&T.ghost){e.ghostT=T.ghost*(.5+Math.random()*.5);e.phased=false;}
   enemies.push(e);return e;
 }
@@ -2454,6 +2461,7 @@ function contactHit(e,st,mul){
   }else{
     const dmg=Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-blockNow(st));
     hp-=dmg;runDmgTaken+=dmg;{const k=e.boss?'boss:'+(e.kind||'classic'):e.type;runHitBy[k]=(runHitBy[k]||0)+dmg;}snd('breach');hint('breach');
+    if(!e.boss&&ENEMY_TYPES[e.type]?.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0){burns.push({left:ECO.burnT,dps:b/ECO.burnT});burst(e.x,LINE_Y,C.hot,10,GH*.05);}}
     burst(e.x,LINE_Y,C.hot,8,GH*.06);
     if(mul===1){screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.2};}
     e.kbVy=-e.spd*3.5;
@@ -2549,6 +2557,21 @@ function updatePlay(dt){
   triX+=(triTarget-triX)*Math.min(1,dt*1.8);
   triX=Math.max(GW*.06,Math.min(GW*.94,triX));
 
+  // SPITTER spits fly to the triangle: ARMOR and DEFENSE cut them like a hit, at most ECO.spitCap of max health
+  for(const s of spits){
+    const dx=triX-s.x,dy=TRI_Y-s.y,d=Math.hypot(dx,dy),step=GH*ECO.spitSpd*dt;
+    if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue;}
+    s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-blockNow(st)));
+    if(h>0){hp-=h;runDmgTaken+=h;runHitBy.spitter=(runHitBy.spitter||0)+h;snd('hit');}
+    burst(triX,TRI_Y-GH*.01,s.col,5,GH*.03);
+  }
+  if(spits.length)spits=spits.filter(s=>!s.hit);
+  // SCORCHER fires: each burns its share every second until it is out (counted as SCORCHER damage)
+  if(burns.length){
+    let d=0;for(const b of burns){d+=b.dps*Math.min(dt,b.left);b.left-=dt;}
+    burns=burns.filter(b=>b.left>0);hp-=d;runDmgTaken+=d;runHitBy.scorcher=(runHitBy.scorcher||0)+d;
+    if(Math.random()<dt*14)burst(triX+(Math.random()-.5)*GW*.05,TRI_Y,C.hot,1,GH*.025);
+  }
   if(hp<st.maxHp)healBy(st,(st.regen+st.regenT*(1+ECO.regenLow*(1-hp/st.maxHp)))*dt);
   shockCooldown=Math.max(0,shockCooldown-dt);
   if(st.shockM>0&&hp/st.maxHp<.3&&shockCooldown<=0){
@@ -2722,6 +2745,11 @@ function updatePlay(dt){
         e.y=Math.min(LINE_Y-e.sz,e.y+GH*.1);burst(e.x,e.y,enemyCol(e),8,GH*.05);
       }
     }
+    // SPITTER: spits at the triangle every few seconds once it is on the field
+    if(e.spitT!==undefined&&!frozen&&e.hp>0&&e.y>GH*HUD_TOP){
+      e.spitT-=dt;
+      if(e.spitT<=0){e.spitT=ENEMY_TYPES.spitter.spit;if(e.y>=GH*ECO.spitStop)e.spitN=(e.spitN||0)+1;spits.push({x:e.x,y:e.y+e.sz*.5,atk:e.atk,col:enemyCol(e)});}
+    }
     // GHOST: fades out for a moment every few seconds; bullets pass through it while it is faded (blasts still hit)
     if(e.ghostT!==undefined&&!frozen&&e.hp>0&&e.y>GH*HUD_TOP){
       e.ghostT-=dt;
@@ -2750,7 +2778,7 @@ runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.
         burst(e.x,e.y,C.hot,8,GH*.06);
       }
     }
-    const spd=frozen||e.clung||e.stunT>0?0:e.spd*(e.slowT>0?1-st.slowAmt:1)*evSpeedMul(e);
+    const spd=frozen||e.clung||e.stunT>0||(e.spitT!==undefined&&e.y>=GH*ECO.spitStop&&(e.spitN||0)<ECO.spitN)?0:e.spd*(e.slowT>0?1-st.slowAmt:1)*evSpeedMul(e);
     e.y+=(spd+e.kbVy)*dt;   // knockback moves frozen enemies too (STASIS + NOVA / bombs / KNOCKBACK)
     if(e.hitFlash>0)e.hitFlash-=dt;
     if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e,st);}
@@ -2787,7 +2815,7 @@ function runShatter(st){
       const d=(o.x-b.x)**2+(o.y-b.y)**2;if(d<=r2)near.push([d,o]);
     }
     near.sort((p,q)=>p[0]-q[0]);
-    for(const [,o] of near.slice(0,ECO.shatterMax)){hurt(o,b.dmg*(o.boss?.25:1),0,'shatter');o.slowT=Math.max(o.slowT,ECO.slowTime);}
+    for(const [,o] of near.slice(0,ECO.shatterMax)){hurt(o,b.dmg*(o.boss?.25:1),0,'shatter');if(ECO.shatterSlow>0)o.slowT=Math.max(o.slowT,ECO.slowTime*ECO.shatterSlow);}
     novas.push({x:b.x,y:b.y,life:1,col:C.a2,r:GW*SHATTER_R});snd('shatter');burst(b.x,b.y,C.a2,10,GH*.08);
   }
 }
@@ -2884,6 +2912,8 @@ function enemyPath(type,s){
   else if(type==='ghost'){cx.moveTo(-s,s);cx.lineTo(-s,-s*.2);cx.arc(0,-s*.2,s,Math.PI,0);cx.lineTo(s,s);cx.lineTo(s*.5,s*.6);cx.lineTo(0,s);cx.lineTo(-s*.5,s*.6);}
   else if(type==='warden'){for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5;cx.lineTo(Math.cos(a)*s*1.1,Math.sin(a)*s*1.1);}}
   else if(type==='mender'){const k=s*.38;cx.moveTo(-k,-s);cx.lineTo(k,-s);cx.lineTo(k,-k);cx.lineTo(s,-k);cx.lineTo(s,k);cx.lineTo(k,k);cx.lineTo(k,s);cx.lineTo(-k,s);cx.lineTo(-k,k);cx.lineTo(-s,k);cx.lineTo(-s,-k);cx.lineTo(-k,-k);}
+  else if(type==='spitter'){cx.moveTo(-s,-s);cx.lineTo(s,-s);cx.lineTo(s*.65,s*.35);cx.lineTo(s*.25,s*.35);cx.lineTo(0,s*1.1);cx.lineTo(-s*.25,s*.35);cx.lineTo(-s*.65,s*.35);}
+  else if(type==='scorcher'){cx.moveTo(0,-s*1.2);cx.lineTo(s*.45,-s*.4);cx.lineTo(s,s*.2);cx.lineTo(s*.7,s);cx.lineTo(-s*.7,s);cx.lineTo(-s,s*.2);cx.lineTo(-s*.45,-s*.4);}
   else if(type==='blinker'){cx.moveTo(-s,-s);cx.lineTo(s,-s);cx.lineTo(s*.2,0);cx.lineTo(s,s);cx.lineTo(-s,s);cx.lineTo(-s*.2,0);}
   else if(type==='boss'){for(let i=0;i<16;i++){const a=i*Math.PI/8,r=s*(i%2?.8:1.12);cx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}}
   else{const c=s*.28;cx.moveTo(-s+c,-s);cx.lineTo(s-c,-s);cx.lineTo(s,-s+c);cx.lineTo(s,s-c);cx.lineTo(s-c,s);cx.lineTo(-s+c,s);cx.lineTo(-s,s-c);cx.lineTo(-s,-s+c);}
@@ -2898,6 +2928,8 @@ function enemyInner(type,s){
   else if(type==='plated'){cx.moveTo(-s*.5,-s*.3);cx.lineTo(0,s*.35);cx.lineTo(s*.5,-s*.3);}
   else if(type==='ghost'){cx.rect(-s*.4,-s*.35,s*.22,s*.22);cx.rect(s*.18,-s*.35,s*.22,s*.22);}
   else if(type==='mini'){}
+  else if(type==='spitter'){cx.arc(0,-s*.3,s*.3,0,Math.PI*2);}
+  else if(type==='scorcher'){cx.moveTo(0,-s*.35);cx.lineTo(s*.35,s*.55);cx.lineTo(-s*.35,s*.55);cx.closePath();}
   else if(type==='boss'){
     // core: an eye-like diamond inside a ring
     cx.arc(0,0,s*.55,0,Math.PI*2);cx.moveTo(0,-s*.34);cx.lineTo(s*.26,0);cx.lineTo(0,s*.34);cx.lineTo(-s*.26,0);cx.closePath();
@@ -3119,6 +3151,7 @@ function drawShots(st){
     cx.save();cx.globalAlpha=.25+.5*(1-e.pulseT/.7);cx.strokeStyle=C.hot;cx.shadowColor=C.hot;cx.shadowBlur=8;cx.lineWidth=1.5;cx.setLineDash([6,8]);
     cx.beginPath();cx.moveTo(e.x,e.y);cx.lineTo(triX,TRI_Y);cx.stroke();cx.restore();
   }
+  for(const s of spits){cx.save();cx.fillStyle=s.col;cx.shadowColor=s.col;cx.shadowBlur=10;cx.beginPath();cx.arc(s.x,s.y,GW*.009+1,0,Math.PI*2);cx.fill();cx.restore();}
   beams.forEach(b=>{
     cx.save();cx.lineCap='round';cx.strokeStyle=b.col;cx.shadowColor=b.col;cx.shadowBlur=22;
     cx.globalAlpha=Math.min(1,b.life*1.3);cx.lineWidth=GW*.03*b.life+2;
@@ -4432,7 +4465,7 @@ function applyFx(){
 const HELP_SHAPES={
   basic:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',runner:'M12 1l7 11-7 11-7-11z',tank:'M12 2l9 5v10l-9 5-9-5V7z',
   splitter:'M3 3h6l3 3 3-3h6v18h-6l-3-3-3 3H3z',armored:'M2 8l4-5h12l4 5v13H2z',plated:'M3 3h18v10l-9 9-9-9z',ghost:'M4 21V11a8 8 0 0 1 16 0v10l-3.5-3-2.5 3-2-3-2 3-2.5-3z',warden:'M12 2l10 7-4 12H6L2 9z',mender:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
-  blinker:'M4 3h16l-7 9 7 9H4l7-9z',elite:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',boss:'M12 1l2 4 4-2-1 4 4 1-3 3 3 3-4 1 1 4-4-2-2 4-2-4-4 2 1-4-4-1 3-3-3-3 4-1-1-4 4 2z'};
+  blinker:'M4 3h16l-7 9 7 9H4l7-9z',spitter:'M3 3h18l-4 10h-3l-2 8-2-8H7z',scorcher:'M12 1l4 8 5 5-3 8H6l-3-8 5-5z',elite:'M7 3h10l4 4v10l-4 4H7l-4-4V7z',boss:'M12 1l2 4 4-2-1 4 4 1-3 3 3 3-4 1 1 4-4-2-2 4-2-4-4 2 1-4-4-1 3-3-3-3 4-1-1-4 4 2z'};
 function enemyRow(key,col,name,text){
   const dash=key==='elite'?' stroke-dasharray="3 2"':'';
   return `<svg viewBox="0 0 24 24" style="stroke:${col}"><path d="${HELP_SHAPES[key]}"${dash}/></svg><div><b>${name}</b><br>${text}</div>`;
@@ -4473,8 +4506,10 @@ const HELP_TOPICS=[
     enemyRow('plated',r[2],T('PLATED'),T('A light shield soaks bullets until it breaks. A first look at what is coming later.')),
     enemyRow('splitter',r[2],T('SPLITTER'),T('Breaks into two small SHARDS when it dies.')),
     enemyRow('armored',r[3],T('ARMORED'),T('Bullets weaker than a tenth of its health are cut in proportion. Strong hits, blasts and BURST pellets get through.')),
+    enemyRow('spitter',r[2],T('SPITTER'),firstMeet('spitter')+T('Stops in the middle of the field and spits at you a few times, then walks on. Armor softens the spit and healing wins it back; or take it out first.')),
     enemyRow('ghost',r[1],T('GHOST'),T('Fades out for a moment: bullets pass through it. Blasts and thorns still hit.')),
     enemyRow('warden',r[2],T('WARDEN'),firstMeet('warden')+T('A strong shield soaks bullets until it breaks; thorns, blasts and BURST pellets go around it.')),
+    enemyRow('scorcher',r[3],T('SCORCHER'),firstMeet('scorcher')+T('Its touch sets you on fire: you lose a little health every second for a few seconds, and fires add up. Armor only softens the fire; healing wins it back.')),
     enemyRow('mender',r[1],T('MENDER'),firstMeet('mender')+T('Heals the enemies around it, so take it out first.')),
     enemyRow('blinker',r[3],T('BLINKER'),firstMeet('blinker')+T('Jumps forward every few seconds.')),
     enemyRow('elite',C.a2,T('ELITE'),T('A rare, tougher version of any enemy (dashed outline). Pays double coins.')),

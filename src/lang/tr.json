@@ -761,5 +761,9 @@
  "PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.": "MÜREKKEP: istemediğin bir dövmeye dokun ve ERİT'i aç. Her yeni kopyası mürekkebe dönüşür; mürekkebi istediğin dövmelere dökerek seviye atlatırsın. Daha nadir dövmeler daha çok mürekkep verir ve daha çok mürekkep ister.",
  "CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.": "Dükkândaki KRİTİK ŞANSI artık en fazla %50 (önceden %80), KRİTİK GÜCÜ en fazla x3.50 (önceden x4.50): her tarzda hasarın çoğunu kritik yapıyordu. Dövmeler kritik şansını yine %80'e taşıyabilir. Yeni sınırın üstündeki seviyelerin parası iade edildi.",
  "PIGMENT: {0}": "MÜREKKEP: {0}",
- "{0} LV{1}": "{0} LV{1}"
+ "{0} LV{1}": "{0} LV{1}",
+ "SPITTER": "SPITTER",
+ "SCORCHER": "SCORCHER",
+ "Stops in the middle of the field and spits at you a few times, then walks on. Armor softens the spit and healing wins it back; or take it out first.": "Alanın ortasında durur, sana birkaç kez tükürür, sonra yürümeye devam eder. Zırh tükürüğü yumuşatır, iyileşme kaybı geri getirir; ya da önce onu vur.",
+ "Its touch sets you on fire: you lose a little health every second for a few seconds, and fires add up. Armor only softens the fire; healing wins it back.": "Dokunuşu seni tutuşturur: birkaç saniye boyunca her saniye biraz can kaybedersin ve yangınlar üst üste biner. Zırh yangını sadece biraz yumuşatır; iyileşme kaybı geri getirir."
 }

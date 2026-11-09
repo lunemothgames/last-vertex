@@ -761,5 +761,9 @@
  "PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.": "PIGMENTO: toca un tatuaje que no quieras y activa FUNDIR. Cada copia nueva se vuelve pigmento, y lo viertes en los tatuajes que sí quieres para subirlos de nivel. Los tatuajes más raros dan y cuestan más pigmento.",
  "CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.": "PROB. CRÍTICA de la tienda ahora llega hasta 50% (antes 80%) y PODER CRÍTICO hasta x3.50 (antes x4.50): el crítico hacía la mayor parte del daño en todos los estilos. Los tatuajes aún pueden subir la prob. crítica a 80%. Los niveles por encima del nuevo límite se devolvieron en monedas.",
  "PIGMENT: {0}": "PIGMENTO: {0}",
- "{0} LV{1}": "{0} NV{1}"
+ "{0} LV{1}": "{0} NV{1}",
+ "SPITTER": "SPITTER",
+ "SCORCHER": "SCORCHER",
+ "Stops in the middle of the field and spits at you a few times, then walks on. Armor softens the spit and healing wins it back; or take it out first.": "Se detiene en medio del campo, te escupe unas cuantas veces y luego sigue avanzando. El blindaje suaviza el escupitajo y la curación lo recupera; o elimínalo primero.",
+ "Its touch sets you on fire: you lose a little health every second for a few seconds, and fires add up. Armor only softens the fire; healing wins it back.": "Su toque te prende fuego: pierdes un poco de vida cada segundo durante unos segundos, y los fuegos se acumulan. El blindaje solo suaviza el fuego; la curación lo recupera."
 }

@@ -22,6 +22,7 @@
     "diff": "node tools/sim-diff.js pace",
     "wall": "node tools/sim-diff.js wall",
     "health": "node tools/sim-health.js",
+    "home": "node tools/sim-home.js",
     "map": "node tools/wave-map.js",
     "wallet-test": "node tools/wallet-test.mjs"
   },

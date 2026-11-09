@@ -147,13 +147,14 @@ function run0(tier,maxW,o){
   // (a boss that is not killed walks on into the next waves). Everything below that depends on the wave is set at its start.
   const KD=Math.pow(.03,dt),KI=(1-KD)/Math.log(1/.03);   // knockback fades to x0.03 a second; KI = distance a push of speed 1 carries an enemy in one step
   const FD=FRAME*st.speed/Math.ceil(st.speed),frames=r=>1/(Math.ceil(1/(r*FD)-1e-9)*FD);
-  const E=[],Q=[],BOMBS=[],P=[];let SQ=[];let ew=0,M=G.NOMODS,hpB=0,atkB=0,spB=0,pool=[],tw=0,dur=0,iv=0,per=0,left=0,spawnT=0,cd=0,cv=0;
+  const E=[],Q=[],BOMBS=[],P=[];let SQ=[],SPIT=[],BURN=[];   // SPIT = SPITTER spits in flight, BURN = SCORCHER fires on the triangle (game spits / burns)
+  let ew=0,M=G.NOMODS,hpB=0,atkB=0,spB=0,pool=[],tw=0,dur=0,iv=0,per=0,left=0,spawnT=0,cd=0,cv=0;
   const mid=()=>A.midas&&A.midas.left>0?A.midas.m:1;   // MIDAS running: every coin multiplier is raised
   const pick=()=>{let r=Math.random()*tw;for(const x of pool){r-=x.w;if(r<0)return x;}return pool[0];};
   // h = size (game e.sz), w = hitbox width for BURST, x defaults to a random spot that keeps the enemy on the field (game spawnEnemy)
   // ck = game crowdK(waveNum) if the game has it: fewer, tougher enemies (health and coins per enemy raised by the same factor)
   const mk=(T,y,x)=>{const h=T.sz*GWH*(M.esz||1),m=h+.05*GWH,ck=G.crowdK?G.crowdK(w):1;return{T,x:x??m+Math.random()*(GWH-2*m),y,sc:.1,wv:w,h,w:h*1.1,hp:hpB*T.hp*ck*(M.ehp||1),max:hpB*T.hp*ck*(M.ehp||1),atk:atkB*T.atk*(M.eatk||1),sp:spB*T.spd*(M.espd||1),coin:T.coin*ck*(M.ecoin||1),ar:Math.max(T.armor||0,M.armor||0),big:T.hp>=(ECO.bigHp||Infinity),kb:0,slow:0,frz:0,boss:false,
-    sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0};};
+    sh:T.shield?hpB*T.hp*(M.ehp||1)*T.shield*(T===ENEMY_TYPES.warden?.5+.5*Math.min(1,Math.max(0,(ew-T.from)/90)):1):0,heal:T.heal||0,ht:1,blink:T.blink||0,bt:(T.blink||0)*(.5+Math.random()*.5),spit:T.spit||0,spT:(T.spit||0)*(.5+Math.random()*.5),gh:T.ghost||0,gt:(T.ghost||0)*(.5+Math.random()*.5),ph:false,rg:M.eregen||0,dv:M.dive||0,rs:M.rise||0,bz:M.berserk||0,cl:M.cling||0};};
   const d2=(a,x,y)=>(a.x-x)**2+(a.y-y)**2;
   const inBlast=(o,x,y,R)=>d2(o,x,y)<=(R+o.h*.5)**2;   // game inBlast(): the circle counts the enemy's own size
   {
@@ -191,7 +192,8 @@ function run0(tier,maxW,o){
       if(Math.random()<st.dodge){back=ECO.parryBack||2;const ps=st.parryStun??ECO.parryStun;if(ps&&!e.boss)e.stun=ps;qe('dodge');}
       // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){book('aegis',e.hp);tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
-      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;}
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;
+        if(!e.boss&&e.T&&e.T.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0)BURN.push({l:ECO.burnT,d:b/ECO.burnT});}}   // SCORCHER (game contactHit): a fire, flat ARMOR does not cut it
       tcontacts++;
       const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);
       // B6-2 test: ECO.contactDie = share of its max health an enemy loses per perimeter hit (like free thorns, pays coins); 1 = it is spent
@@ -303,6 +305,10 @@ function run0(tier,maxW,o){
     var tick=active=>{
       t+=dt;aegis=Math.max(0,aegis-dt);shock=Math.max(0,shock-dt);
       if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0,n=Math.floor(per)+(Math.random()<per%1?1:0);i<n;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
+      // SPITTER spits fly to the triangle (game updatePlay): ARMOR / DEFENSE cut them, at most ECO.spitCap of max health · SCORCHER fires burn
+      if(SPIT.length){const step=ECO.spitSpd*dt;for(const s of SPIT){const dx=triX-s.x,dy=TRI-s.y,d=Math.hypot(dx,dy);if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue;}
+        s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB));hp-=h;tdmg+=h;tdAll+=h;}SPIT=SPIT.filter(s=>!s.hit);}
+      if(BURN.length){let d=0;for(const b of BURN){d+=b.d*Math.min(dt,b.l);b.l-=dt;}BURN=BURN.filter(b=>b.l>0);hp-=d;tdmg+=d;tdAll+=d;}
       hp=Math.min(st.maxHp,hp+(st.regen+(st.regenT||0)*(1+(ECO.regenLow||0)*(1-hp/st.maxHp)))*dt);cd-=dt;   // REGEN tattoo: faster when low (game updatePlay)
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
@@ -350,6 +356,7 @@ function run0(tier,maxW,o){
         if(e.bz&&!e.bzOn&&e.hp>0&&e.hp<e.max*EVT.berserkAt){e.bzOn=1;e.atk*=EVT.berserkAtk;}
         if(e.heal&&e.hp>0){e.ht-=dt;if(e.ht<=0){e.ht=1;const r2=(.25*GWH)**2;for(const o of E)if(o.hp>0&&d2(o,e.x,e.y)<r2)o.hp=Math.min(o.max,o.hp+o.max*e.heal);}}
         if(e.blink&&e.hp>0){e.bt-=dt;if(e.bt<=0&&e.y>.1){e.bt=e.blink;e.y=Math.min(LINE-e.h,e.y+.1);}}
+        if(e.spit&&e.hp>0&&e.y>.1){e.spT-=dt;if(e.spT<=0){e.spT=e.spit;if(e.y>=ECO.spitStop)e.spN=(e.spN||0)+1;SPIT.push({x:e.x,y:e.y+e.h*.5,atk:e.atk});}}   // game: SPITTER
         if(e.gh&&e.hp>0&&e.y>.1){e.gt-=dt;if(e.gt<=0){e.ph=!e.ph;e.gt=e.gh*(e.ph?.4:1);}}
         // boss: enrages below half health (faster, shock waves and summons more often); the timers run from the moment it appears
         if(e.boss&&e.hp>0){
@@ -361,7 +368,7 @@ function run0(tier,maxW,o){
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
         }
         if(e.stun>0)e.stun-=dt;
-        const sp=e.clOn||e.stun>0?0:e.sp*(e.slow>0&&!st.slowSpd0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
+        const sp=e.clOn||e.stun>0||(e.spit&&e.y>=ECO.spitStop&&(e.spN||0)<(ECO.spitN??Infinity))?0:e.sp*(e.slow>0&&!st.slowSpd0?1-st.slowAmt:1)*evMul(e);e.y+=sp*dt+kb0*KI;
         // the perimeter is touched by the enemy's front edge; it is put back just in front of the line
         if(e.clOn){
           if(e.hp>0){e.kb=0;e.y=LINE-e.h/2-.003;e.clT-=dt;
@@ -403,7 +410,7 @@ function run0(tier,maxW,o){
       // SHATTER: each burst hurts and slows the nearest enemies around it (at most ECO.shatterMax; 12 bursts a step)
       if(SQ.length){const q=SQ;SQ=[];const r2=(SHATTER_R*GWH)**2;
         for(const b of q.slice(0,12)){const near=[];for(const o of E)if(o.hp>0){const d=d2(o,b.x,b.y);if(d<=r2)near.push([d,o]);}
-          near.sort((p,q)=>p[0]-q[0]);for(const [,o] of near.slice(0,ECO.shatterMax)){hit(o,b.d*(o.boss?.25:1),'shatter');o.slow=Math.max(o.slow,ECO.slowTime);}}}
+          near.sort((p,q)=>p[0]-q[0]);for(const [,o] of near.slice(0,ECO.shatterMax)){hit(o,b.d*(o.boss?.25:1),'shatter');if(ECO.shatterSlow>0)o.slow=Math.max(o.slow,ECO.slowTime*ECO.shatterSlow);}}}
       separate();
       if(TRACE&&Math.round(t/dt)%Math.round(1/dt)===0){const L=E.filter(e=>e.hp>0&&e.y>0);FS.y+=L.reduce((a,e)=>a+e.y,0);FS.n+=L.length;FS.l+=L.filter(e=>e.y>.6).length;FS.k++;}
       if(hp<=0||t>5400){DROP.t+=t/st.speed;summary();if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp+1,...fin()};}
@@ -447,18 +454,20 @@ function run0(tier,maxW,o){
   }
 }
 
-// how deep a build gets: climb tiers while it clears the unlock wave, report effective wave + coins/hour
-const DEPTH_N=+process.env.SIM_DEPTH_N||4;   // runs per tier (was 2 — raised to cut the ±5-8% noise from a single unlucky/lucky run)
+// how deep a build gets: climb tiers while it clears the unlock wave (one run is enough, like the game's unlock), report effective wave + coins/hour.
+// eff = the MEAN wave of the runs at the last tier (since 2026-11-09; was the best run, which hid survival losses: tank without REGEN
+// read -9 waves at most, the mean at a fixed tier -8..-23%). SIM_DEPTHMAX=1 = the old best-run reading; effMax is always returned.
+const DEPTH_N=+process.env.SIM_DEPTH_N||4,DEPTHMAX=process.env.SIM_DEPTHMAX==='1';   // runs per tier (was 2 — raised to cut the ±5-8% noise from a single unlucky/lucky run)
 function depth(maxTier=40){
-  let best=0,cph=0,t=1,spread=0;
+  let best=0,bestMax=0,cph=0,t=1,spread=0;
   for(;t<=maxTier;t++){
     const r=[];for(let i=0;i<DEPTH_N;i++)r.push(run(t,TIERS.unlockWave+10));
-    const ws=r.map(x=>x.w),w=Math.max(...ws);best=(t-1)*TIERS.offset+w;
+    const ws=r.map(x=>x.w),w=Math.max(...ws),wm=ws.reduce((a,x)=>a+x,0)/ws.length;best=(t-1)*TIERS.offset+(DEPTHMAX?w:wm);bestMax=(t-1)*TIERS.offset+w;
     spread=Math.max(...ws)-Math.min(...ws);
     cph=Math.max(cph,r.reduce((s,x)=>s+x.coins,0)/r.reduce((s,x)=>s+x.t,0)*3600);
     if(w<TIERS.unlockWave)break;
   }
-  return{eff:best,tier:Math.min(t,maxTier),cph,spread};
+  return{eff:+best.toFixed(1),effMax:bestMax,tier:Math.min(t,maxTier),cph,spread};
 }
 // required by another tool (tools/referee.js): hand over the builds and the run code, skip the command line below
 if(require.main!==module){module.exports={PU,upCost,ALLCAP,CAPPED,ALLSLOW,weeklyMods:k=>G.combineMods(k),TAT_TYPES:G.TAT_TYPES,MUTATORS:G.MUTATORS,BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
@@ -617,6 +626,21 @@ if(process.argv[2]==='shopcard'){
       r.c=m.c/b.c*(id==='mix'?dayInc(G.permVal('offline'))/dayInc(v0):1);}}   // the mix may raise IDLE INCOME too
     out.cases[st+' '+B]=r;}
   console.log('SHOP '+JSON.stringify(out));
+  process.exit(0);
+}
+
+// homecard: what each tattoo is worth IN ITS OWN BUILD (the card plays a tattoo alone; defence tattoos work together, so alone they read
+// dead while the build needs them). For every budget: the build's frontier tier T (depth()), then the MEAN wave of SIM_N runs at T-1 and T
+// (the same random numbers; a tier it always clears to the cap is skipped) with all five tattoos, and with each one taken out (its slot left empty). loss = 1 - without/with.
+//   node tools/sim.js homecard <build> [lv=5]  → HOME lines of JSON (tools/sim-home.js runs every build and prints the table)
+if(process.argv[2]==='homecard'){
+  const b=process.argv[3],LV=+process.argv[4]||5,N=+process.env.SIM_N||12,BUD=(process.env.SIM_BUDGETS||'1e6,1e8,1e10,1e12').split(',').map(Number);
+  for(const B of BUD){save.perm={};shop(b,B,{gameSpeed:1});equip(b,LV);_seed=99;DROP.t=DROP.coin=DROP.gem=0;const T=depth().tier;
+    const mean=(tier,drop)=>{equip(b,LV);if(drop){delete save.tatCol[drop];save.equipped=save.equipped.filter(x=>x!==drop);}
+      _seed=4242;DROP.t=DROP.coin=DROP.gem=0;let w=0;for(let i=0;i<N;i++)w+=run(tier,TIERS.unlockWave+10).w;return w/N;};
+    for(const tier of [T-1,T]){if(tier<1)continue;const full=mean(tier);if(full>TIERS.unlockWave+9.5)continue;const loss={};   // a tier it always clears says nothing
+      for(const id of BUILDS[b].tat)loss[id]=+(1-mean(tier,id)/full).toFixed(3);
+      console.log('HOME '+JSON.stringify({b,B,tier,full:+full.toFixed(1),loss}));}}
   process.exit(0);
 }
 

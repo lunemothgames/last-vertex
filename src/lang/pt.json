@@ -761,5 +761,9 @@
  "PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.": "PIGMENTO: toque numa tatuagem que você não quer e ligue DERRETER. Cada cópia nova vira pigmento, e você o coloca nas tatuagens que quer para subir de nível. Tatuagens mais raras dão e custam mais pigmento.",
  "CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.": "CHANCE CRÍTICA da loja agora vai até 50% (antes 80%) e PODER CRÍTICO até x3.50 (antes x4.50): o crítico fazia a maior parte do dano em todos os estilos. As tatuagens ainda podem levar a chance crítica a 80%. Os níveis acima do novo limite foram devolvidos em moedas.",
  "PIGMENT: {0}": "PIGMENTO: {0}",
- "{0} LV{1}": "{0} NV{1}"
+ "{0} LV{1}": "{0} NV{1}",
+ "SPITTER": "SPITTER",
+ "SCORCHER": "SCORCHER",
+ "Stops in the middle of the field and spits at you a few times, then walks on. Armor softens the spit and healing wins it back; or take it out first.": "Para no meio do campo, cospe em você algumas vezes e depois segue em frente. A armadura suaviza o cuspe e a cura recupera a perda; ou elimine-o primeiro.",
+ "Its touch sets you on fire: you lose a little health every second for a few seconds, and fires add up. Armor only softens the fire; healing wins it back.": "O toque dele te incendeia: você perde um pouco de vida a cada segundo por alguns segundos, e os fogos se acumulam. A armadura só suaviza o fogo; a cura recupera a perda."
 }

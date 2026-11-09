@@ -26,7 +26,8 @@ function gameFile(v){
   return f;}
 const SIDES=A.before?[['before',gameFile(A.before)],['after',gameFile(A.after)]]:[['now',gameFile(A.after)]];
 const hours=+A.hours||168,days=+A.days||30;
-const builds=(A.builds||(cmd==='pace'?'offense,swarm,tank,thornsTank,bruiser,active,control,shatter,chillNoKb,reaper,farm,greedy':'offense,active,tank')).split(',');
+// pace with SIM_ECON=1 also plays `drifter` (a player without a plan, 2026-11-09) as a "real player" row, left out of the median change
+const REAL=['drifter','switcher'],builds=(A.builds||(cmd==='pace'?'offense,swarm,tank,thornsTank,bruiser,active,control,shatter,chillNoKb,reaper,farm,greedy'+(process.env.SIM_ECON==='1'?',drifter':''):'offense,active,tank')).split(',');
 const types=(A.types||'short,normal').split(',');
 const ROWS=cmd==='pace'?builds.map(b=>[b]):types.flatMap(t=>builds.map(b=>[t,b]));
 const res={};   // res[side][row key][seed] = parsed PACE / DAYS line (every side exists even when all its runs fail)
@@ -68,7 +69,7 @@ function finish(){
     console.log(`== pace ${head} · ${hours} h · ${REPS} seeds · effective wave after N hours (mean${note})`);
     console.log('build'.padEnd(11)+AT.map(h=>(h+'h').padStart(cmp?19:7)).join(''));
     for(const [b] of ROWS)console.log(b.padEnd(11)+AT.map(h=>cell(r=>r.at[h],b,2,0,cmp?19:7)).join(''));
-    if(cmp){const h=AT[AT.length-1],ch=ROWS.map(([b])=>{const B=res.before[b]||{},F=res.after[b]||{};const S=Object.keys(B).filter(s=>F[s]);
+    if(cmp){const h=AT[AT.length-1],ch=ROWS.filter(([b])=>!REAL.includes(b)).map(([b])=>{const B=res.before[b]||{},F=res.after[b]||{};const S=Object.keys(B).filter(s=>F[s]);
         return S.length?mean(S.map(s=>(F[s].at[h]||0)/(B[s].at[h]||1))):1;});
       console.log(`\nat ${h} h: median change x${ch.slice().sort((a,b)=>a-b)[ch.length>>1].toFixed(3)} · smallest x${Math.min(...ch).toFixed(3)} · biggest x${Math.max(...ch).toFixed(3)}`);}
   }else{

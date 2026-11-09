@@ -7,7 +7,9 @@
 // min / median / max / max÷min at 168h. A healthy spread is about x1.7; the old game was x2.65.
 const {spawn}=require('child_process');
 const label=process.argv[2],hours=process.argv[3]||'336';
-const builds=(process.argv[4]||'offense,swarm,tank,thornsTank,bruiser,active,control,shatter,chillNoKb,reaper,farm,greedy,bomb').split(',');
+// with SIM_ECON=1 the default list also plays `drifter` (sim.js: a player without a plan, added 2026-11-09 with Ahmet) as a "real player"
+// line; it is left out of the min / median / max (those compare the styles)
+const REAL=['drifter','switcher'],builds=(process.argv[4]||'offense,swarm,tank,thornsTank,bruiser,active,control,shatter,chillNoKb,reaper,farm,greedy,bomb'+(process.env.SIM_ECON==='1'?',drifter':'')).split(',');
 const REPS=+process.env.SIM_REPS||3;
 const res={};   // res[build] = array of REPS per-seed PACE results
 let running=0,jobs=[];for(const b of builds)for(let s=1;s<=REPS;s++)jobs.push([b,s]);
@@ -36,7 +38,7 @@ function finish(){
     // highest tier opened at each checkpoint (lowest seed: what every seed reached)
     const tierStr=AT.filter(h=>h<=+hours).map(h=>{const a=runs.map(r=>(r.tier||{})[h]).filter(x=>x!==undefined);return a.length?'T'+Math.min(...a):'-';}).join('/');
     console.log(b.padEnd(10)+atStr+hitStr+'   '+tierStr);
-    const a168=runs.map(r=>r.at[168]||0);
+    const a168=runs.map(r=>r.at[168]||0);if(REAL.includes(b))continue;
     vals.push(mean(a168));spreads.push(halfRange(a168));
   }
   const mx=Math.max(...vals),mn=Math.min(...vals),md=vals.slice().sort((a,b)=>a-b)[Math.floor(vals.length/2)];

@@ -1302,6 +1302,7 @@ const ECO={
   bossShield:.35, bossRegen:.012,       // BULWARK boss: shield as a share of max health · REGENERATOR boss: heal per second (self and neighbours)
   bossPulse:.35,  bossPulseEvery:5, bossPulseFirst:3.5, // boss shock wave: boss attack x this, first after 3.5 s, then every 5 s (3.25 s enraged); armor, parry and AEGIS work on it like on a perimeter hit
   bossPulseCap:.25,                     // ...but one pulse takes at most a quarter of max health (it used to one-shot attack builds)
+  hitCapMin:.25,                        // 0.7.4: one perimeter touch (or boss pulse) takes at most (1 - your block share) of max health, never less than this: no ARMOR = no limit (one touch can kill), a defence player is never one-shot
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
@@ -1500,7 +1501,7 @@ const PERM_UPGRADES=[
   {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
    info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
-   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing.'},
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing. And one hit can never take more than what you do not block: with 50% blocked a hit takes at most half your health, with 75% (ARMOR and the DEFENSE tattoo together) at most a quarter. Without armor one hit can take it all.'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
    info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
@@ -1772,6 +1773,7 @@ function stats(){
     regenT:    maxHp*tb('regen').pct*M.regen*healM,
     healM,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
+    hitCap:    Math.max(ECO.hitCapMin,1-cutRed(reduce)),   // share of max health one touch can take at most = the share not blocked (ARMOR + DEFENSE tattoo, as the shop shows it)
     block:     maxHp*ECO.blockK*armorRed(v('defense')),   // ARMOR's flat part: cut from every hit after the share above
     blockA:    ECO.blockA*armorRed(v('defense')),          // ...plus this x atkAt(effWave()) at the moment of the hit (blockNow)
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
@@ -2462,7 +2464,7 @@ function contactHit(e,st,mul){
     for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,GW*ECO.aegisPushR))knock(o,1.5);
     novas.push({x:e.x,y:LINE_Y,life:1,col:C.a2,r:GW*ECO.aegisPushR});
   }else{
-    const dmg=Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-blockNow(st));
+    const dmg=Math.min(st.maxHp*st.hitCap,Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-blockNow(st)));
     hp-=dmg;runDmgTaken+=dmg;{const k=e.boss?'boss:'+(e.kind||'classic'):e.type;runHitBy[k]=(runHitBy[k]||0)+dmg;}snd('breach');hint('breach');
     if(!e.boss&&ENEMY_TYPES[e.type]?.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0){burns.push({left:ECO.burnT,dps:b/ECO.burnT});burst(e.x,LINE_Y,C.hot,10,GH*.05);}}
     burst(e.x,LINE_Y,C.hot,8,GH*.06);
@@ -2773,7 +2775,7 @@ function updatePlay(dt){
         e.pulseT=ECO.bossPulseEvery*(e.enraged?.65:1);e.pulse=1;burst(e.x,e.y,C.hot,14,GH*.1);const bm={x1:e.x,y1:e.y,x2:triX,y2:TRI_Y,life:1,col:C.hot};beams.push(bm);
         if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('PARRY'),C.a2);}
         else if(st.aegisCD>0&&aegisT<=0){bm.col=C.a2;aegisT=st.aegisCD;snd('block');spawnText(triX,LINE_Y-GH*.05,T('BLOCK'),C.a2);}
-        else{const d=Math.min(st.maxHp*ECO.bossPulseCap,Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-blockNow(st)));hp-=d;{const k='boss:'+(e.kind||'classic');runHitBy[k]=(runHitBy[k]||0)+d;}
+        else{const d=Math.min(st.maxHp*Math.min(ECO.bossPulseCap,st.hitCap),Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-blockNow(st)));hp-=d;{const k='boss:'+(e.kind||'classic');runHitBy[k]=(runHitBy[k]||0)+d;}
 runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
       }
       e.summonT-=dt;
@@ -4870,7 +4872,8 @@ const INBOX=[
     {text:'PIGMENT: tap a tattoo you do not want and turn MELT on. Every new copy of it becomes pigment, and you pour pigment into the tattoos you do want to level them up. Rarer tattoos give and cost more pigment.'},
     {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'},
     {text:'SHATTER\'s ice bursts are smaller and no longer slow the enemies around them: it was far ahead of every other style.'},
-    {text:'LANCE hits about four times as hard. SLAYER also deals extra damage to WARDEN, and EXECUTE breaks a worn shield at once, a boss\'s too: shields stopped most styles late in the game.'}]},
+    {text:'LANCE hits about four times as hard. SLAYER also deals extra damage to WARDEN, and EXECUTE breaks a worn shield at once, a boss\'s too: shields stopped most styles late in the game.'},
+    {text:'ARMOR now also limits how much one hit can take: never more than the share you do not block (at most a quarter of your health with 75% blocked). Defence styles are no longer killed by a single boss touch. Without armor one hit can still take it all.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},

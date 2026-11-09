@@ -206,7 +206,7 @@ function run0(tier,maxW,o){
       if(Math.random()<st.dodge){back=ECO.parryBack||2;const ps=st.parryStun??ECO.parryStun;if(ps&&!e.boss)e.stun=ps;qe('dodge');}
       // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){book('aegis',e.hp);tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
-      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);if(st.hitCap)taken=Math.min(taken,st.maxHp*st.hitCap);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
         if(!e.boss&&e.T&&e.T.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0)BURN.push({l:ECO.burnT,d:b/ECO.burnT});}}   // SCORCHER (game contactHit): a fire, flat ARMOR does not cut it
       tcontacts++;
       const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);
@@ -377,7 +377,7 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}}}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);if(st.hitCap)d=Math.min(d,st.maxHp*st.hitCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
@@ -486,7 +486,7 @@ function depth(maxTier=40){
   return{eff:+best.toFixed(1),effMax:bestMax,tier:Math.min(t,maxTier),cph,spread};
 }
 // required by another tool (tools/referee.js): hand over the builds and the run code, skip the command line below
-if(require.main!==module){module.exports={ENEMY_TYPES,PU,upCost,ALLCAP,CAPPED,ALLSLOW,weeklyMods:k=>G.combineMods(k),TAT_TYPES:G.TAT_TYPES,MUTATORS:G.MUTATORS,BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
+if(require.main!==module){module.exports={G,ENEMY_TYPES,PU,upCost,ALLCAP,CAPPED,ALLSLOW,weeklyMods:k=>G.combineMods(k),TAT_TYPES:G.TAT_TYPES,MUTATORS:G.MUTATORS,BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
 
 // trace: one run, wave by wave (health at the end of the wave, kills, perimeter contacts, damage taken)
 //   node tools/sim.js trace <build> <budget> <tier> [lv=5]

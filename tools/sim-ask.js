@@ -15,7 +15,7 @@
 //               taken wherever it appears (it does not matter).
 //   luck    S6  How bad is the unluckiest player? 10 seeds (SIM_REPS) per build: median against the worst. ALARM: worst effective wave
 //               under 80% of the median, or its first own tattoo 2x later than the median (and after day 21).
-//   extras  S7  NEXT RUN boosts (each one, all of them, none: do they pay for themselves?), gems spent on themes (how much slower),
+//   extras  S7  NEXT RUN boosts (each one, all of them, none: do they pay for themselves?), gems spent on themes (how much slower), · boosts=a,b measures only those
 //               gems bought with money (how much faster). ALARM: a boost that makes progress slower · all boosts 10%+ faster (must-buy).
 const {spawn}=require('child_process'),path=require('path'),fs=require('fs'),os=require('os');
 const SIM=path.join(__dirname,'sim.js');
@@ -158,10 +158,10 @@ async function luck(){
 // ── S7 extras ──
 async function extras(){
   const D=+A.xdays||60,CK=[14,30,D],B=(A.builds||'offense,tank,swarm').split(','),R=+A.reps||2;
-  const BO=['lucky','power','berserk','rapid','shield','invincible','focus'];
+  const BO=(A.boosts||'lucky,power,berserk,rapid,shield,invincible,focus').split(',');   // boosts=a,b: only these
   const V0=[['none',{}],...BO.map(b=>[b,{SIM_BOOST:b}]),['all boosts',{SIM_BOOST:'all'}],['2 themes',{SIM_THEMES:'2'}],['all themes',{SIM_THEMES:'99'}],
     ['starter pack',{SIM_PAID:'1:300'}],['spender',{SIM_PAID:'1:300,7:1200,14:1200,30:1200,45:1200'}]];
-  const V=A.only==='boosts'?V0.filter(([n])=>n==='none'||BO.includes(n)||n==='all boosts'):V0;   // only=boosts: the boosts alone (to re-measure with more seeds)
+  const V=A.only==='boosts'?V0.filter(([n])=>n==='none'||BO.includes(n)||n==='all boosts'&&!A.boosts):V0;   // only=boosts: the boosts alone (to re-measure with more seeds)
   L(`\nS7 EXTRAS: effective wave against a player who uses none of them (normal player, ${D} days, median of ${B.length} builds x ${R} seeds)`);
   const jobs=await runAll(V.flatMap(([n,env])=>B.flatMap(b=>[...Array(R).keys()].map(s=>Object.assign(cal(b,s+1,env,D),{v:n})))));
   const eff=(v,d)=>{const r=[];for(const b of B)for(let s=1;s<=R;s++){const j=jobs.find(j=>j.v===v&&j.b===b&&j.seed===s),j0=jobs.find(j=>j.v==='none'&&j.b===b&&j.seed===s);

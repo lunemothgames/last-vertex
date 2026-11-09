@@ -1294,7 +1294,7 @@ function updateMusicVolume(){if(_musGain)_musGain.gain.value=(save.settings.musO
 // Built for months/years: enemy power grows slowly per wave, flat upgrades get
 // polynomially pricier (no hard wall), capped upgrades get exponentially pricier.
 const ECO={
-  enemyHp:1,      enemyHpGrowth:1.044,  // per (effective) wave (1.042 until 2026-11-07: 12 tattoo slots)
+  enemyHp:1,      enemyHpGrowth:1.0435, // per (effective) wave (1.042 until 2026-11-07: 12 tattoo slots; 1.044 until 0.7.4: SLOW POWER lost its damage part, every build ~8% slower at 168 h, this gives it back)
   enemyAtk:.78,    enemyAtkGrowth:1.038,
   rookieRuns:3, rookieMul:.6,   // the first runs in Tier 1: enemies come 1/.6 as often with .6 of the health, hit and coins (same total, busier screen)
   tatPow:.7,     // every tattoo's strength x this (see tatFx): .7 since 12 slots (2026-11-07; 1 = the 5-slot values)
@@ -1503,7 +1503,7 @@ const PERM_UPGRADES=[
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
    info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing. And one hit can never take more than what you do not block: with 50% blocked a hit takes at most half your health, with 75% (ARMOR and the DEFENSE tattoo together) at most a quarter. Without armor one hit can take it all.'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
-   info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a quarter, plus half of what is above 100% (36% at most: 3 touches).'},
+   info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take a twentieth, plus a tenth of what is above 100% (7.2% at most: about 14 touches).'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
    info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo; above that, a parried enemy stands still longer.'},
   {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'salvage',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
@@ -1513,7 +1513,7 @@ const PERM_UPGRADES=[
   {id:'slowChance',cat:'def', name:'SLOW CHANCE',icon:'snow',base:30,  g:1.1,  max:133,  start:0,  step:.006, fx:v=>pc(v),
    info:'Chance that a bullet slows the enemy it hits for 4 seconds. How much it slows is set by SLOW POWER. Max 80%; slow chance from tattoos above that can freeze the enemy for 1 second (not bosses).'},
   {id:'slowAmt',   cat:'def', name:'SLOW POWER', icon:'gauge',  base:30,  g:1.1,  max:40,  start:0,  step:.005, fx:v=>pc(v),   // v0.7.3: max 50% → 20% (every build bought it late: x1.27 pace)
-   info:'How much slower a slowed enemy moves, max 20%. Slowed enemies also take that much extra bullet damage: 20% slower = +20% damage. The FROST tattoo adds more on top (up to 50% slower), and slow power above 50% still adds damage.'},
+   info:'How much slower a slowed enemy moves, max 20%. The FROST tattoo adds more on top (up to 50% slower), and slow power above 50% adds bullet damage against slowed enemies.'},
   // ── utility
   {id:'coinMult',  cat:'util',name:'COIN BONUS', icon:'coins', base:60,  p:2.6,  max:4500, start:1,  step:.02,  fx:v=>'x'+v.toFixed(2),
    info:'Multiplies every coin you earn: kills, bosses, wave bounty, coin drops and idle income.'},
@@ -1801,8 +1801,9 @@ function stats(){
     slowChance:Math.min(.8,slowCRaw),
     freeze:    Math.max(0,slowCRaw-.8)*ECO.freezeK,   // chance a hit freezes a normal enemy for ECO.freezeT s
     slowAmt:   Math.min(.5,slowARaw),
-    // slowed / frozen enemies take extra bullet damage: the slow power itself, plus the FROST tattoo
-    frostVuln: 1+slowARaw+tb('frost').vuln,
+    // slowed / frozen enemies take extra bullet damage: the FROST tattoo, plus slow power above the 50% cap (0.7.4: slow power below it no
+    // longer adds damage: slowing AND damage multiplied each other, the frost family led every other style; fine.js: shatter/control back to offense)
+    frostVuln: 1+Math.max(0,slowARaw-.5)+tb('frost').vuln,
     rangeY:    GH*(B?Math.max(BURST.rangeMin,BURST.range-(v('range')+tb('reach').r)*BURST.rangeUp):Math.max(ECO.rangeMin,ECO.rangeBase-v('range')-tb('reach').r)),
     pierce:    v('pierce'),
     lanceEvery:Math.round(tb('piercer').every||0),   // LANCE tattoo (id piercer): every Nth shot is a lance...
@@ -3682,7 +3683,7 @@ const TEMP_UPGRADES=[
   {id:'shield',    name:'SHIELD UP',  icon:'shieldp',desc:'x1.4 max HP',          base:25,info:'Multiplies max health by 1.4 for one run.'},
   {id:'lucky',     name:'LUCKY',      icon:'clover', desc:'x1.5 coins',           base:35,info:'Multiplies all coins earned by 1.5 for one run.'},
   {id:'berserk',   name:'BERSERK',    icon:'swords', desc:'x1.25 dmg · x1.2 spd', base:45,info:'x1.25 damage and x1.2 fire rate for one run.'},
-  {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:25,info:'Adds 8% critical hit chance for one run.'},
+  {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:10,info:'Adds 8% critical hit chance for one run.'},
   {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:60,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
 const tempCost=u=>boostPrice(u.base,bestEffWave());
@@ -4873,6 +4874,8 @@ const INBOX=[
     {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'},
     {text:'SHATTER\'s ice bursts are smaller and no longer slow the enemies around them: it was far ahead of every other style.'},
     {text:'LANCE hits about four times as hard. SLAYER also deals extra damage to WARDEN, and EXECUTE breaks a worn shield at once, a boss\'s too: shields stopped most styles late in the game.'},
+    {text:'The FOCUS boost costs less: it brought less than it cost.'},
+    {text:'SLOW POWER now only slows: below 50% it no longer adds damage. Extra damage against slowed and frozen enemies comes from the FROST tattoo (and slow power above 50%). Slowing and damage stacked on each other, so frost styles were far ahead of all others. Enemy health also grows a little slower from wave to wave, so every other style keeps its pace.'},
     {text:'ARMOR now also limits how much one hit can take: never more than the share you do not block (at most a quarter of your health with 75% blocked). Defence styles are no longer killed by a single boss touch. Without armor one hit can still take it all.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},

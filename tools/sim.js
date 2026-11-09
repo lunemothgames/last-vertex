@@ -16,7 +16,11 @@ const fs=require('fs'),path=require('path');
 let _seed=((+process.env.SIM_SEED||1)>>>0)||1;
 function rand(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;_seed>>>=0;return _seed/4294967296;}
 Math.random=rand;
-const HUMAN=+process.env.SIM_HUMAN||0;   // reaction time in real seconds for active tattoos and bombs (0 = the perfect player)   // the game's own copied-in code (via `new Function`) also calls Math.random(), so this seeds it too
+// SIM_AIM=k: a bomb lands up to k x its radius away from the best spot (random direction; 0 = the perfect aim)
+// SIM_SKILL=normal: a normal-skill player (placeholder until real data: taps 1.5 s late, bombs up to 0.4 x the radius off); SIM_HUMAN / SIM_AIM win
+const SKILLS={perfect:{h:0,a:0},normal:{h:1.5,a:.4}},SKILL=SKILLS[process.env.SIM_SKILL||'perfect'];if(!SKILL)throw new Error('unknown SIM_SKILL '+process.env.SIM_SKILL);
+let AIM=process.env.SIM_AIM!==undefined?+process.env.SIM_AIM:SKILL.a;
+let HUMAN=process.env.SIM_HUMAN!==undefined?+process.env.SIM_HUMAN:SKILL.h;   // reaction time in real seconds for active tattoos and bombs (0 = the perfect player)   // the game's own copied-in code (via `new Function`) also calls Math.random(), so this seeds it too
 // SIM_SRC=<file> measures another copy of the game (e.g. an older version) with the same builds
 const src=fs.readFileSync(process.env.SIM_SRC||path.join(__dirname,'..','src','index.src.html'),'utf8');
 const cut=(a,b)=>{const i=src.indexOf(a),j=src.indexOf(b,i+1);if(i<0||j<0)throw new Error('marker '+a);return src.slice(i,j);};
@@ -134,9 +138,14 @@ function run0(tier,maxW,o){
   // TOT.by = damage by source (health and shields really taken, overkill not counted): shot / multishot / twin / bounce / pierce / lance /
   // overkill (REACH carry) / crit (the crit part of a bullet) / chill (the slowed-enemy bonus part) / overdrive (the extra fire rate's part) /
   // a tattoo id for its own hits (thorns, arc, nova, logic_bomb …) / contact (enemies that die on the line). Read by tools/sim-health.js.
-  const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0,by:{}},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
-    book=(k,v)=>{if(v>0)TOT.by[k]=(TOT.by[k]||0)+v;},
-    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE,by:TOT.by});
+  // TOT.hurt = damage TAKEN by source (enemy type id, 'boss', 'boss pulse', 'spitter', 'scorcher burn'), TOT.big = the biggest single hit
+  // as a share of max health; hiT[0/1] = last time health was at 80% / 50%+ (fin: s80 / s50 = real seconds from there to death).
+  // Bookkeeping only (no random numbers): results stay the same. Read by tools/sim-ask.js feel.
+  const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0,by:{},hurt:{},big:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
+    book=(k,v)=>{if(v>0)TOT.by[k]=(TOT.by[k]||0)+v;},hiT=[0,0],
+    ouch=(k,v,one)=>{if(v>0){TOT.hurt[k]=(TOT.hurt[k]||0)+v;if(one&&v/st.maxHp>TOT.big)TOT.big=v/st.maxHp;}},
+    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE,by:TOT.by,hurt:TOT.hurt,big:TOT.big,
+      ...(hp<=0?{s80:(t-hiT[0])/st.speed,s50:(t-hiT[1])/st.speed}:{})});
   const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act||TT[id].auto)A[id]={...tb(id),cd:0,left:0};
@@ -192,7 +201,7 @@ function run0(tier,maxW,o){
       if(Math.random()<st.dodge){back=ECO.parryBack||2;const ps=st.parryStun??ECO.parryStun;if(ps&&!e.boss)e.stun=ps;qe('dodge');}
       // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){book('aegis',e.hp);tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
-      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
         if(!e.boss&&e.T&&e.T.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0)BURN.push({l:ECO.burnT,d:b/ECO.burnT});}}   // SCORCHER (game contactHit): a fire, flat ARMOR does not cut it
       tcontacts++;
       const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);
@@ -307,8 +316,8 @@ function run0(tier,maxW,o){
       if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0,n=Math.floor(per)+(Math.random()<per%1?1:0);i<n;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
       // SPITTER spits fly to the triangle (game updatePlay): ARMOR / DEFENSE cut them, at most ECO.spitCap of max health · SCORCHER fires burn
       if(SPIT.length){const step=ECO.spitSpd*dt;for(const s of SPIT){const dx=triX-s.x,dy=TRI-s.y,d=Math.hypot(dx,dy);if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue;}
-        s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB));hp-=h;tdmg+=h;tdAll+=h;}SPIT=SPIT.filter(s=>!s.hit);}
-      if(BURN.length){let d=0;for(const b of BURN){d+=b.d*Math.min(dt,b.l);b.l-=dt;}BURN=BURN.filter(b=>b.l>0);hp-=d;tdmg+=d;tdAll+=d;}
+        s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB));hp-=h;tdmg+=h;tdAll+=h;ouch('spitter',h,1);}SPIT=SPIT.filter(s=>!s.hit);}
+      if(BURN.length){let d=0;for(const b of BURN){d+=b.d*Math.min(dt,b.l);b.l-=dt;}BURN=BURN.filter(b=>b.l>0);hp-=d;tdmg+=d;tdAll+=d;ouch('scorcher burn',d);}
       hp=Math.min(st.maxHp,hp+(st.regen+(st.regenT||0)*(1+(ECO.regenLow||0)*(1-hp/st.maxHp)))*dt);cd-=dt;   // REGEN tattoo: faster when low (game updatePlay)
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
@@ -334,7 +343,8 @@ function run0(tier,maxW,o){
           const R=TT[id].r*GWH;let best=null,bn=0;
           for(const c of live){let n=0;for(const o of live)if(inBlast(o,c.x,c.y,R))n++;if(n>bn){bn=n;best=c;}}
           if(bn<3)continue;
-          TOT.bombs++;BOMBS.push({id,x:Math.max(GWH*.03,Math.min(GWH*.97,best.x)),y:Math.max(.1,best.y),at:t+.3});   // game: 0.3 s in the air
+          let bx=best.x,by=best.y;if(AIM>0){const an=Math.random()*Math.PI*2,rr=Math.random()*AIM*R;bx+=Math.cos(an)*rr;by+=Math.sin(an)*rr;}   // SIM_AIM: a human misses a little
+          TOT.bombs++;BOMBS.push({id,x:Math.max(GWH*.03,Math.min(GWH*.97,bx)),y:Math.max(.1,by),at:t+.3});   // game: 0.3 s in the air
         }
         else if(id==='overdrive'&&E.some(e=>e.y>st.rangeY)){a.left=a.dur;}
         else if(id==='midas'&&E.length>=3){a.left=a.dur;}
@@ -362,7 +372,7 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);hp-=d;tdmg+=d;tdAll+=d;}}}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}
@@ -412,6 +422,7 @@ function run0(tier,maxW,o){
         for(const b of q.slice(0,12)){const near=[];for(const o of E)if(o.hp>0){const d=d2(o,b.x,b.y);if(d<=r2)near.push([d,o]);}
           near.sort((p,q)=>p[0]-q[0]);for(const [,o] of near.slice(0,ECO.shatterMax)){hit(o,b.d*(o.boss?.25:1),'shatter');if(ECO.shatterSlow>0)o.slow=Math.max(o.slow,ECO.slowTime*ECO.shatterSlow);}}}
       separate();
+      if(hp>=st.maxHp*.8)hiT[0]=t;if(hp>=st.maxHp*.5)hiT[1]=t;
       if(TRACE&&Math.round(t/dt)%Math.round(1/dt)===0){const L=E.filter(e=>e.hp>0&&e.y>0);FS.y+=L.reduce((a,e)=>a+e.y,0);FS.n+=L.length;FS.l+=L.filter(e=>e.y>.6).length;FS.k++;}
       if(hp<=0||t>5400){DROP.t+=t/st.speed;summary();if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp+1,...fin()};}
     };
@@ -470,7 +481,7 @@ function depth(maxTier=40){
   return{eff:+best.toFixed(1),effMax:bestMax,tier:Math.min(t,maxTier),cph,spread};
 }
 // required by another tool (tools/referee.js): hand over the builds and the run code, skip the command line below
-if(require.main!==module){module.exports={PU,upCost,ALLCAP,CAPPED,ALLSLOW,weeklyMods:k=>G.combineMods(k),TAT_TYPES:G.TAT_TYPES,MUTATORS:G.MUTATORS,BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
+if(require.main!==module){module.exports={ENEMY_TYPES,PU,upCost,ALLCAP,CAPPED,ALLSLOW,weeklyMods:k=>G.combineMods(k),TAT_TYPES:G.TAT_TYPES,MUTATORS:G.MUTATORS,BUILDS,shop,equip,save,run,depth,TIERS,fmtN,reseed:s=>{_seed=(s>>>0)||1;},resetDrops:()=>{DROP.t=DROP.coin=DROP.gem=0;}};return;}
 
 // trace: one run, wave by wave (health at the end of the wave, kills, perimeter contacts, damage taken)
 //   node tools/sim.js trace <build> <budget> <tier> [lv=5]
@@ -644,6 +655,54 @@ if(process.argv[2]==='homecard'){
   process.exit(0);
 }
 
+// ── the questions added 2026-11-09 (tools/sim-ask.js runs them and grades them) ──
+// combo: is there a mix of tattoos nobody planned that beats every hand-made build? Each combo = 5 tattoos at Lv LV and the shop a sensible
+// player would pick for them (BASE + the extras of each tattoo's style, TSHOP). All measured in ONE tier T at budget B: SIM_N runs (default 8),
+// no wave cap, the same random numbers for every combo (paired): mean wave (w) and coins per hour (c).
+//   node tools/sim.js combo <B> <T|auto> <file.json: [{name?,tat:[…]} or "build name"…]> [lv=5]
+//   T=auto: the hardest tier any hand-made build reaches at B (its depth() tier), printed as a TIER line first.
+const TSHOP={thorns:DEF,aegis:DEF,defense:DEF,regen:DEF,max_hp:DEF,lifesteal:DEF,mend:DEF,dodge:DEF,shockwave:DEF,
+  frost:CTRL,stasis:{...CTRL,cooldown:1},shatter:CTRL,reach:CTRL,nova:{cooldown:2},overdrive:{cooldown:2},logic_bomb:{cooldown:2},goo_bomb:{cooldown:2},
+  virus_bomb:{cooldown:2},reaper:{execute:2},crit_chance:{critChance:1,critMult:1},crit_mult:{critChance:1,critMult:1},boss_slayer:{bossDmg:1},
+  coin_mult:COIN,luck:COIN,midas:COIN};
+const comboShop=tat=>{const x={};for(const id of tat)for(const [k,v] of Object.entries(TSHOP[id]||{}))x[k]=Math.max(x[k]||0,v);return plus(x);};
+if(process.argv[2]==='combo'){
+  const B=+process.argv[3],LV=+process.argv[6]||5,N=+process.env.SIM_N||8,list=JSON.parse(fs.readFileSync(process.argv[5],'utf8'));
+  const put=c=>{if(typeof c==='string'){BUILDS.__c=BUILDS[c];}else BUILDS.__c={shop:comboShop(c.tat),tat:c.tat};save.perm={};shop('__c',B,{gameSpeed:1});equip('__c',LV);};
+  let T=+process.argv[4];
+  // the shop as in the calendar (shopL): from Tier SLOWFROM every build also buys the SLOW pair and the cheap capped items (ALLSLOW / ALLCAP)
+  if(process.argv[4]==='auto'){T=1;for(const b of Object.keys(BUILDS).filter(n=>!n.startsWith('__'))){put(b);_seed=99;DROP.t=DROP.coin=DROP.gem=0;T=Math.max(T,depth().tier);}console.log('TIER '+JSON.stringify({B,T}));}
+  shopTier=T;
+  for(const c of list){put(c);_seed=+process.env.SIM_CSEED||4242;DROP.t=DROP.coin=DROP.gem=0;let w=0,co=0,t=0;for(let i=0;i<N;i++){const r=run(T);w+=r.w;co+=r.coins;t+=r.t;}
+    console.log('COMBO '+JSON.stringify({B,T,name:typeof c==='string'?c:c.name||null,tat:typeof c==='string'?BUILDS[c].tat:c.tat,w:+(w/N).toFixed(2),c:+(co/t*3600).toPrecision(4)}));}
+  process.exit(0);
+}
+// skill: how much does a build lose when a normal-skill player plays it (SKILLS.normal: taps late, bombs a little off) instead of the perfect one
+// all the other reports use? Like homecard: the build's frontier tier T (perfect player) and T-1, SIM_N runs (default 12), same random numbers.
+//   node tools/sim.js skill <build> [lv=5]   → SKILL lines
+if(process.argv[2]==='skill'){
+  const b=process.argv[3],LV=+process.argv[4]||5,N=+process.env.SIM_N||12,BUD=(process.env.SIM_BUDGETS||'1e6,1e8,1e10,1e12').split(',').map(Number);
+  const mean=(tier,sk)=>{HUMAN=sk.h;AIM=sk.a;_seed=4242;DROP.t=DROP.coin=DROP.gem=0;let w=0;for(let i=0;i<N;i++)w+=run(tier,TIERS.unlockWave+10).w;return w/N;};
+  for(const B of BUD){save.perm={};shop(b,B,{gameSpeed:1});equip(b,LV);HUMAN=0;AIM=0;_seed=99;DROP.t=DROP.coin=DROP.gem=0;const T=depth().tier;
+    for(const tier of [T-1,T]){if(tier<1)continue;const p=mean(tier,SKILLS.perfect);if(p>TIERS.unlockWave+9.5)continue;const n=mean(tier,SKILLS.normal);
+      console.log('SKILL '+JSON.stringify({b,B,tier,perfect:+p.toFixed(1),normal:+n.toFixed(1),loss:+(1-n/p).toFixed(3)}));}}
+  process.exit(0);
+}
+// feel: what a run is like at the tier the player is pushing (the build's frontier tier at budget B): SIM_N runs (default 12), no wave cap.
+// Run length (real minutes), waves, how the player dies (s80 = real seconds from 80% health to death; sudden = under 5 s), the biggest single
+// hit (share of max health), and the damage taken by source (enemy types, boss, boss pulse, spits, burns).
+//   node tools/sim.js feel <build> [lv=5]   → FEEL lines
+if(process.argv[2]==='feel'){
+  const b=process.argv[3],LV=+process.argv[4]||5,N=+process.env.SIM_N||12,BUD=(process.env.SIM_BUDGETS||'3e3,1e5,1e7,1e9,1e11').split(',').map(Number);
+  for(const B of BUD){save.perm={};shop(b,B,{gameSpeed:1});equip(b,LV);_seed=99;DROP.t=DROP.coin=DROP.gem=0;const T=depth().tier;
+    _seed=4242;DROP.t=DROP.coin=DROP.gem=0;const R=[];for(let i=0;i<N;i++)R.push(run(T));
+    const md=a=>{a=a.slice().sort((x,y)=>x-y);return a[a.length>>1];},hurt={};for(const r of R)for(const k in r.hurt)hurt[k]=(hurt[k]||0)+r.hurt[k];
+    const ht=Object.values(hurt).reduce((a,x)=>a+x,0)||1,dead=R.filter(r=>r.s80!==undefined);
+    console.log('FEEL '+JSON.stringify({b,B,T,min:+md(R.map(r=>r.t/60)).toFixed(1),w:+md(R.map(r=>r.w)).toFixed(0),s80:dead.length?+md(dead.map(r=>r.s80)).toFixed(1):null,
+      sudden:+(dead.filter(r=>r.s80<5).length/Math.max(1,dead.length)).toFixed(2),big:+md(R.map(r=>r.big)).toFixed(3),
+      hurt:Object.fromEntries(Object.entries(hurt).sort((x,y)=>y[1]-x[1]).map(([k,v])=>[k,+(v/ht).toFixed(3)]))}));}
+  process.exit(0);
+}
 // value: from the same starting point, put an extra 25% of the budget into ONE upgrade and measure
 // how many waves it adds (combat) or how much coins/hour (economy). Shows over/under-priced upgrades.
 if(process.argv[2]==='value'){
@@ -683,6 +742,16 @@ const PT=process.env.SIM_TYPE?PTYPES[process.env.SIM_TYPE]:null;if(process.env.S
 const env=(k,d)=>process.env[k]!==undefined&&process.env[k]!==''?+eval(process.env[k]):d;
 const DAYH=env('SIM_DAYH',PT?PT.dayH:2),AFKH=env('SIM_AFKH',PT?PT.afkH:0),SESS=env('SIM_SESS',PT?PT.sess:1),DAYS=env('SIM_DAYS',0);
 const HOURS=DAYS?DAYS*DAYH:+process.argv[2]||600,BUILD=process.argv[3]||'offense',EC=process.env.SIM_ECON==='1'||!!PT,TLV=EC?0:+process.env.SIM_TLV||0;
+// S4 (2026-11-09) players without a plan, for tools/sim-ask.js messy: `switcher` takes a random hand-made style every 14 days (its shop list and
+// its tattoos first; what was bought stays), `drifter` has no style at all: a random shop list every 7 days (weights 0-3 on every item), it
+// puts on the shiniest tattoos (rarest x level), wishes for a random one, never uses PIGMENT. Their own random numbers (SIM_SEED), so the
+// game's dice stay the same.
+const MESSY=BUILD==='switcher'||BUILD==='drifter',MSTY=['offense','swarm','tank','bruiser','bomb','active','control','reaper','farm'];
+let _ms=((+process.env.SIM_SEED||1)*7919+3)>>>0;const mr=()=>{_ms^=_ms<<13;_ms^=_ms>>>17;_ms^=_ms<<5;_ms>>>=0;return _ms/4294967296;};
+const messyRoll=()=>{if(BUILD==='switcher'){const s=BUILDS[MSTY[Math.floor(mr()*MSTY.length)]];BUILDS.switcher={shop:{...s.shop},tat:s.tat};}
+  else{const W={};for(const u of PERM_UPGRADES)if(u.id!=='autoRetry'&&u.id!=='offline'){const r=Math.floor(mr()*4);if(r)W[u.id]=r;}W.damage=W.damage||1;BUILDS.drifter={shop:W,tat:[]};}
+  if(EC)BUILDS[BUILD].shop.offline=BUILDS[BUILD].shop.offline||1;};
+if(MESSY)messyRoll();
 if(!BUILDS[BUILD])throw new Error('unknown build '+BUILD);
 if(TLV)equip(BUILD,TLV);
 const LOG=[1,2,5,10,20,42,84,168,336,600,1000,1500,2000,3000].filter(h=>h<=HOURS);
@@ -720,7 +789,8 @@ const equipBest=()=>{const own=owned(),want=BUILDS[BUILD].tat.filter(id=>own.inc
 // guaranteed ink gives it). An older game (SIM_SRC) has neither. SIM_NOGIFT=1 / SIM_NOWISH=1 turn them off.
 const NOGIFT=!!process.env.SIM_NOGIFT,NOWISH=!!process.env.SIM_NOWISH;
 const gifts=()=>{
-  if(G.wishOk&&!NOWISH){const ok=BUILDS[BUILD].tat.filter(id=>G.wishOk(id));save.wish=ok.find(id=>!G.tatOf(id).lv)||ok[0]||null;}
+  if(G.wishOk&&!NOWISH){if(BUILD==='drifter'){if(!save.wish||!G.wishOk(save.wish)){const ok=G.TAT_TYPES.map(t=>t.id).filter(id=>G.wishOk(id));save.wish=ok.length?ok[Math.floor(mr()*ok.length)]:null;}}
+    else{const ok=BUILDS[BUILD].tat.filter(id=>G.wishOk(id));save.wish=ok.find(id=>!G.tatOf(id).lv)||ok[0]||null;}}
   if(!G.giftLeft||NOGIFT)return;
   while(G.giftLeft()>0){const ids=G.giftOptsNow();if(!ids.length)break;const want=BUILDS[BUILD].tat;
     const pick=want.find(id=>ids.includes(id))||ids.slice().sort((a,b)=>G.TT[b].rar-G.TT[a].rar)[0];
@@ -729,7 +799,13 @@ const gifts=()=>{
 // one at a time only while a slot is still empty. The pity counter and the pool work as in the game's doPull().
 // v0.7.4: slots 9-12 open with tiers 3-6 (game slotSync / slotPrice); an older game (SIM_SRC) sells all 11 for gems.
 const slotP=()=>G.slotPrice?(G.slotSync(),G.slotPrice()):save.tatSlots<G.MAX_SLOTS?G.TAT_SLOT_PRICES[save.tatSlots-1]:null;
+// S7 (2026-11-09): SIM_THEMES=n = a player who buys the n cheapest THEMES as soon as the gems are there (before slots and inks);
+// SIM_PAID='day:gems,…' = gems bought with money on those days (the wallet packs: 100 / 550 / 1200, starter pack 300). Both off by default.
+const THEME_P=(()=>{try{return new Function(cut('const THEMES=','const C={}')+';return THEMES;')().map(t=>t.price).filter(x=>x>0).sort((a,b)=>a-b);}catch(e){return[];}})();
+const THEMES_N=Math.min(+process.env.SIM_THEMES||0,THEME_P.length);let themesGot=0;
+const PAID=Object.fromEntries((process.env.SIM_PAID||'').split(',').filter(Boolean).map(x=>x.split(':').map(Number)));
 const spendGems=()=>{
+  while(themesGot<THEMES_N&&save.gems>=THEME_P[themesGot]){save.gems-=THEME_P[themesGot];SPENT.theme=(SPENT.theme||0)+THEME_P[themesGot];themesGot++;}
   gifts();
   for(;;){const own=owned().length,sp=slotP(),slotNext=sp!==null&&own>save.tatSlots;
     if(slotNext&&save.gems>=sp){save.gems-=sp;SPENT.slot+=sp;if(G.slotPrice){save.slotGem++;G.slotSync();}else save.tatSlots++;continue;}
@@ -744,7 +820,7 @@ const spendGems=()=>{
 // become pigment); pigment is poured into the build's own owned tattoos, first one first, while it pays for a copy. An older game: nothing.
 // SIM_NOPIG=1 turns it off (a player who never uses it).
 const NOPIG=!!process.env.SIM_NOPIG;
-const pigment=()=>{if(!G.pourPig||NOPIG)return;const want=BUILDS[BUILD].tat;save.tatMelt={};
+const pigment=()=>{if(!G.pourPig||NOPIG||MESSY)return;const want=BUILDS[BUILD].tat;save.tatMelt={};
   for(const id of owned())if(!save.equipped.includes(id)&&!want.includes(id))save.tatMelt[id]=1;
   // a real player spreads it: one copy at a time into the build's own owned tattoo with the lowest level (ties: list order), saving up
   // when that one costs more than the pigment in hand (else rare ones never get any). SIM_PIGFIRST=1 = the old rule (all into the first listed)
@@ -784,6 +860,16 @@ const weeklyOp=()=>{if(!G.MUTATORS)return;const T=Math.max(1,G.maxUnlockedTier()
 // The field-drop cooldowns run on the real clock (game gameNow), so they also run out while the player is away: the time between
 // sessions (the day minus play and AUTO RETRY, split evenly before the SIM_SESS sessions) moves DROP.t on (AUTO RETRY runs move it themselves)
 let GAP=0,sessN=0;
+// S2 (2026-11-09) SIM_FARMCHECK=n: every n days, does an easier tier pay more? For the climbing tier and up to 3 below it: SIM_FARMN runs
+// (default 3) played (a = coins per hour of play, 3 s between runs) and, once AUTO RETRY is owned, on AUTO RETRY (f = coins per hour, its
+// waits included). The calendar's random numbers and drop clocks are put back afterwards, so the calendar itself is not changed. → DAYS fc
+const FARMCHK=+process.env.SIM_FARMCHECK||0,FARMN=+process.env.SIM_FARMN||3;
+const farmCheck=()=>{const sd=_seed,dr={...DROP},o={};
+  for(let k=0;k<=3&&tier-k>=1;k++){const T=tier-k;let c=0,t=0,ca=0,ta=0;
+    for(let i=0;i<FARMN;i++){const r=run(T);c+=r.coins;t+=r.t+3;}
+    if(autoOwned())for(let i=0;i<FARMN;i++){const r=run(T,1e9,{auto:true});ca+=r.coins;ta+=r.t+2+G.AUTO_RETRY.wait;}
+    o[T]={a:+(c/t*3600).toPrecision(3),f:ta?+(ca/ta*3600).toPrecision(3):0};}
+  _seed=sd;Object.assign(DROP,dr);return o;};
 // a new day: last night's idle income, ads, the daily reward, 8 daily quests (one every 3 h), and on every 7th day 4 weekly quests + the weekly op
 const newDay=()=>{
   if(day>0){let s=0;
@@ -794,7 +880,10 @@ const newDay=()=>{
     if(away>=ECO.offlineMinSec&&idleCps>0){const c=idleCps*G.permVal('offline')*secs*(ADS>0?2:1);bank+=c;CX.idle+=c;}
     const g=Math.max(0,ADS-(idleCps>0?1:0))*ECO.adGems;save.gems+=g;GEM.ad+=g;
   }
+  if(MESSY&&day>0&&day%(BUILD==='switcher'?14:7)===0){messyRoll();equipBest();}
+  if(PAID[day]){save.gems+=PAID[day];GEM.paid=(GEM.paid||0)+PAID[day];}
   if(DAYS)logDay();   // after last night (AUTO RETRY, idle income, ads), before this day's rewards
+  if(DAYS&&FARMCHK&&day>0&&day%FARMCHK===0)dayLog[dayLog.length-1].fc=farmCheck();
   save.idleCps=idleCps;
   const d=G.DAILY[save.daily.n%G.DAILY.length];save.daily.n++;
   if(d.g){save.gems+=d.g;GEM.daily+=d.g;}if(d.c){const c=G.dailyCoins(d.c);bank+=c;CX.daily+=c;}

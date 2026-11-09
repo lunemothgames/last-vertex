@@ -48,7 +48,8 @@ function next(){
       process.stderr.write(`\r${done}/${jobs.length} done  `);
       if(done===jobs.length)report();else next();});}
 }
-next();
+if(require.main===module)next();
+module.exports={CORE,IDSRC};   // tools/sim-ask.js reads the build cores
 
 const med=a=>{a=a.filter(x=>x!==undefined&&x!==null).sort((x,y)=>x-y);return a.length?a[a.length>>1]:undefined;};
 const pct=x=>x===undefined||isNaN(x)?'  -':String(Math.round(x*100)).padStart(3)+'%';

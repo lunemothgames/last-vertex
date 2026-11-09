@@ -119,7 +119,7 @@ async function messy(){
 // ── S5 feel ──
 async function feel(){
   L('\nS5 FEEL: a run at the tier being pushed (median of 12 runs): minutes, waves, sudden deaths, biggest hit, top damage sources');
-  const B=(A.builds||'offense,swarm,tank,bruiser,bomb,active,control,reaper,farm').split(','),rows=tagged(await runAll(B.map(b=>({b,args:['feel',b]}))),'FEEL');
+  const B=(A.builds||'offense,swarm,tank,thornsTank,bruiser,bomb,active,control,shatter,reaper,farm').split(','),rows=tagged(await runAll(B.map(b=>({b,args:['feel',b]}))),'FEEL');
   L('  build       budget  tier   min  waves  80%→dead  sudden  big hit   damage taken from');
   const share={},seen={};
   for(const r of rows){L(`  ${r.b.padEnd(10)}${pad(r.B.toExponential(0),7)}  T${String(r.T).padEnd(3)}${pad(r.min,6)}${pad(r.w,7)}${pad(r.s80===null?'-':r.s80+' s',10)}${pad(pct(r.sudden),8)}${pad(pct(r.big),9)}   `+
@@ -130,6 +130,12 @@ async function feel(){
   const low=Object.entries(share).filter(([k,v])=>v<.02&&!/burn|pulse/.test(k)&&!(SM.ENEMY_TYPES&&SM.ENEMY_TYPES[k]&&SM.ENEMY_TYPES[k].heal));
   L('  most any build takes from each source: '+Object.entries(share).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' '+pct(v).trim()).join(', '));
   for(const [k,v] of low)alarms.push(`FEEL: ${k} never does more than ${pct(v).trim()} of the damage a build takes (it does not matter)`);
+  // how the deaths came (2026-11-09, D1): one hit = a single hit took half the health or more · flood = 6+ hits from 80% health, none that big
+  L('\n  HOW THE DEATHS CAME: one hit (a single hit took 50%+ of max health) · few (2-5 hits from 80%) · flood (6+ hits) · what the falls were made of');
+  L('  build       budget  tier  one hit  few  flood  hits  in last 5 s   fall made of');
+  for(const r of rows){if(r.one===undefined)continue;const few=Math.max(0,1-r.one-r.flood);
+    L(`  ${r.b.padEnd(10)}${pad(r.B.toExponential(0),7)}  T${String(r.T).padEnd(3)}${pad(pct(r.one),8)}${pad(pct(few),5)}${pad(pct(r.flood),7)}${pad(r.hits??'-',6)}${pad(r.n5??'-',13)}   `+
+      Object.entries(r.fall||{}).slice(0,4).map(([k,v])=>k+' '+pct(v).trim()).join(', '));}
 }
 
 // ── S6 luck ──

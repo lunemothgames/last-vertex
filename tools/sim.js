@@ -142,10 +142,15 @@ function run0(tier,maxW,o){
   // as a share of max health; hiT[0/1] = last time health was at 80% / 50%+ (fin: s80 / s50 = real seconds from there to death).
   // Bookkeeping only (no random numbers): results stay the same. Read by tools/sim-ask.js feel.
   const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0,by:{},hurt:{},big:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
-    book=(k,v)=>{if(v>0)TOT.by[k]=(TOT.by[k]||0)+v;},hiT=[0,0],
-    ouch=(k,v,one)=>{if(v>0){TOT.hurt[k]=(TOT.hurt[k]||0)+v;if(one&&v/st.maxHp>TOT.big)TOT.big=v/st.maxHp;}},
+    book=(k,v)=>{if(v>0)TOT.by[k]=(TOT.by[k]||0)+v;},hiT=[0,0],FALL=[],
+    // FALL = every hit since health was last at 80%+ (cleared there): at death it says how the end came (fin: death)
+    ouch=(k,v,one)=>{if(v>0){TOT.hurt[k]=(TOT.hurt[k]||0)+v;if(one&&v/st.maxHp>TOT.big)TOT.big=v/st.maxHp;if(FALL.length<5000)FALL.push([t,v/st.maxHp,k,one?1:0]);}},
+    // the end of a run that died: n = hits since 80% health (single hits, burn ticks not counted), max = the biggest one (share of max health),
+    // n5 = hits in the last 5 real seconds, by = what the fall was made of (share of the damage since 80%)
+    deathOf=()=>{const by={};let n=0,mx=0,n5=0,tot=0;for(const [tt,v,k,one] of FALL){by[k]=(by[k]||0)+v;tot+=v;if(one){n++;if(v>mx)mx=v;if((t-tt)/st.speed<=5)n5++;}}
+      return{n,max:+mx.toFixed(3),n5,by:Object.fromEntries(Object.entries(by).map(([k,v])=>[k,+(v/(tot||1)).toFixed(3)]))};},
     fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE,by:TOT.by,hurt:TOT.hurt,big:TOT.big,
-      ...(hp<=0?{s80:(t-hiT[0])/st.speed,s50:(t-hiT[1])/st.speed}:{})});
+      ...(hp<=0?{s80:(t-hiT[0])/st.speed,s50:(t-hiT[1])/st.speed,death:deathOf()}:{})});
   const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act||TT[id].auto)A[id]={...tb(id),cd:0,left:0};
@@ -422,7 +427,7 @@ function run0(tier,maxW,o){
         for(const b of q.slice(0,12)){const near=[];for(const o of E)if(o.hp>0){const d=d2(o,b.x,b.y);if(d<=r2)near.push([d,o]);}
           near.sort((p,q)=>p[0]-q[0]);for(const [,o] of near.slice(0,ECO.shatterMax)){hit(o,b.d*(o.boss?.25:1),'shatter');if(ECO.shatterSlow>0)o.slow=Math.max(o.slow,ECO.slowTime*ECO.shatterSlow);}}}
       separate();
-      if(hp>=st.maxHp*.8)hiT[0]=t;if(hp>=st.maxHp*.5)hiT[1]=t;
+      if(hp>=st.maxHp*.8){hiT[0]=t;FALL.length=0;}if(hp>=st.maxHp*.5)hiT[1]=t;
       if(TRACE&&Math.round(t/dt)%Math.round(1/dt)===0){const L=E.filter(e=>e.hp>0&&e.y>0);FS.y+=L.reduce((a,e)=>a+e.y,0);FS.n+=L.length;FS.l+=L.filter(e=>e.y>.6).length;FS.k++;}
       if(hp<=0||t>5400){DROP.t+=t/st.speed;summary();if(TRACE)console.log('DEATH in wave '+w+' (eff '+ew+') after '+((dur-left)).toFixed(0)+'s of '+dur.toFixed(0)+'s: kills '+tkills+', contacts '+tcontacts+', dmg '+(tdmg/st.maxHp*100).toFixed(0)+'% of maxHp, enemies alive '+E.length);return{w,coins,drops:dropC,gems,t:t/st.speed,dmg:tdAll/st.maxHp+1,...fin()};}
     };
@@ -700,7 +705,11 @@ if(process.argv[2]==='feel'){
     const ht=Object.values(hurt).reduce((a,x)=>a+x,0)||1,dead=R.filter(r=>r.s80!==undefined);
     console.log('FEEL '+JSON.stringify({b,B,T,min:+md(R.map(r=>r.t/60)).toFixed(1),w:+md(R.map(r=>r.w)).toFixed(0),s80:dead.length?+md(dead.map(r=>r.s80)).toFixed(1):null,
       sudden:+(dead.filter(r=>r.s80<5).length/Math.max(1,dead.length)).toFixed(2),big:+md(R.map(r=>r.big)).toFixed(3),
-      hurt:Object.fromEntries(Object.entries(hurt).sort((x,y)=>y[1]-x[1]).map(([k,v])=>[k,+(v/ht).toFixed(3)]))}));}
+      hurt:Object.fromEntries(Object.entries(hurt).sort((x,y)=>y[1]-x[1]).map(([k,v])=>[k,+(v/ht).toFixed(3)])),
+      // how the deaths came: one = a single hit took half the health or more · few = 2-5 hits from 80% · flood = 6+ hits; fall = what the falls were made of
+      one:+(dead.filter(r=>r.death.max>=.5).length/Math.max(1,dead.length)).toFixed(2),flood:+(dead.filter(r=>r.death.max<.5&&r.death.n>=6).length/Math.max(1,dead.length)).toFixed(2),
+      hits:dead.length?md(dead.map(r=>r.death.n)):null,n5:dead.length?md(dead.map(r=>r.death.n5)):null,
+      fall:(()=>{const f={};for(const r of dead)for(const [k,v] of Object.entries(r.death.by))f[k]=(f[k]||0)+v/dead.length;return Object.fromEntries(Object.entries(f).sort((x,y)=>y[1]-x[1]).map(([k,v])=>[k,+v.toFixed(3)]));})()}));}
   process.exit(0);
 }
 // value: from the same starting point, put an extra 25% of the budget into ONE upgrade and measure

@@ -3687,11 +3687,11 @@ function attachHold(el,onTap,onHold){
 const TEMP_UPGRADES=[
   {id:'power',     name:'POWER SURGE',icon:'flame',  desc:'x1.5 damage',          base:30,info:'Multiplies bullet damage by 1.5 for one run.'},
   {id:'rapid',     name:'RAPID FIRE', icon:'bolt2',  desc:'x1.25 fire rate',      base:25,info:'Multiplies fire rate by 1.25 for one run.'},
-  {id:'shield',    name:'SHIELD UP',  icon:'shieldp',desc:'x1.4 max HP',          base:25,info:'Multiplies max health by 1.4 for one run.'},
+  {id:'shield',    name:'SHIELD UP',  icon:'shieldp',desc:'x1.4 max HP',          base:10,info:'Multiplies max health by 1.4 for one run.'},
   {id:'lucky',     name:'LUCKY',      icon:'clover', desc:'x1.5 coins',           base:35,info:'Multiplies all coins earned by 1.5 for one run.'},
   {id:'berserk',   name:'BERSERK',    icon:'swords', desc:'x1.25 dmg · x1.2 spd', base:45,info:'x1.25 damage and x1.2 fire rate for one run.'},
   {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:10,info:'Adds 8% critical hit chance for one run.'},
-  {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:60,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
+  {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:20,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
 const tempCost=u=>boostPrice(u.base,bestEffWave());
 // boosts marked AUTO are bought right before a run, if affordable
@@ -4881,7 +4881,7 @@ const INBOX=[
     {text:'CRIT CHANCE from the shop now goes up to 50% (was 80%) and CRIT POWER to x3.50 (was x4.50): crit was doing most of the damage in every style. Tattoos can still take crit chance to 80%. Levels above the new limits were refunded in coins.'},
     {text:'SHATTER\'s ice bursts are smaller and no longer slow the enemies around them: it was far ahead of every other style.'},
     {text:'LANCE hits about four times as hard. SLAYER also deals extra damage to WARDEN, and EXECUTE breaks a worn shield at once, a boss\'s too: shields stopped most styles late in the game.'},
-    {text:'The FOCUS boost costs less: it brought less than it cost.'},
+    {text:'The FOCUS, SHIELD UP and GUARDIAN boosts cost much less: they brought less than they cost.'},
     {text:'SLOW POWER now only slows: below 50% it no longer adds damage. Extra damage against slowed and frozen enemies comes from the FROST tattoo (and slow power above 50%). Slowing and damage stacked on each other, so frost styles were far ahead of all others. Enemy health also grows a little slower from wave to wave, so every other style keeps its pace.'},
     {text:'ARMOR now also limits how much one hit can take: never more than the share you do not block (at most a quarter of your health with 75% blocked). Defence styles are no longer killed by a single boss touch. Without armor one hit can still take it all.'},
     {text:'THORNS hurts bosses three times as much, a boss\'s beam now sets off your thorns too (even when you parry or block it), and every enemy your thorns finish off heals you: the longer a defence style stands, the more it kills.'}]},

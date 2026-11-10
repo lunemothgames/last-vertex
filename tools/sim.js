@@ -377,7 +377,9 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);if(st.hitCap)d=Math.min(d,st.maxHp*st.hitCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}}}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);if(st.hitCap)d=Math.min(d,st.maxHp*st.hitCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}
+            // game 0.7.4: the shock wave sets off THORNS on the boss, parried or not (an older game has no ECO.pulseThorns)
+            if(ECO.pulseThorns&&st.thornBoss>0){const th=Math.min(e.hp,e.max*st.thornBoss*ECO.pulseThorns);e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}

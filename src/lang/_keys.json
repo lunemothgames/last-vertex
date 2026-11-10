@@ -15,7 +15,7 @@
  "+{0} parry chance: a parried hit does no damage and throws the enemy far back (50% max, the rest makes it stand still longer) · a parried enemy stands still {1} s longer",
  "+{0} ricochet chance · a bullet can bounce up to {1} times · with no other enemy around it bounces back into the same one at half damage",
  "+{0} salvage: every enemy that dies in the lower half of the field heals that share of your max health",
- "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage",
+ "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} damage from bullets and bombs",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health",
  "+{0}% AT LV{1}",
  "+{0}% BONUS EVERY {1} LEVELS (UNTIL {2})",

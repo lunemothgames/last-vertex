@@ -13,7 +13,7 @@
  "+{0} fire rate": "+{0} de cadência",
  "+{0} max health": "+{0} de vida máxima",
  "+{0} ricochet chance · a bullet can bounce up to {1} times · with no other enemy around it bounces back into the same one at half damage": "+{0} de chance de ricochete · uma bala pode quicar até {1} vezes · sem outro inimigo por perto, ela volta no mesmo com metade do dano",
- "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage": "+{0} de chance de lentidão, +{1} de potência · inimigos lentos ou congelados sofrem +{2} de dano por bala",
+ "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} damage from bullets and bombs": "+{0} de chance de lentidão, +{1} de potência · inimigos lentos ou congelados sofrem +{2} de dano de balas e bombas",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health": "+{0} de espinhos: o inimigo que atinge o perímetro perde essa parte da vida máxima",
  "+{0}% AT LV{1}": "+{0}% NO NV{1}",
  "+{0}% BONUS EVERY {1} LEVELS (UNTIL {2})": "+{0}% DE BÔNUS A CADA {1} NÍVEIS (ATÉ {2})",

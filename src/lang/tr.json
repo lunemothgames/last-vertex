@@ -13,7 +13,7 @@
  "+{0} fire rate": "+{0} atış hızı",
  "+{0} max health": "+{0} maksimum can",
  "+{0} ricochet chance · a bullet can bounce up to {1} times · with no other enemy around it bounces back into the same one at half damage": "+{0} sekme şansı · bir mermi en fazla {1} kez sekebilir · yakında başka düşman yoksa aynı düşmana yarım hasarla geri seker",
- "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage": "+{0} yavaşlatma şansı, +{1} yavaşlatma gücü · yavaşlayan ya da donan düşmanlar +{2} mermi hasarı alır",
+ "+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} damage from bullets and bombs": "+{0} yavaşlatma şansı, +{1} yavaşlatma gücü · yavaşlayan ya da donan düşmanlar mermi ve bombalardan +{2} fazla hasar alır",
  "+{0} thorns: an enemy that hits the perimeter loses that share of its max health": "+{0} diken: sınıra vuran düşman maksimum canının o kadarını kaybeder",
  "+{0}% AT LV{1}": "LV{1}'DE +%{0}",
  "+{0}% BONUS EVERY {1} LEVELS (UNTIL {2})": "HER {1} SEVİYEDE +%{0} BONUS ({2}'YE KADAR)",

@@ -1553,7 +1553,7 @@ const TAT_TYPES=[
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:0,w:9,  v:{c:[.3,.6],a:[.22,.4],vuln:[.35,.8]},
-   desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
+   desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} damage from bullets and bombs',pc(x.c),pc(x.a),pc(x.vuln))},
   {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[5,10],cd:[38,28]},
    desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage and can still be pushed back',x.dur.toFixed(1))+cdTxt(x)},
   // ── rare: build pieces + defensive actives

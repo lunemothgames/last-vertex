@@ -1554,7 +1554,7 @@ const TAT_TYPES=[
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
   {id:'frost',       name:'FROST',    icon:'snow',  rar:0,w:9,  v:{c:[.3,.6],a:[.22,.4],vuln:[.35,.8]},
    desc:x=>T('+{0} slow chance, +{1} slow power · slowed or frozen enemies take +{2} bullet damage',pc(x.c),pc(x.a),pc(x.vuln))},
-  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[5,10],cd:[29,17]},
+  {id:'stasis',      name:'STASIS',   icon:'stasis',rar:0,w:9,  act:1,v:{dur:[5,10],cd:[38,28]},
    desc:x=>T('ACTIVE · freezes every enemy for {0}s (bosses for half); frozen enemies still take damage and can still be pushed back',x.dur.toFixed(1))+cdTxt(x)},
   // ── rare: build pieces + defensive actives
   {id:'crit_chance', name:'CRIT POWER',icon:'burst',rar:1,w:6,  v:{c:[.04,.1],m:[.6,1.5]},  desc:x=>T('+{0} crit chance and +x{1} crit power: every critical hit deals that much more',pc(x.c),x.m.toFixed(2))},
@@ -2667,7 +2667,7 @@ function updatePlay(dt){
       const isCrit=Math.random()<st.crit,pel=b.left!==undefined,bare=pel&&BURST.bare;
       let dmg=b.dmg*(isCrit?st.critM:1)*vsDmg(e,st)*(e.hp<e.maxHp*ECO.executeAt?st.execute:1)*(e.slowT>0||e.frozenT>0?st.frostVuln:1);
       // BURST point-blank: the way the pellet had flown when it touched the enemy
-      if(pel)dmg*=pointBlank(b.len-b.left-Math.hypot(b.x-hx,b.y-hy),b.len);
+      const pb=pel?pointBlank(b.len-b.left-Math.hypot(b.x-hx,b.y-hy),b.len):1;dmg*=pb;
       // ARMOR: a bullet weaker than armorThr x its max health is cut in proportion (thorns / blasts / BURST pellets skip it)
       if(e.armorThr&&!bare)dmg*=Math.min(1,dmg/(e.maxHp*e.armorThr));
       const hpBefore=e.shield>0&&!bare?Infinity:e.hp;
@@ -2687,8 +2687,10 @@ function updatePlay(dt){
         for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hurt(o,left*(o.boss?ECO.execBoss:1),true,'reaper');
         if(novas.length<10)novas.push({x:e.x,y:e.y,life:1,col:C.r[3],r:R,fill:true});}
       if(isCrit){snd('crit');burst(hx,hy,C.r[2],10,GH*.1);qEvent('crit');
-        // CRIT DMG tattoo: the crit splashes a share of its damage onto the enemies around the hit (they die in the enemy loop)
-        if(st.splash>0){const R=GW*ECO.critSplashR;for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,hx,hy,R))hurt(o,dmg*st.splash*vsDmg(o,st),true,'crit_mult');
+        // CRIT DMG tattoo: the crit splashes a share of its damage onto the enemies around the hit (they die in the enemy loop).
+        // 0.7.4: each neighbour takes the crit with ITS OWN bonuses (boss / elite, frozen): it used to get the hit enemy's bonuses (boss, EXECUTE,
+        // frost, armor cut) and then its own boss bonus on top, so the splash grew with every bonus twice and CRIT BLAST led every late mix
+        if(st.splash>0){const R=GW*ECO.critSplashR,sp=b.dmg*st.critM*pb*st.splash;for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,hx,hy,R))hurt(o,sp*bombVuln(o,st),true,'crit_mult');
           if(novas.length<10)novas.push({x:hx,y:hy,life:1,col:C.r[2],r:R,fill:true});}}
       else{snd('hit');burst(hx,hy,C.a2,5,GH*.06);}
       dmgText(e,dmg,isCrit);
@@ -4884,7 +4886,8 @@ const INBOX=[
     {text:'The FOCUS, SHIELD UP and GUARDIAN boosts cost much less: they brought less than they cost.'},
     {text:'SLOW POWER now only slows: below 50% it no longer adds damage. Extra damage against slowed and frozen enemies comes from the FROST tattoo (and slow power above 50%). Slowing and damage stacked on each other, so frost styles were far ahead of all others. Enemy health also grows a little slower from wave to wave, so every other style keeps its pace.'},
     {text:'ARMOR now also limits how much one hit can take: never more than the share you do not block (at most a quarter of your health with 75% blocked). Defence styles are no longer killed by a single boss touch. Without armor one hit can still take it all.'},
-    {text:'THORNS hurts bosses three times as much, a boss\'s beam now sets off your thorns too (even when you parry or block it), and every enemy your thorns finish off heals you: the longer a defence style stands, the more it kills.'}]},
+    {text:'THORNS hurts bosses three times as much, a boss\'s beam now sets off your thorns too (even when you parry or block it), and every enemy your thorns finish off heals you: the longer a defence style stands, the more it kills.'},
+    {text:'CRIT BLAST: every enemy the splash reaches now takes it with its own bonuses only. Before, the splash also carried the bonuses of the enemy you hit (against bosses, frozen enemies, EXECUTE) and counted them twice, so it led every late-game mix. STASIS takes longer to recharge (the freeze lasts as long as before): it kept the field frozen most of the time.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},

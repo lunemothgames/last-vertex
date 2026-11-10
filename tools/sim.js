@@ -121,6 +121,7 @@ function shop(b,bank,skip){
 const DROP={t:0,coin:0,gem:0};
 const ETYPE=new Map(Object.entries(ENEMY_TYPES).map(([k,T])=>[T,k]));   // enemy type → its id (game e.type), for the kill_<type> quests
 const SHATTER_R=+(src.match(/const SHATTER_R=([\d.]+)/)||[0,.2])[1];
+const SPLASH_OWN=src.includes('sp*bombVuln(o,st)');   // 0.7.4: CRIT BLAST splash with the neighbour's own bonuses; an older game (SIM_SRC) carried the hit's
 const FROZEN_KB=src.includes('e.y+=(spd+e.kbVy)*dt');   // since 2026-11-06 knockback moves frozen (STASIS) enemies too; an older game (SIM_SRC) did not
 
 // o.auto: an AUTO RETRY run with nobody watching (game runAuto): every coin pays AUTO_RETRY.share, no actives, no bombs, drops not tapped
@@ -232,7 +233,7 @@ function run0(tier,maxW,o){
       if(e.sh>0&&!bare){if(e.sh0===undefined)e.sh0=e.sh;e.sh-=d*.5;tdealt+=d;if(ECO.execShield&&st.reap&&e.sh>0&&e.sh<e.sh0*st.reap*ECO.execShield){book('reaper',e.sh);e.sh=0;}}else{e.hp-=d;tdealt+=d;}
       HN.n++;HN.d+=d;
       // CRIT DMG tattoo (game): a crit splashes st.splash of its damage onto the enemies around (they die at the end of the step)
-      if(cr&&st.splash){const R=ECO.critSplashR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,d*st.splash*vsD(o),'crit_mult');}
+      if(cr&&st.splash){const R=ECO.critSplashR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,SPLASH_OWN?st.dmg*m*st.critM*st.splash*vul(o):d*st.splash*vsD(o),'crit_mult');}   // 0.7.4: the neighbour's own bonuses only (was the hit's full damage x its boss bonus again)
       // EXECUTE (game): the health it had left bursts onto the enemies close by (bosses take ECO.execBoss)
       if(!e.boss&&e.hp>0&&e.hp<e.max*st.reap){const L=e.hp;book('reaper',L);e.hp=0;if(ECO.execR){const R=ECO.execR*GWH;for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,R))hit(o,L*(o.boss?ECO.execBoss:1),'reaper');}}
       if(!e.boss&&Math.random()<st.kbChance){e.kb=Math.min(e.kb,-e.sp*ECO.kbPush);qe('knockback');}

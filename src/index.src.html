@@ -1303,6 +1303,7 @@ const ECO={
   bossPulse:.35,  bossPulseEvery:5, bossPulseFirst:3.5, // boss shock wave: boss attack x this, first after 3.5 s, then every 5 s (3.25 s enraged); armor, parry and AEGIS work on it like on a perimeter hit
   bossPulseCap:.25,                     // ...but one pulse takes at most a quarter of max health (it used to one-shot attack builds)
   pulseThorns:1,                        // 0.7.4: a shock wave sets off THORNS on the boss (x this of a touch's thorns), parried or not
+  thornHeal:.06,                        // 0.7.4: an enemy killed by THORNS heals this share of max health x your thorns (up to 100%), x the DEFENSE tattoo's heal bonus
   hitCapMin:.25,                        // 0.7.4: one perimeter touch (or boss pulse) takes at most (1 - your block share) of max health, never less than this: no ARMOR = no limit (one touch can kill), a defence player is never one-shot
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
@@ -1504,7 +1505,7 @@ const PERM_UPGRADES=[
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
    info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing. And one hit can never take more than what you do not block: with 50% blocked a hit takes at most half your health, with 75% (ARMOR and the DEFENSE tattoo together) at most a quarter. Without armor one hit can take it all.'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
-   info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take 15% of it, plus a tenth of what is above 100% (17.2% at most: about 6 touches). A boss\'s beam sets off thorns too, even when you parry it.'},
+   info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take 15% of it, plus a tenth of what is above 100% (17.2% at most: about 6 touches). A boss\'s beam sets off thorns too, even when you parry it. Every enemy your thorns finish off heals you: up to 6% of your max health at 100% thorns, a boss 10 times as much.'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
    info:'Chance to parry a perimeter hit: you take no damage, the enemy is thrown far back and stands still for a moment (bosses only bounce). It still takes thorns. Max 30% from the shop, 50% with the PARRY tattoo; above that, a parried enemy stands still longer.'},
   {id:'lifesteal', cat:'def', name:'SALVAGE',    icon:'salvage',  base:50,  g:1.12, max:100,  start:0,  step:.0004,fx:v=>pc2(v),
@@ -1784,6 +1785,7 @@ function stats(){
     kbChance:  Math.min(.8,v('knockback')),
     thornPct:  Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn),
     thornBoss: Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn)*ECO.bossThorns+Math.max(0,(v('thorns')+tb('thorns').t)*M.thorn-1)*ECO.bossThornsOver,   // share a boss loses
+    thornHeal: ECO.thornHeal*Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn)*healM,   // 0.7.4: an enemy killed by thorns heals this share of max health
     crit:      Math.min(.8,critRaw),
     critM:     v('critMult')+(tb('crit_chance').m||0)+Math.max(0,critRaw-.8)*3,   // CRIT POWER tattoo (id crit_chance)
     dodge:     Math.min(.5,dodgeRaw),
@@ -2447,11 +2449,13 @@ function evSpeedMul(e){
 // ARMOR's flat cut of one hit: a share of max health plus a share of a basic enemy's attack at this wave
 const atkAt=ew=>ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1);
 const blockNow=st=>st.block+(st.blockA||0)*atkAt(effWave());
+// 0.7.4: an enemy that THORNS finishes off heals you (a boss x ECO.salvBoss): the longer a thorns player stands, the more it kills, the longer it stands
+const thornKillHeal=(e,st,d)=>{if(d>0&&e.hp<=0&&st.thornHeal>0)healBy(st,st.maxHp*st.thornHeal*(e.boss?ECO.salvBoss:1));};
 function contactHit(e,st,mul){
   const LINE_Y=GH*LINE_FRAC;
   // MEND's guard: a normal enemy touching the perimeter is destroyed (bosses hit as usual)
   if(runFx.guardT>0&&!e.boss){const d=e.hp;e.hp=0;runDmgDealt+=d;dmgBy('mend',d);burst(e.x,LINE_Y,C.r[2],8,GH*.06);snd('block');return;}
-  const thorn=()=>{if(st.thornPct>0){const d=Math.min(e.hp,e.maxHp*(e.boss?st.thornBoss:st.thornPct));e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);}};
+  const thorn=()=>{if(st.thornPct>0){const d=Math.min(e.hp,e.maxHp*(e.boss?st.thornBoss:st.thornPct));e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);thornKillHeal(e,st,d);}};
   if(Math.random()<st.dodge){
     snd('dodge');qEvent('dodge');runSt.par++;
     spawnText(e.x,LINE_Y-GH*.02,T('PARRY'),C.a2);
@@ -2780,7 +2784,7 @@ function updatePlay(dt){
         else{const d=Math.min(st.maxHp*Math.min(ECO.bossPulseCap,st.hitCap),Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-blockNow(st)));hp-=d;{const k='boss:'+(e.kind||'classic');runHitBy[k]=(runHitBy[k]||0)+d;}
 runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
         // 0.7.4: the shock wave sets off THORNS like a touch does (even when parried or blocked): a boss that stays back still pays for hitting you
-        if(st.thornBoss>0&&ECO.pulseThorns){const d=Math.min(e.hp,e.maxHp*st.thornBoss*ECO.pulseThorns);e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);}
+        if(st.thornBoss>0&&ECO.pulseThorns){const d=Math.min(e.hp,e.maxHp*st.thornBoss*ECO.pulseThorns);e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);thornKillHeal(e,st,d);}
       }
       e.summonT-=dt;
       if(e.summonT<=0&&e.y>GH*HUD_TOP){
@@ -4880,7 +4884,7 @@ const INBOX=[
     {text:'The FOCUS boost costs less: it brought less than it cost.'},
     {text:'SLOW POWER now only slows: below 50% it no longer adds damage. Extra damage against slowed and frozen enemies comes from the FROST tattoo (and slow power above 50%). Slowing and damage stacked on each other, so frost styles were far ahead of all others. Enemy health also grows a little slower from wave to wave, so every other style keeps its pace.'},
     {text:'ARMOR now also limits how much one hit can take: never more than the share you do not block (at most a quarter of your health with 75% blocked). Defence styles are no longer killed by a single boss touch. Without armor one hit can still take it all.'},
-    {text:'THORNS hurts bosses three times as much, and a boss\'s beam now sets off your thorns too, even when you parry or block it: defence styles no longer get stuck on boss waves.'}]},
+    {text:'THORNS hurts bosses three times as much, a boss\'s beam now sets off your thorns too (even when you parry or block it), and every enemy your thorns finish off heals you: the longer a defence style stands, the more it kills.'}]},
   {id:'0.7.3',date:'2026-11-08',name:'UPDATE 0.7.3',lines:[
     {text:'SLOW POWER from the shop now goes up to 20% (was 50%): late in the game it made every build far stronger for almost no coins. Your levels were converted and the coins for anything above the new limit were refunded. The FROST tattoo still slows more on top.'},
   ]},

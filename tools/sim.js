@@ -138,18 +138,18 @@ function run0(tier,maxW,o){
   // TOT.by = damage by source (health and shields really taken, overkill not counted): shot / multishot / twin / bounce / pierce / lance /
   // overkill (REACH carry) / crit (the crit part of a bullet) / chill (the slowed-enemy bonus part) / overdrive (the extra fire rate's part) /
   // a tattoo id for its own hits (thorns, arc, nova, logic_bomb …) / contact (enemies that die on the line). Read by tools/sim-health.js.
-  // TOT.hurt = damage TAKEN by source (enemy type id, 'boss', 'boss pulse', 'spitter', 'scorcher burn'), TOT.big = the biggest single hit
+  // TOT.hits[source] = [single hits that did damage, their summed share of max health] · TOT.hurt = damage TAKEN by source (enemy type id, 'boss', 'boss pulse', 'spitter', 'scorcher burn'), TOT.big = the biggest single hit
   // as a share of max health; hiT[0/1] = last time health was at 80% / 50%+ (fin: s80 / s50 = real seconds from there to death).
   // Bookkeeping only (no random numbers): results stay the same. Read by tools/sim-ask.js feel.
-  const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0,by:{},hurt:{},big:0},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
+  const TOT={k:0,b:0,d:0,th:0,bombs:0,taps:0,by:{},hurt:{},big:0,hits:{}},QE={wave:0},qe=k=>{QE[k]=(QE[k]||0)+1;},
     book=(k,v)=>{if(v>0)TOT.by[k]=(TOT.by[k]||0)+v;},hiT=[0,0],FALL=[],
     // FALL = every hit since health was last at 80%+ (cleared there): at death it says how the end came (fin: death)
-    ouch=(k,v,one)=>{if(v>0){TOT.hurt[k]=(TOT.hurt[k]||0)+v;if(one&&v/st.maxHp>TOT.big)TOT.big=v/st.maxHp;if(FALL.length<5000)FALL.push([t,v/st.maxHp,k,one?1:0]);}},
+    ouch=(k,v,one)=>{if(v>0){TOT.hurt[k]=(TOT.hurt[k]||0)+v;if(one){const h=TOT.hits[k]||(TOT.hits[k]=[0,0]);h[0]++;h[1]+=v/st.maxHp;}if(one&&v/st.maxHp>TOT.big)TOT.big=v/st.maxHp;if(FALL.length<5000)FALL.push([t,v/st.maxHp,k,one?1:0]);}},
     // the end of a run that died: n = hits since 80% health (single hits, burn ticks not counted), max = the biggest one (share of max health),
     // n5 = hits in the last 5 real seconds, by = what the fall was made of (share of the damage since 80%)
     deathOf=()=>{const by={};let n=0,mx=0,n5=0,tot=0;for(const [tt,v,k,one] of FALL){by[k]=(by[k]||0)+v;tot+=v;if(one){n++;if(v>mx)mx=v;if((t-tt)/st.speed<=5)n5++;}}
       return{n,max:+mx.toFixed(3),n5,by:Object.fromEntries(Object.entries(by).map(([k,v])=>[k,+(v/(tot||1)).toFixed(3)]))};},
-    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE,by:TOT.by,hurt:TOT.hurt,big:TOT.big,
+    fin=()=>({kills:TOT.k+tkills,bosses:TOT.b,dealt:TOT.d+tdealt,thorns:TOT.th,bombs:TOT.bombs,taps:TOT.taps,qe:QE,by:TOT.by,hurt:TOT.hurt,big:TOT.big,hits:TOT.hits,
       ...(hp<=0?{s80:(t-hiT[0])/st.speed,s50:(t-hiT[1])/st.speed,death:deathOf()}:{})});
   const BSP=.95;   // bullet speed in screen heights a second (game fireBullets)
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
@@ -198,6 +198,8 @@ function run0(tier,maxW,o){
     const riseF=e=>{if(!(e.rs&&e.wv===w&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
     const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
     // st.block = ARMOR's flat part (game contactHit): every hit is cut by this much, small hits do nothing
+    // game thornKillHeal (0.7.4): an enemy THORNS finishes off heals st.thornHeal of max health (a boss x ECO.salvBoss); an older game has none
+    const thornHeal=(e,th)=>{if(th>0&&e.hp<=0&&st.thornHeal>0)hp=Math.min(st.maxHp,hp+st.maxHp*st.thornHeal*(e.boss?ECO.salvBoss:1));};
     const contact=(e,mul)=>{
       // MEND's guard: a normal enemy touching the perimeter is destroyed, nothing else happens (game contactHit)
       if(A.mend&&A.mend.left>0&&!e.boss){book('mend',e.hp);tdealt+=e.hp;e.hp=0;tcontacts++;return 3.5;}
@@ -209,7 +211,7 @@ function run0(tier,maxW,o){
       else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);if(st.hitCap)taken=Math.min(taken,st.maxHp*st.hitCap);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
         if(!e.boss&&e.T&&e.T.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0)BURN.push({l:ECO.burnT,d:b/ECO.burnT});}}   // SCORCHER (game contactHit): a fire, flat ARMOR does not cut it
       tcontacts++;
-      const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);
+      const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);thornHeal(e,th);
       // B6-2 test: ECO.contactDie = share of its max health an enemy loses per perimeter hit (like free thorns, pays coins); 1 = it is spent
       // (no coins, no shards) unless ECO.contactPay
       if(ECO.contactDie>=1&&!ECO.contactPay&&!e.boss){e.coin=0;e.hp=0;e.cx=1;}else if(ECO.contactDie&&!e.boss){const d=Math.min(e.hp,e.max*ECO.contactDie);e.hp-=d;tdealt+=d;book('contact',d);}
@@ -379,7 +381,7 @@ function run0(tier,maxW,o){
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
             if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);if(st.hitCap)d=Math.min(d,st.maxHp*st.hitCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}
             // game 0.7.4: the shock wave sets off THORNS on the boss, parried or not (an older game has no ECO.pulseThorns)
-            if(ECO.pulseThorns&&st.thornBoss>0){const th=Math.min(e.hp,e.max*st.thornBoss*ECO.pulseThorns);e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);}}}
+            if(ECO.pulseThorns&&st.thornBoss>0){const th=Math.min(e.hp,e.max*st.thornBoss*ECO.pulseThorns);e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);thornHeal(e,th);}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);
             if(e.kind==='swarmlord'){e.summon=ev*1.4;for(let k=-1;k<=1;k++)E.push({...mk(ENEMY_TYPES.runner,e.y+e.h*.3,e.x+k*e.h*.6),coin:0});}
             else{e.summon=ev;for(const k of[-1,1])E.push(mk(ENEMY_TYPES.mini,e.y+e.h*.3,e.x+k*e.h*.6));}}

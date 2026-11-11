@@ -1305,14 +1305,13 @@ const ECO={
   bossPulseCap:.25,                     // ...but one pulse takes at most a quarter of max health (it used to one-shot attack builds)
   pulseThorns:1,                        // 0.7.4: a shock wave sets off THORNS on the boss (x this of a touch's thorns), parried or not
   thornHeal:.06,                        // 0.7.4: an enemy killed by THORNS heals this share of max health x your thorns (up to 100%), x the DEFENSE tattoo's heal bonus
-  hitCapMin:.25,                        // 0.7.4: one perimeter touch (or boss pulse) takes at most (1 - your block share) of max health, never less than this: no ARMOR = no limit (one touch can kill), a defence player is never one-shot
   bossSummonEvery:5, bossEnrageAt:.5,   // boss calls 2 shards every few seconds, speeds up below half HP
   coinChance:.5,  coinBase:1,    coinGrowth:1.035,
   earlyBoost:4,   earlyUntil:40,        // extra coins early on: x5 at wave 1, fading to x1 at effective wave 40
   pickupCooldown:300,                   // seconds after collecting a coin drop
   spitStop:.62,   spitSpd:.9,  spitN:3, // SPITTER: stops at this share of the screen height (inside the base range), spits every ENEMY_TYPES.spitter.spit s, a spit flies this many screen heights a second; after spitN spits from there it walks on (still spitting)
   spitK:.2,       spitCap:.015,          // ...a spit hits for its attack x spitK (ARMOR, DEFENSE cut it like a hit; parry and AEGIS do not), at most this share of max health
-  burnT:4,        burnK:.5,   burnCap:.06,   // SCORCHER: a touch that gets through lights a fire: its attack x burnK (DEFENSE share cuts it, flat ARMOR does not), at most burnCap of max health, over burnT s; fires add up
+  burnT:4,        burnK:.5,   burnCap:.06,   // SCORCHER: a touch that gets through lights a fire: its attack x burnK (ARMOR and DEFENSE cut it by their share, like a hit), at most burnCap of max health, over burnT s; fires add up
   slayWard:.5,   execShield:2,         // SLAYER also hits WARDEN at slayWard of its bonus · EXECUTE breaks a shield (bosses' too) worn below execShield x its line (0.7.4: WARDEN killed most bullet builds late)
   shatterMax:6,   shatterSlow:0,        // an ice burst hurts at most shatterMax enemies (the nearest), so chains cannot snowball in a crowd, and slows them for shatterSlow x slowTime (0.7.4: 0, was 1; SHATTER led every build)
   gemPickupCooldown:1200,               // …and a gem drop (about 2.6 gems an hour of play: field gems must not outweigh quests, the weekly op and ads)
@@ -1326,8 +1325,6 @@ const ECO={
   reduceKnee:.7,  reduceAbove:.25,      // damage reduction above 70% counts a quarter (77.5% at most), so thorns tanks can't become untouchable
   bossThorns:.15,                       // bosses take 15% of thorns (5% until 0.7.4: defence builds died on boss waves; with the shock wave thorns it made tank/thornsTank/bruiser +8..+20 waves at 168 h, 0.2 no better)
   bossThornsOver:.1,                    // ...plus a tenth of the thorns above 100% (shop 50% + tattoo 72% = 7.2% a touch: a boss lasts ~20 s like with other builds)
-  blockK:.03,                           // ARMOR also stops a flat amount of every hit: max health x this x ARMOR's share (so it keeps up with your health)
-  blockA:.05,                           // ...plus a basic enemy's attack at this wave x this x ARMOR's share (so it keeps up with the enemies in every tier)
   parryBack:8,    parryStun:1.2,        // PARRY: a parried enemy is pushed back this hard (a hit one 3.5) and stands still this many seconds (not bosses)
   // above a cap nothing is wasted (like crit): PARRY over 50% → +this many s stun per 1.0 over · SLOW CHANCE over 80% → x this = chance a hit
   // freezes the enemy freezeT s (not bosses) · SLOW POWER over 50% still adds to the damage slowed enemies take · RICOCHET over 85% →
@@ -1448,7 +1445,7 @@ const ENEMY_TYPES={
   armored: {name:'ARMORED', hp:1.5,spd:.7,  atk:1.3,sz:.058,coin:1.8,from:30,      w:2,  ci:3,armor:.1},      // bullets weaker than 10% of its health are cut in proportion
   ghost:   {name:'GHOST',   hp:.8, spd:.95, atk:1.1,sz:.046,coin:1.5,from:45,      w:1.5,ci:1,ghost:3},       // fades out for a moment: bullets pass through it (blasts do not)
   spitter: {name:'SPITTER', hp:.8, spd:.9,  atk:.8, sz:.046,coin:.9, from:40,      w:2,  ci:2,spit:2.5},   // stops mid-field and spits at the triangle (steady small damage: REGEN's job)
-  scorcher:{name:'SCORCHER',hp:1.1,spd:.85, atk:1,  sz:.05, coin:1.1,from:80,      w:2,  ci:3,burn:1},     // its touch sets the triangle on fire (damage over time, flat ARMOR does not stop it)
+  scorcher:{name:'SCORCHER',hp:1.1,spd:.85, atk:1,  sz:.05, coin:1.1,from:80,      w:2,  ci:3,burn:1},     // its touch sets the triangle on fire (damage over time, cut by ARMOR's share like a hit)
   mini:    {name:'SHARD',   hp:.35,spd:1.25,atk:.5, sz:.03, coin:0,  from:Infinity,w:0,  ci:0},
   // later tier bands: a shield that halves bullets, a healer, a teleporter
   warden:  {name:'WARDEN',  hp:1.2,spd:.8,  atk:1.2,sz:.056,coin:1.5,from:60,      w:2,  ci:2,shield:1.2},   // shield starts at half strength and reaches full by wave 150 (see makeEnemy)
@@ -1504,7 +1501,7 @@ const PERM_UPGRADES=[
   {id:'regen',     cat:'def', name:'REGEN',      icon:'regen',  base:10,  p:2.2,  max:1e6,  start:0,  step:.4,   ms:[200,1.1,5000], fx:v=>f2(v)+'/s',
    info:'Health restored every second during a run. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
   {id:'defense',   cat:'def', name:'ARMOR',      icon:'shield',base:8,   p:2.2,  max:600,  start:0,  step:1,    fx:v=>'-'+pc(cutRed(armorRed(v))),
-   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together counts only a quarter (77.5% at most). It also stops a small flat amount of every hit that grows with your max health and with the enemies of each tier and wave, so weak hits do nothing. And one hit can never take more than what you do not block: with 50% blocked a hit takes at most half your health, with 75% (ARMOR and the DEFENSE tattoo together) at most a quarter. Without armor one hit can take it all.'},
+   info:'Blocks a share of every hit at the perimeter. Each level adds a bit less: 100 levels block 50%, 200 block 67%, 600 block 74%. Works the same at every wave. Above 70%, all damage reduction together (ARMOR and the DEFENSE tattoo) counts only a quarter (77.5% at most).'},
   {id:'thorns',    cat:'def', name:'THORNS',     icon:'spikes',base:12,  p:2,    max:63,   start:0,  step:.008, fx:v=>pc(v),
    info:'Every time an enemy hits the perimeter (even when you parry) it loses this share of its MAX health. Max 50% from the shop; with the THORNS tattoo up to 122%. 100% kills in one touch. Bosses take 15% of it, plus a tenth of what is above 100% (17.2% at most: about 6 touches). A boss\'s beam sets off thorns too, even when you parry it. Every enemy your thorns finish off heals you: up to 6% of your max health at 100% thorns, a boss 10 times as much.'},
   {id:'dodge',     cat:'def', name:'PARRY',      icon:'parry',  base:60,  g:1.13, max:60,   start:0,  step:.005, fx:v=>pc2(v),
@@ -1776,9 +1773,6 @@ function stats(){
     regenT:    maxHp*tb('regen').pct*M.regen*healM,
     healM,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
-    hitCap:    Math.max(ECO.hitCapMin,1-cutRed(reduce)),   // share of max health one touch can take at most = the share not blocked (ARMOR + DEFENSE tattoo, as the shop shows it)
-    block:     maxHp*ECO.blockK*armorRed(v('defense')),   // ARMOR's flat part: cut from every hit after the share above
-    blockA:    ECO.blockA*armorRed(v('defense')),          // ...plus this x atkAt(effWave()) at the moment of the hit (blockNow)
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
     coinChance:Math.min(1,ECO.coinChance+v('lootChance')),
     jackpot:   lk.jack,
@@ -2456,9 +2450,7 @@ function evSpeedMul(e){
   return m;
 }
 // one touch of the perimeter (a first contact, or a tick of a clinging enemy): parry, AEGIS or damage, then thorns
-// ARMOR's flat cut of one hit: a share of max health plus a share of a basic enemy's attack at this wave
 const atkAt=ew=>ECO.enemyAtk*Math.pow(ECO.enemyAtkGrowth,ew-1);
-const blockNow=st=>st.block+(st.blockA||0)*atkAt(effWave());
 // 0.7.4: an enemy that THORNS finishes off heals you (a boss x ECO.salvBoss): the longer a thorns player stands, the more it kills, the longer it stands
 const thornKillHeal=(e,st,d)=>{if(d>0&&e.hp<=0&&st.thornHeal>0)healBy(st,st.maxHp*st.thornHeal*(e.boss?ECO.salvBoss:1));};
 function contactHit(e,st,mul){
@@ -2480,7 +2472,7 @@ function contactHit(e,st,mul){
     for(const o of enemies)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,GW*ECO.aegisPushR))knock(o,1.5);
     novas.push({x:e.x,y:LINE_Y,life:1,col:C.a2,r:GW*ECO.aegisPushR});
   }else{
-    const dmg=Math.min(st.maxHp*st.hitCap,Math.max(0,e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken-blockNow(st)));
+    const dmg=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken;   // 0.7.5: ARMOR is only its share (no flat block, no one-hit limit): 2x max health = 2x the hits
     hp-=dmg;runDmgTaken+=dmg;{const k=e.boss?'boss:'+(e.kind||'classic'):e.type;runHitBy[k]=(runHitBy[k]||0)+dmg;}snd('breach');hint('breach');
     if(!e.boss&&ENEMY_TYPES[e.type]?.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0){burns.push({left:ECO.burnT,dps:b/ECO.burnT});burst(e.x,LINE_Y,C.hot,10,GH*.05);}}
     burst(e.x,LINE_Y,C.hot,8,GH*.06);
@@ -2584,7 +2576,7 @@ function updatePlay(dt){
   for(const s of spits){
     const dx=triX-s.x,dy=TRI_Y-s.y,d=Math.hypot(dx,dy),step=GH*ECO.spitSpd*dt;
     if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue;}
-    s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-blockNow(st)));
+    s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,s.atk*ECO.spitK*st.dmgTaken);
     if(h>0){hp-=h;runDmgTaken+=h;runHitBy.spitter=(runHitBy.spitter||0)+h;snd('hit');}
     burst(triX,TRI_Y-GH*.01,s.col,5,GH*.03);
   }
@@ -2795,7 +2787,7 @@ function updatePlay(dt){
         e.pulseT=ECO.bossPulseEvery*(e.enraged?.65:1);e.pulse=1;burst(e.x,e.y,C.hot,14,GH*.1);const bm={x1:e.x,y1:e.y,x2:triX,y2:TRI_Y,life:1,col:C.hot};beams.push(bm);
         if(Math.random()<st.dodge){bm.col=C.a2;snd('dodge');spawnText(triX,LINE_Y-GH*.05,T('PARRY'),C.a2);}
         else if(st.aegisCD>0&&aegisT<=0){bm.col=C.a2;aegisT=st.aegisCD;snd('block');spawnText(triX,LINE_Y-GH*.05,T('BLOCK'),C.a2);}
-        else{const d=Math.min(st.maxHp*Math.min(ECO.bossPulseCap,st.hitCap),Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-blockNow(st)));hp-=d;{const k='boss:'+(e.kind||'classic');runHitBy[k]=(runHitBy[k]||0)+d;}
+        else{const d=Math.min(st.maxHp*ECO.bossPulseCap,e.atk*ECO.bossPulse*st.dmgTaken);hp-=d;{const k='boss:'+(e.kind||'classic');runHitBy[k]=(runHitBy[k]||0)+d;}
 runDmgTaken+=d;burst(triX,TRI_Y,C.hot,12,GH*.07);snd('breach');screenFlash=Math.min(1,screenFlash+.3);shake={x:0,y:0,t:.25};}
         // 0.7.4: the shock wave sets off THORNS like a touch does (even when parried or blocked): a boss that stays back still pays for hitting you
         if(st.thornBoss>0&&ECO.pulseThorns){const d=Math.min(e.hp,e.maxHp*st.thornBoss*ECO.pulseThorns);e.hp-=d;runDmgDealt+=d;dmgBy('thorns',d);dmgText(e,d,false);thornKillHeal(e,st,d);}
@@ -3733,9 +3725,6 @@ $('mBoosts').addEventListener('click',e=>{
 
 let shopBuyMode=1,shopTab='perm',pendingTheme=null;
 const shopShows=u=>!u.from||maxUnlockedTier()>=u.from||(save.perm[u.id]||0)>0;   // AUTO RETRY is sold from Tier 2
-// ARMOR's flat part at this level with your max health now (the shop row shows it, stats().block uses the same formula)
-// shown for the first wave of the chosen tier (the attack part grows with the wave)
-const armorFlat=lv=>{const f=(stats().maxHp*ECO.blockK+ECO.blockA*atkAt(1+(save.tier-1)*TIERS.offset))*armorRed(uVal(PU.defense,lv));return f<10?f.toFixed(1):fmtN(f);};
 function openShop(tab){if(tab)shopTab=tab;pendingTheme=null;snd('click');renderShop();$('shopPanel').classList.add('open');$('shopPanel').querySelector('.scroll').scrollTop=0;}
 function closeShop(){snd('click');$('shopPanel').classList.remove('open');renderMenu();}
 $('shopBack').addEventListener('click',closeShop);
@@ -3795,7 +3784,7 @@ function renderShop(){
         pips=`<div class="pips">${'<i class="on"></i>'.repeat(20)}</div><em>LV${fmtN(lv)} · ${T('NO LEVEL CAP')}</em>`;
       }else{
         const np=Math.min(u.max,20),on=Math.floor(lv/u.max*np);
-        pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv}${u.id==='defense'?' · '+T('-{0} PER HIT',armorFlat(lv)):' / '+u.max}</em>`;
+        pips=`<div class="pips">${Array.from({length:np},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><em>LV${lv} / ${u.max}</em>`;
       }
       const btn=maxed?T('MAX'):n>0?`<span>${I('coin')}${fmtP(cost)}</span>${n>1?`<small>x${fmtN(n)}</small>`:''}`:`<span>${I('coin')}${fmtP(upCost(u,lv))}</span>`;
       const cls=maxed?' max':n>0?'':' no';
@@ -4898,6 +4887,7 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
+    {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},
     {text:'LANCE throws its lance less often at the higher levels (every 5th shot at level 7, was every 3rd): at the top level it was as strong as a mythic tattoo.'}]},
   {id:'0.7.4',date:'2026-11-11',name:'UPDATE 0.7.4',lines:[
     {text:'Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.'},

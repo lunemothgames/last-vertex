@@ -198,7 +198,7 @@ function run0(tier,maxW,o){
     // behaviour events (RISING TIDE, DIVE, BERSERK, CLINGERS): same rules as the game, see EV_TUNE
     const riseF=e=>{if(!(e.rs&&e.wv===w&&left>0))return 1;const p=Math.max(0,Math.min(1,1-left/dur));return EVT.rise[0]+(EVT.rise[1]-EVT.rise[0])*p;};
     const evMul=e=>{let m=riseF(e);if(e.dv){const p=Math.max(0,Math.min(1,(e.y-.1)/(LINE-.1)));m*=EVT.dive[0]+(EVT.dive[1]-EVT.dive[0])*p;}if(e.bzOn)m*=EVT.berserkSpd;return m;};
-    // st.block = ARMOR's flat part (game contactHit): every hit is cut by this much, small hits do nothing
+    // ARMOR = only its share (st.dmgTaken) since 0.7.5: no flat block, no one-hit limit (game contactHit)
     // game thornKillHeal (0.7.4): an enemy THORNS finishes off heals st.thornHeal of max health (a boss x ECO.salvBoss); an older game has none
     const thornHeal=(e,th)=>{if(th>0&&e.hp<=0&&st.thornHeal>0)hp=Math.min(st.maxHp,hp+st.maxHp*st.thornHeal*(e.boss?ECO.salvBoss:1));};
     const contact=(e,mul)=>{
@@ -209,7 +209,7 @@ function run0(tier,maxW,o){
       if(Math.random()<st.dodge){back=ECO.parryBack||2;const ps=st.parryStun??ECO.parryStun;if(ps&&!e.boss)e.stun=ps;qe('dodge');}
       // AEGIS (game contactHit): the blocked enemy is destroyed (a boss is only pushed), the ones next to it are pushed back
       else if(st.aegisCD&&aegis<=0){aegis=st.aegisCD;if(ECO.aegisPushR){if(!e.boss){book('aegis',e.hp);tdealt+=e.hp;e.hp=0;}for(const o of E)if(o!==e&&o.hp>0&&inBlast(o,e.x,e.y,ECO.aegisPushR*GWH))push(o,1.5);}}
-      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);taken=Math.max(0,taken-(st.block||0)-(st.blockA||0)*atkB);if(st.hitCap)taken=Math.min(taken,st.maxHp*st.hitCap);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
+      else{taken=e.atk*Math.sqrt(riseF(e))*mul*st.dmgTaken*(e.slow>0?1-st.slowAmt*(ECO.slowHitCut||0):1);hp-=taken;tdmg+=taken;tdAll+=taken;ouch(e.boss?'boss':ETYPE.get(e.T)||'enemy',taken,1);
         if(!e.boss&&e.T&&e.T.burn){const b=Math.min(st.maxHp*ECO.burnCap,e.atk*ECO.burnK*mul*st.dmgTaken);if(b>0)BURN.push({l:ECO.burnT,d:b/ECO.burnT});}}   // SCORCHER (game contactHit): a fire, flat ARMOR does not cut it
       tcontacts++;
       const th=Math.min(e.hp,e.max*(e.boss?(st.thornBoss??st.thornPct*ECO.bossThorns):st.thornPct));e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);thornHeal(e,th);
@@ -324,7 +324,7 @@ function run0(tier,maxW,o){
       if(active){left-=dt;spawnT-=dt;if(spawnT<=0){spawnT=iv;for(let i=0,n=Math.floor(per)+(Math.random()<per%1?1:0);i<n;i++){const T=pick();E.push(elite(mk(T,.1-T.sz*GWH/2)));}}}
       // SPITTER spits fly to the triangle (game updatePlay): ARMOR / DEFENSE cut them, at most ECO.spitCap of max health · SCORCHER fires burn
       if(SPIT.length){const step=ECO.spitSpd*dt;for(const s of SPIT){const dx=triX-s.x,dy=TRI-s.y,d=Math.hypot(dx,dy);if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue;}
-        s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,Math.max(0,s.atk*ECO.spitK*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB));hp-=h;tdmg+=h;tdAll+=h;ouch('spitter',h,1);}SPIT=SPIT.filter(s=>!s.hit);}
+        s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,s.atk*ECO.spitK*st.dmgTaken);hp-=h;tdmg+=h;tdAll+=h;ouch('spitter',h,1);}SPIT=SPIT.filter(s=>!s.hit);}
       if(BURN.length){let d=0;for(const b of BURN){d+=b.d*Math.min(dt,b.l);b.l-=dt;}BURN=BURN.filter(b=>b.l>0);hp-=d;tdmg+=d;tdAll+=d;ouch('scorcher burn',d);}
       hp=Math.min(st.maxHp,hp+(st.regen+(st.regenT||0)*(1+(ECO.regenLow||0)*(1-hp/st.maxHp)))*dt);cd-=dt;   // REGEN tattoo: faster when low (game updatePlay)
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
@@ -380,7 +380,7 @@ function run0(tier,maxW,o){
         if(e.boss&&e.hp>0){
           if(!e.enr&&e.hp<e.max*ECO.bossEnrageAt){e.enr=true;e.sp*=1.4;}
           if(ECO.bossPulse){e.pt-=dt;if(e.pt<=0&&e.y>.1){e.pt=ECO.bossPulseEvery*(e.enr?.65:1);
-            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=Math.max(0,e.atk*ECO.bossPulse*st.dmgTaken-(st.block||0)-(st.blockA||0)*atkB);if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);if(st.hitCap)d=Math.min(d,st.maxHp*st.hitCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}
+            if(Math.random()<st.dodge){}else if(st.aegisCD&&aegis<=0)aegis=st.aegisCD;else{let d=e.atk*ECO.bossPulse*st.dmgTaken;if(ECO.bossPulseCap)d=Math.min(d,st.maxHp*ECO.bossPulseCap);hp-=d;tdmg+=d;tdAll+=d;ouch('boss pulse',d,1);}
             // game 0.7.4: the shock wave sets off THORNS on the boss, parried or not (an older game has no ECO.pulseThorns)
             if(ECO.pulseThorns&&st.thornBoss>0){const th=Math.min(e.hp,e.max*st.thornBoss*ECO.pulseThorns);e.hp-=th;tdealt+=th;TOT.th+=th;book('thorns',th);thornHeal(e,th);}}}
           e.summon-=dt;if(e.summon<=0&&e.y>.1){const ev=ECO.bossSummonEvery*(e.enr?.6:1);

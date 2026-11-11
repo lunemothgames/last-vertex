@@ -1546,7 +1546,7 @@ const TAT_TYPES=[
   {id:'attack_speed',name:'ATK SPD',  icon:'stream',  rar:0,w:10, v:{rate:[.07,.35]},        desc:x=>T('+{0} fire rate',pc(x.rate))},
   {id:'max_hp',      name:'MAX HP',   icon:'heart', rar:0,w:10, v:{hp:[.3,1.3]},            desc:x=>T('+{0} max health',pc(x.hp))},
   {id:'regen',       name:'REGEN',    icon:'regen',  rar:0,w:10, v:{pct:[.0055,.03]},      desc:x=>T('heals {0} of your max health every second, up to 4x faster as your health runs low',pc2(x.pct))},
-  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5],h:[.15,.4]},   desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts) · every heal (REGEN, SALVAGE) heals more the more you block: +{1} of your total block',pc(x.red),pc(x.h))},
+  {id:'defense',     name:'DEFENSE',  icon:'shield',rar:0,w:10, v:{red:[.1,.5]},              desc:x=>T('-{0} damage from perimeter hits (adds up with ARMOR; above 70% only a quarter counts)',pc(x.red))},   // 0.7.6: its heal bonus is gone (little effect, hard to read)
   {id:'coin_mult',   name:'COINS',    icon:'coins', rar:0,w:10, v:{c:[.08,.4]},             desc:x=>T('+{0} coins from every source · coin bonuses multiply each other (tap the coin bonus under the tier to see them all)',pc(x.c))},
   {id:'luck',        name:'LUCK',     icon:'clover',rar:0,w:9,  v:{jack:[.05,.25],drop:[.15,.6]},
    desc:x=>T('{0} chance that a kill which drops coins pays x3 · coin and gem drops on the field show up {1} more often',pc(x.jack),pc(x.drop))},
@@ -1751,8 +1751,6 @@ function stats(){
   // crit chance above the 80% cap is converted: every 1% → +0.03x crit power
   const critRaw=v('critChance')+(tb('crit_chance').c||0)+(T.focus?.08:0);
   const reduce=1-(1-armorRed(v('defense')))*(1-tb('defense').red);
-  // DEFENSE tattoo: every heal (REGEN, SALVAGE) is raised by its share h of the total block (ARMOR + DEFENSE, after the soft cap)
-  const healM=1+(tb('defense').h||0)*cutRed(reduce);
   const lk=tb('luck'),rk=tb('ricochet'),sw=tb('shockwave'),arc=tb('arc'),B=isBurst();
   // caps: what goes above one turns into a related bonus (ECO.parryOverStun ...)
   const dodgeRaw=v('dodge')+tb('dodge').d,bounceRaw=v('bounce')+rk.c;
@@ -1767,11 +1765,10 @@ function stats(){
     pellets:   B?BURST.pellets:1, pellet:B?BURST.dmg:1,
     hitDmg:    dmg*(B?BURST.dmg:1),   // bullet damage with the mode bonus: pellets, TWIN, ARC, NOVA, SHOCKWAVE, bombs
     maxHp,
-    regen:     v('regen')*M.regen*healM,
+    regen:     v('regen')*M.regen,
     // REGEN tattoo: this share of max health per second at full health, up to (1+ECO.regenLow)x as health runs out
     // (since 2026-11-06 of the whole max health, MAX HP tattoo included; pct was lowered so the pair stays where it was)
-    regenT:    maxHp*tb('regen').pct*M.regen*healM,
-    healM,
+    regenT:    maxHp*tb('regen').pct*M.regen,
     dmgTaken:  (1-cutRed(reduce))*M.taken,
     mult:      v('coinMult')*(T.lucky?1.5:1)*(1+tb('coin_mult').c)*tierCoinMult(runTier)*(runFx.midT>0?runFx.midM:1)*(1+stars*STAR.coin)*M.coin,
     coinChance:Math.min(1,ECO.coinChance+v('lootChance')),
@@ -1780,13 +1777,13 @@ function stats(){
     kbChance:  Math.min(.8,v('knockback')),
     thornPct:  Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn),
     thornBoss: Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn)*ECO.bossThorns+Math.max(0,(v('thorns')+tb('thorns').t)*M.thorn-1)*ECO.bossThornsOver,   // share a boss loses
-    thornHeal: ECO.thornHeal*Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn)*healM,   // 0.7.4: an enemy killed by thorns heals this share of max health
+    thornHeal: ECO.thornHeal*Math.min(1,(v('thorns')+tb('thorns').t)*M.thorn),   // 0.7.4: an enemy killed by thorns heals this share of max health
     crit:      Math.min(.8,critRaw),
     critM:     v('critMult')+(tb('crit_chance').m||0)+Math.max(0,critRaw-.8)*3,   // CRIT POWER tattoo (id crit_chance)
     dodge:     Math.min(.5,dodgeRaw),
     parryStun: ECO.parryStun+(tb('dodge').s||0)+Math.max(0,dodgeRaw-.5)*ECO.parryOverStun,
-    salv:      (v('lifesteal')+(B?BURST.heal||0:0))*M.ls*healM,
-    salvT:     tb('lifesteal').l*M.ls*healM,   // SALVAGE tattoo: same heal, wider zone (ECO.salvZoneT)   // SALVAGE (+ BURST's own): share of max health healed per kill near the perimeter
+    salv:      (v('lifesteal')+(B?BURST.heal||0:0))*M.ls,
+    salvT:     tb('lifesteal').l*M.ls,   // SALVAGE tattoo: same heal, wider zone (ECO.salvZoneT)   // SALVAGE (+ BURST's own): share of max health healed per kill near the perimeter
     multiChance:Math.min(.6,v('multishot')),
     bounce:    Math.min(.85,bounceRaw),
     bounceM:   1+Math.max(0,bounceRaw-.85)*ECO.bounceOverDmg,   // damage x of a bounced bullet
@@ -3987,7 +3984,7 @@ $('tatBack').addEventListener('click',closeTattoos);
 // level chart columns per tattoo: [effect key, header, format]
 const TAT_COLS={
   attack_power:[['dmg','DAMAGE','+%']],attack_speed:[['rate','FIRE RATE','+%']],max_hp:[['hp','MAX HP','+%']],
-  regen:[['pct','HEAL / SEC','%2']],defense:[['red','DMG TAKEN','-%'],['h','HEAL BONUS','%']],coin_mult:[['c','COINS','+%']],
+  regen:[['pct','HEAL / SEC','%2']],defense:[['red','DMG TAKEN','-%']],coin_mult:[['c','COINS','+%']],
   luck:[['jack','x3 CHANCE','%'],['drop','MORE DROPS','+%']],
   crit_chance:[['m','CRIT DMG','+x']],crit_mult:[['s','SPLASH','%']],dodge:[['d','PARRY','+%']],thorns:[['t','THORNS','+%']],
   frost:[['c','SLOW %','+%'],['a','SLOW PWR','+%'],['vuln','BONUS DMG','+%']],reach:[['r','RANGE','+r'],['s','CARRY','%']],
@@ -4886,6 +4883,8 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.6',date:'2026-11-12',name:'UPDATE 0.7.6',lines:[
+    {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'}]},
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
     {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},
     {text:'LANCE throws its lance less often at the higher levels (every 5th shot at level 7, was every 3rd): at the top level it was as strong as a mythic tattoo.'}]},
@@ -5086,7 +5085,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.7.5';
+const GAME_VERSION='0.7.6';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

@@ -1950,6 +1950,7 @@ const dmgBy=(src,d)=>{if(d>0)runDmgBy[src]=(runDmgBy[src]||0)+d;};
 // times each active / automatic tattoo or bomb went off, gems picked up, the biggest single hit
 const newRunSt=()=>({kN:0,kE:0,kB:0,cK:0,cD:0,cB:0,par:0,aeg:0,heal:0,use:{},gem:0,big:0});
 let runSt=newRunSt();
+let runPerf={n:0,ms:0};   // frames and their total ms in this run (sent with run_end: which phones are slow)
 const healBy=(st,h)=>{const n=Math.min(st.maxHp,hp+h);if(n>hp){runSt.heal+=n-hp;hp=n;}};
 const usedTat=id=>{runSt.use[id]=(runSt.use[id]||0)+1;};
 const runPay=c=>runAuto&&c>0?Math.max(1,Math.round(c*AUTO_RETRY.share)):c;   // coins an AUTO RETRY run actually pays
@@ -1984,7 +1985,7 @@ function initRun(){
   triX=GW/2;hp=stats().maxHp;runCoins=0;paused=false;confirmEndRun=false;
   waveNum=0;enemies=[];bullets=[];particles=[];pickups=[];textParticles=[];thruster=[];
   wavePhase='between';waveTimer=.5;deadTimer=0;fireCooldown=0;shockCooldown=0;
-  runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;runDmgBy={};runHitBy={};runSt=newRunSt();
+  runDmgDealt=0;runDmgTaken=0;runKills=0;runWave=0;runStart=Date.now();runNewBest=false;runDmgBy={};runHitBy={};runSt=newRunSt();runPerf={n:0,ms:0};
   runEarned=0;runPlayT=0;shotCount=0;aegisT=0;arcs=[];novas=[];beams=[];actCD={};shatterQ=[];spits=[];burns=[];runUnlockSnd=0;lanceCount=0;novaCharge=0;lanceSparks=[];
   cancelArm();bombs=[];
   shake={x:0,y:0,t:0};muzzle=[];screenFlash=0;
@@ -2112,7 +2113,7 @@ function adPreload(){
   adsInit().then(ok=>ok&&A.prepareRewardVideoAd(adOpts())).then(r=>{if(r)adLoaded=true;}).catch(()=>{adLoaded=false;});
 }
 // → true only when the player earned the reward (always true in the browser)
-async function playRewardedAd(){
+async function playRewardedAd(place){
   const A=AD();if(!A||adBusy)return false;   // browser: no ads, so no reward
   adBusy=true;
   const hs=[];let rewarded=false,shown=false,err='';
@@ -2133,13 +2134,14 @@ async function playRewardedAd(){
   }catch(e){err=String((e&&(e.message||e.code))||e);}
   hs.forEach(h=>{try{h.remove();}catch(e){}});
   adBusy=false;setTimeout(adPreload,500);
+  track('ad_result',{place:place||'',res:rewarded?'ok':shown?'quit':'none',err:rewarded?'':err.slice(0,90)});
   if(!rewarded){snd('deny');toast(shown?T('WATCH THE WHOLE AD TO GET THE REWARD'):(ADS_TEST&&err?'['+err.slice(0,50)+'] ':'')+T('NO AD AVAILABLE. TRY AGAIN LATER.'),true);}
   return rewarded;
 }
 async function useAd(place){
   if(adCooldown()>0){snd('deny');return false;}
-  if(!await playRewardedAd())return false;
-  save.gems+=ECO.adGems;save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;
+  if(!await playRewardedAd(place))return false;
+  save.gems+=ECO.adGems;gemEarn('ad_'+place,ECO.adGems);save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;
   persist();snd('gem');achCheck();track('ad_watched',{place});
   toast(`${T('AD REWARD')}<br>${I('gem')} ${T('+{0} GEM',ECO.adGems)}<small>${T('TOTAL: {0}',fmtN(save.gems))}</small>`,false,true,3200);
   return true;
@@ -2185,7 +2187,7 @@ function resumeRun(mr){
 function saveProgress(){
   if(runWeekly){
     const W=weeklyState();W.best=Math.max(W.best,runWave);
-    for(const [w,g] of WEEKLY_REWARDS)if(runWave>=w&&!W.got.includes(w)){W.got.push(w);save.gems+=g;runSt.gem+=g;toast(T('WEEKLY WAVE {0} · +{1} GEM',w,g));snd('gem');}
+    for(const [w,g] of WEEKLY_REWARDS)if(runWave>=w&&!W.got.includes(w)){W.got.push(w);save.gems+=g;runSt.gem+=g;gemEarn('weekly',g);toast(T('WEEKLY WAVE {0} · +{1} GEM',w,g));snd('gem');}
   }else{
     const before=tierStars(runTier);
     if(runWave>(save.tierBest[runTier]||0)){save.tierBest[runTier]=runWave;save.bestWave=bestEffWave();}
@@ -2224,10 +2226,16 @@ function triggerDeath(quit){
     saveProgress();
   }
   runUnlockedTier=maxUnlockedTier()>runPrevMaxTier?maxUnlockedTier():0;
-  // next-run boosts last exactly one run
-  save.temp={};
   LIFE().runs++;LIFE().dmg+=runDmgDealt;achCheck();
-  track('run_end',{tier:runTier,wave:runWave,secs:Math.round(runPlayT),weekly:runWeekly?1:0,best:runNewBest?1:0,run_no:LIFE().runs});
+  {const foe=deadTop(runHitBy,1)[0]||['',0],dmg=deadTop(runDmgBy,2),eq=save.equipped.filter(id=>TT[id]),h=Math.ceil(eq.length/2);
+   let act=0;for(const id in runSt.use)if(tapAct(id))act+=runSt.use[id];
+   track('run_end',{tier:runTier,wave:runWave,secs:Math.round(runPlayT),weekly:runWeekly?1:0,best:runNewBest?1:0,run_no:LIFE().runs,
+     eff:runWeekly?0:(runTier-1)*TIERS.offset+runWave,foe:foe[0],foe_pct:foe[1],dmg1:(dmg[0]||[''])[0],dmg2:(dmg[1]||[''])[0],
+     kills:runKills,coins:Math.round(runCoins),gems:runSt.gem,act,rdy:Math.round(runSt.rdy||0),auto:runAuto?1:0,quit:quit?1:0,
+     fps:runPerf.ms>0?Math.round(1000*runPerf.n/runPerf.ms):0,tats1:eq.slice(0,h).join(','),tats2:eq.slice(h).join(','),
+     boosts:Object.keys(save.temp||{}).join(','),mode:save.mode||'rapid'});
+   trackProps();}
+  save.temp={};   // next-run boosts last exactly one run (cleared after run_end has named them)
   if(runAuto){autoSess.runs++;autoSess.coins+=runCoins;autoSess.best=Math.max(autoSess.best,runWave);}
   runQuit=!!quit;   // ended from the pause menu: no AUTO RETRY countdown this time (the switch stays on)
   persist();paused=false;confirmEndRun=false;hp=0;state=ST.DEAD;deadTimer=0;autoLeft=0;keepAwake(wakeWanted());
@@ -2450,6 +2458,7 @@ function arcStrike(first,st){
 
 // ── ACTIVE TATTOOS ───────────────────────────────────────────────────────────
 const isAct=id=>TT[id]&&TT[id].act;
+const tapAct=id=>isAct(id)&&id!=='midas'&&id!=='nova';   // the ones the player taps
 const activeIds=()=>save.equipped.filter(isAct);
 function useActive(id){
   if(state!==ST.PLAY||paused||(actCD[id]||0)>0){snd('deny');return;}
@@ -2595,7 +2604,7 @@ function loop(ts){
   const rawMs=ts-lastTime;
   frameDt=Math.min(rawMs/1000,.05);lastTime=ts;
   if(ecoWake>0&&!paused)ecoWake=Math.max(0,ecoWake-frameDt);   // a tap on the ECO+ screen shows the game for ECO_WAKE seconds
-  if(state===ST.PLAY&&!paused&&!document.hidden)perfSample(rawMs);
+  if(state===ST.PLAY&&!paused&&!document.hidden){perfSample(rawMs);if(rawMs>0&&rawMs<=250){runPerf.n++;runPerf.ms+=rawMs;}}
   if(state===ST.MENU){updateMenu(frameDt);drawMenu();}
   else if(state===ST.PLAY){
     // a slow phone draws fewer frames, but the run still moves at its real speed: a long frame (down to 10 fps) gets
@@ -2649,6 +2658,8 @@ function updatePlay(dt){
   for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];b.t+=dt;if(b.t>=b.dur){bombs.splice(i,1);blastBomb(b);}}
   // tattoo timers
   for(const id in actCD){const was=actCD[id];actCD[id]=Math.max(0,was-dt);if(was>0&&actCD[id]===0&&TT[id]&&TT[id].gren)snd('ready');}
+  // seconds a button tattoo (active or bomb) sat ready and unused: with the uses, how late players really tap (the sim guesses it)
+  for(const id of save.equipped)if(tapAct(id)&&!(actCD[id]>0))runSt.rdy=(runSt.rdy||0)+dt;
   if(runFx.odT>0)runFx.odT-=dt;
   if(runFx.midT>0)runFx.midT-=dt;
   if(runFx.guardT>0)runFx.guardT-=dt;
@@ -3809,7 +3820,7 @@ function autoBuyBoosts(){
   for(const u of TEMP_UPGRADES){
     if(!save.autoBoost[u.id]||save.temp[u.id])continue;
     const c=tempCost(u);if(c>budget)continue;budget-=c;
-    save.coins-=c;save.temp[u.id]=1;got.push(u.name);LIFE().boosts=(LIFE().boosts||0)+1;
+    save.coins-=c;save.temp[u.id]=1;got.push(u.name);LIFE().boosts=(LIFE().boosts||0)+1;track('boost_buy',{id:u.id,auto:1});
   }
   if(got.length){persist();toast(T(got.length>1?'AUTO: {0} BOOSTS':'AUTO: {0} BOOST',got.length));}
 }
@@ -3947,11 +3958,12 @@ $('shopList').addEventListener('click',e=>{
     for(let k=0;k<n;k++){const c=upCost(u,lv);if(save.coins<c)break;save.coins-=c;lv++;}
     // buying GAME SPEED while running at the old max: keep running at the (new) max
     if(u.id==='gameSpeed'&&save.settings.speed&&save.settings.speed>=permVal('gameSpeed')-1e-6)delete save.settings.speed;
+    track('shop_buy',{id:u.id,lv,n:lv-(save.perm[u.id]||0)});
     LIFE().levels+=lv-(save.perm[u.id]||0);save.perm[u.id]=lv;persist();snd('buy');renderShop();achCheck();
   }else if(b.dataset.temp){
     const u=TEMP_UPGRADES.find(x=>x.id===b.dataset.temp),c=tempCost(u);
     if(save.temp[u.id]||save.coins<c){snd('deny');return;}
-    save.coins-=c;save.temp[u.id]=1;LIFE().boosts=(LIFE().boosts||0)+1;persist();snd('buy');renderShop();achCheck();
+    save.coins-=c;save.temp[u.id]=1;LIFE().boosts=(LIFE().boosts||0)+1;persist();snd('buy');renderShop();achCheck();track('boost_buy',{id:u.id,auto:0});
   }else if(b.dataset.theme){
     const t=THEMES.find(x=>x.id===b.dataset.theme);
     if(save.theme===t.id)return;
@@ -3959,7 +3971,7 @@ $('shopList').addEventListener('click',e=>{
     const free=!save.freeTheme;
     if(!free&&save.gems<t.price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
     if(pendingTheme!==t.id){pendingTheme=t.id;snd('blip');renderShop();return;}
-    if(free)save.freeTheme=t.id;else save.gems-=t.price;
+    if(free)save.freeTheme=t.id;else{save.gems-=t.price;gemSpend('theme',t.price);}
     save.themesOwned.push(t.id);pendingTheme=null;
     setTheme(t.id);toast(T('{0} UNLOCKED',T(t.name)));
   }
@@ -4018,7 +4030,7 @@ function doPull(count){
   count=Math.min(count,left);
   const freeOne=count===1&&save.freeInk===1,cost=freeOne?0:count===10?ECO.pull10Cost:ECO.pullCost*count;
   if(save.gems<cost){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
-  save.gems-=cost;if(freeOne)save.freeInk=2;LIFE().pulls+=count;snd('summon');track('summon',{count});
+  save.gems-=cost;if(freeOne)save.freeInk=2;LIFE().pulls+=count;snd('summon');track('summon',{count});if(cost)gemSpend('ink',cost);
   const results=[];
   for(let i=0;i<count;i++){
     const top=pityRar(),hit=(save.pity||0)>=PITY-1,t=rollType();if(!t)break;   // the pity counter resets on the rarest tier still in the pool (epics may all be maxed late on) and on the guaranteed ink itself (a WISH epic)
@@ -4187,7 +4199,7 @@ function renderTattoos(){
       d.addEventListener('click',()=>{
         if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
         if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
-        save.gems-=price;save.slotGem++;slotSync();pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
+        save.gems-=price;gemSpend('slot',price);save.slotGem++;slotSync();pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
       });
     }else if(i>=MAX_SLOTS-(SLOT_TIERS.length-(save.slotTier||0))){
       // the last slots open with a tier: each shows which one (tap: a hint)
@@ -4355,12 +4367,13 @@ $('questList').addEventListener('click',e=>{
   if(ab){
     const a=ACHS.find(x=>x.id===ab.dataset.ach);
     if(!a||!achDone(a)||save.achClaimed.includes(a.id)){snd('deny');return;}
-    save.achClaimed.push(a.id);save.gems+=a.gems;save.coins+=a.coins||0;persist();snd('buy');toast(T('+{0} GEM',a.gems)+(a.coins?' · '+T('+{0} COINS',fmtN(a.coins)):''));renderQuests();renderQuestDot();return;
+    save.achClaimed.push(a.id);save.gems+=a.gems;gemEarn('ach',a.gems);save.coins+=a.coins||0;persist();snd('buy');toast(T('+{0} GEM',a.gems)+(a.coins?' · '+T('+{0} COINS',fmtN(a.coins)):''));renderQuests();renderQuestDot();return;
   }
   const b=e.target.closest('[data-claim]');if(!b)return;
   const q=save.quests.find(x=>x.id===b.dataset.claim);
   if(!q||!questDone(q)){snd('deny');return;}
   save.gems+=q.gems;save.coins+=q.coins;save.quests=save.quests.filter(x=>x!==q);LIFE().quests++;achCheck();
+  gemEarn('quest_'+q.kind,q.gems);track('quest_claim',{kind:q.kind,k:q.k});
   persist();snd('buy');toast(T('+{0} GEM',q.gems)+' · '+T('+{0} COINS',fmtN(q.coins)));refreshQuests();renderQuests();renderQuestDot();
 });
 setInterval(()=>{refreshQuests();if($('questPanel').classList.contains('open')&&questTab==='q')renderQuestTimers();},1000);
@@ -4412,7 +4425,7 @@ async function redeemGift(text){
   if(save.redeemed.includes(r.i)){snd('deny');toast(T('CODE ALREADY USED'),true);return;}
   if(r.x&&Math.floor(gameNow()/864e5)>r.x){snd('deny');toast(T('CODE EXPIRED'),true);return;}
   const got=[];
-  if(r.g>0){save.gems+=Math.floor(r.g);got.push(T('{0} GEMS',fmtN(r.g)));}
+  if(r.g>0){save.gems+=Math.floor(r.g);gemEarn('code',Math.floor(r.g));got.push(T('{0} GEMS',fmtN(r.g)));}
   if(r.c>0){save.coins+=Math.floor(r.c);got.push(T('{0} COINS',fmtN(r.c)));}
   // themes: a list of ids, or 'all'
   const th=r.th==='all'?THEMES.map(t=>t.id):Array.isArray(r.th)?r.th:[];
@@ -4536,7 +4549,7 @@ let coachCur=null,coachEl=null;
 const bombIdle=()=>TAT_TYPES.some(t=>t.gren&&tatOf(t.id).lv)&&!save.equipped.some(id=>TT[id]&&TT[id].gren);   // owns a bomb, none equipped
 function coachClear(done){
   if(coachEl)coachEl.classList.remove('coach');
-  if(done&&coachCur){if(!save.coach)save.coach={};save.coach[coachCur.id]=1;persist();}
+  if(done&&coachCur){if(!save.coach)save.coach={};save.coach[coachCur.id]=1;persist();track('coach_done',{step:coachCur.id,run_no:LIFE().runs});}
   coachCur=coachEl=null;$('coachTip').classList.remove('show');
 }
 function coachCheck(where){
@@ -4549,7 +4562,8 @@ function coachCheck(where){
     const el=document.querySelector(c.sel);if(!el||!el.offsetParent||coverOf(el))continue;
     // a step the player keeps ignoring retires after a few showings
     if(!save.coachN)save.coachN={};save.coachN[c.id]=(save.coachN[c.id]||0)+1;
-    if(save.coachN[c.id]>6){save.coach[c.id]=1;continue;}
+    if(save.coachN[c.id]>6){save.coach[c.id]=1;track('coach_skip',{step:c.id});continue;}
+    if(save.coachN[c.id]===1)track('coach_show',{step:c.id,run_no:LIFE().runs});
     coachCur=c;coachEl=el;el.classList.add('coach');placeCoach(el,T(c.text),c.up);return;
   }
 }
@@ -4928,7 +4942,7 @@ function showAway(){
   $('away').classList.add('show');
 }
 function collectAway(mult){
-  const c=Math.floor(save.awayPending*mult);snd('collect');
+  const c=Math.floor(save.awayPending*mult);snd('collect');track('offline_claim',{secs:Math.round(save.awaySecs||0),coins:c,x2:mult>1?1:0});
   save.coins+=c;save.awayPending=0;save.awaySecs=0;persist();
   $('away').classList.remove('show');snd('buy');toast(T('+{0} COINS',fmtN(c)));
   if(state===ST.MENU)renderMenu();
@@ -4937,7 +4951,7 @@ function collectAway(mult){
 $('awGet').addEventListener('click',()=>collectAway(1));
 $('awAd').addEventListener('click',()=>{
   if(adCooldown()>0){snd('deny');return;}
-  playRewardedAd().then(ok=>{
+  playRewardedAd('idle').then(ok=>{
     if(!ok)return;
     adsLeftToday();save.adLastUsed=gameNow();save.adCount=(save.adCount||0)+1;track('ad_watched',{place:'idle'});collectAway(2);
   });
@@ -4965,7 +4979,7 @@ function openDaily(){renderDaily();$('dailyUI').classList.add('show');snd('click
 function claimDaily(){
   if(!dailyReady()){snd('deny');return;}
   const d=DAILY[save.daily.n%DAILY.length],c=d.c?dailyCoins(d.c):0;
-  save.gems+=d.g||0;save.coins+=c;
+  save.gems+=d.g||0;save.coins+=c;if(d.g)gemEarn('daily',d.g);
   save.daily={n:save.daily.n+1,last:dailyToday()};
   persist();snd('gem');track('daily_claim',{day:save.daily.n});
   toast([d.g?T('+{0} GEM',d.g):'',c?T('+{0} COINS',fmtN(c)):''].filter(Boolean).join(' · '));
@@ -5136,8 +5150,9 @@ $('notifToggle').addEventListener('click',async()=>{
 
 // ── USAGE STATS & CRASH REPORTS (Firebase, Android app only) ─────────────────
 // Off in the manifest. Switched on only after the consent flow has finished (the same Google consent form as the ads)
-// and only while the player keeps USAGE STATS on in Settings. No user ID, no personal data: a handful of game events
-// (run start/end, tier unlocks, summons, daily reward, ad rewards) and errors. Session and retention numbers are automatic.
+// and only while the player keeps USAGE STATS on in Settings. No user ID, no personal data: game events (runs and how they ended,
+// first-steps coach, shop and boost buys, gems in/out, ads, idle income, quests, tier unlocks) and errors. Sessions and retention are automatic.
+// Every event answers a question in GUIDE.md (analytics review 2026-11-11).
 const FA=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.FirebaseAnalytics;
 const FC=()=>IS_APP&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.FirebaseCrashlytics;
 let statsConsent=false,statsOn=null,errSent=0;
@@ -5146,6 +5161,7 @@ function statsApply(){
   if(on===statsOn)return;statsOn=on;
   try{
     if(FA())FA().setEnabled({enabled:on}).catch(()=>{});
+    if(on)setTimeout(trackProps,0);
     if(FC())FC().setEnabled({enabled:on}).catch(()=>{});
   }catch(e){}
 }
@@ -5153,6 +5169,14 @@ function track(name,params){
   if(!statsOn)return;
   const A=FA();if(!A)return;
   try{A.logEvent({name,params}).catch(()=>{});}catch(e){}
+}
+const gemEarn=(src,n)=>track('earn_virtual_currency',{virtual_currency_name:'gems',value:n,src});
+const gemSpend=(item,n)=>track('spend_virtual_currency',{virtual_currency_name:'gems',value:n,item_name:item});
+// player-level facts every event carries in the reports (no personal data)
+function trackProps(){
+  if(!statsOn)return;const A=FA();if(!A||!A.setUserProperty)return;
+  const P={max_tier:String(maxUnlockedTier()),lang:save.settings.lang||'en',fx:save.settings.fx||'high',theme:save.theme||'default',slots:String(save.tatSlots||1)};
+  for(const k in P)try{A.setUserProperty({key:k,value:P[k]}).catch(()=>{});}catch(e){}
 }
 // JavaScript errors are where this game would really break; at most 5 per session are sent
 function reportErr(msg){

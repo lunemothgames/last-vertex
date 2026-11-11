@@ -1,8 +1,9 @@
 // Uploads the store listing text (store/listing.md) and the graphics to Google Play with the upload robot.
 //   node tools/play-listing.js          only shows what is on Play now
 //   node tools/play-listing.js push     replaces text, phone screenshots and feature graphic, only in languages that already exist on Play
+//   node tools/play-listing.js push new same, and also adds the languages of listing.md that Play does not have yet
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
-const root=path.join(__dirname,'..'),pkg='com.lunemoth.lastvertex',push=process.argv[2]==='push';
+const root=path.join(__dirname,'..'),pkg='com.lunemoth.lastvertex',push=process.argv[2]==='push',addNew=process.argv[3]==='new';
 // listing.md section → [Play language codes, screenshot folder]
 const LANGS={'English':[['en-US'],'en'],'Türkçe':[['tr-TR'],'tr'],'Español':[['es-419','es-ES'],'es'],'Português':[['pt-BR','pt-PT'],'pt']};
 const key=JSON.parse(fs.readFileSync(path.join(root,'keys','play-service-account.json'),'utf8'));
@@ -33,7 +34,7 @@ for(const sec of md.split(/^## /m).slice(1)){
     if(!push){await fetch(E,{method:'DELETE',headers:H});return;}
     for(const [name,[codes,dir]] of Object.entries(LANGS)){
       const files=fs.readdirSync(path.join(root,'store','screenshots',dir)).filter(f=>/\.png$/.test(f)).sort();
-      for(const code of codes.filter(c=>have.has(c))){
+      for(const code of codes.filter(c=>have.has(c)||addNew)){
         await call('text '+code,`${E}/listings/${code}`,{method:'PUT',headers:J,body:JSON.stringify({language:code,...texts[name]})});
         await call('clear shots '+code,`${E}/listings/${code}/phoneScreenshots`,{method:'DELETE',headers:H});
         for(const f of files)await call('shot '+f,`https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/${pkg}/edits/${edit.id}/listings/${code}/phoneScreenshots?uploadType=media`,{method:'POST',headers:{...H,'content-type':'image/png'},body:fs.readFileSync(path.join(root,'store','screenshots',dir,f))});

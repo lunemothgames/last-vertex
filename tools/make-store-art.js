@@ -15,12 +15,12 @@ const LANGS=process.argv.slice(2).length?process.argv.slice(2):Object.keys(TEXT)
 const FONT_CSS=(fs.readFileSync(path.join(root,'index.html'),'utf8').match(/@font-face\{[^}]+\}/g)||[]).join('\n');
 const HINTS={menu:1,start:1,breach:1,drops:1,hud:1,shop:1,tattoo:1,quests:1,tier:1,target:1,active:1};
 // a mid-game player: a few tiers in, some tattoos, an active build
-const SAVE={coins:4.2e7,gems:340,tier:3,tierBest:{1:80,2:66,3:38},tatSlots:4,themesOwned:['ice'],
+const SAVE={coins:4.2e7,gems:340,tier:3,tierBest:{1:80,2:66,3:38},tatSlots:5,freeInk:2,tgDone:4,themesOwned:['ice'],
   perm:{damage:520,fireRate:70,maxHp:480,regen:380,defense:180,thorns:90,critChance:90,critMult:60,multishot:70,bounce:40,cooldown:30,
     pierce:20,coinMult:150,lootChance:60,bounty:40,gameSpeed:8,offline:10},
   tatCol:{attack_power:{lv:5,copies:2},twin:{lv:3,copies:1},nova:{lv:4,copies:0},arc:{lv:2,copies:3},crit_mult:{lv:4,copies:1},
     max_hp:{lv:5,copies:0},regen:{lv:3,copies:2},coin_mult:{lv:4,copies:1},frost:{lv:2,copies:0},aegis:{lv:1,copies:0},thorns:{lv:3,copies:0}},
-  equipped:['attack_power','twin','nova','arc'],settings:{fx:'high',target:0,lang:'en'},coach:Object.fromEntries(['play','shop','buy','again','help','tattoo','summon','equip','quests','tier','weekly'].map(k=>[k,1])),hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
+  equipped:['attack_power','twin','nova','arc','crit_mult'],settings:{fx:'high',target:0,lang:'en'},coach:Object.fromEntries(['play','shop','buy','again','help','tattoo','summon','equip','quests','tier','weekly'].map(k=>[k,1])),hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
 // a 10x summon to show off: two new tattoos, a few level-ups
 const GACHA=[['ricochet',{isNew:1,lv:1}],['attack_speed',{lv:3}],['nova',{leveled:1,lv:5}],['luck',{lv:2}],['crit_mult',{lv:4}],
   ['max_hp',{leveled:1,lv:6}],['frost',{lv:2}],['twin',{leveled:1,lv:4}],['regen',{lv:3}],['shatter',{isNew:1,lv:1}]];

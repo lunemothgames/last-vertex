@@ -733,7 +733,6 @@
  "Every new tier you open gives one free tattoo of your choice": "Açtığın her yeni tier, seçtiğin bir dövmeyi bedava verir",
  "GIFT": "HEDİYE",
  "NO WISH SET · TAP TO PICK ONE": "DİLEK YOK · SEÇMEK İÇİN DOKUN",
- "Pick a rare, epic or mythic tattoo: the guaranteed ink gives you that one": "Nadir, epik ya da destansı bir dövme seç: garanti dövme o olur",
  "Pick one tattoo, it is free": "Bir dövme seç, bedava",
  "TAKE": "AL",
  "TIER {0} GIFT": "TIER {0} HEDİYESİ",
@@ -742,7 +741,6 @@
  "WISH": "DİLEK",
  "WISH: {0}": "DİLEK: {0}",
  "WISH: {0} · TAP TO CHANGE": "DİLEK: {0} · DEĞİŞTİRMEK İÇİN DOKUN",
- "Your guaranteed ink gives this tattoo": "Garanti dövmen bu olur",
  "UPDATE 0.7.4": "GÜNCELLEME 0.7.4",
  "Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.": "Açtığın her yeni tier artık seçtiğin bir dövmeyi bedava veriyor. Tier 2'de sende olmayan bütün epik dövmeler arasından seçersin, böylece istediğin tarzı çok daha erken oynarsın. Daha önce açtığın tierlar da sayılır: hediyeleri DÖVMELER'de seni bekliyor.",
  "WISH: under the ink buttons, pick one rare, epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.": "DİLEK: dövme yaptırma düğmelerinin altından nadir, epik ya da destansı bir dövme seç. Garanti dövmen (50 içinde) o olur.",
@@ -781,5 +779,9 @@
  "Boosts cost twice as much as before: buying all of them every run had become the normal way to play.": "Takviyeler artık eskisinin iki katı fiyatında: her koşuda hepsini almak oyunun olağan yolu hâline gelmişti.",
  "Tattoos you do not have yet come twice as often": "Sende olmayan dövmeler iki kat sık çıkar",
  "Inks now give tattoos you do not have yet twice as often, so fewer copies of the same ones and your style comes sooner. The chances on the ink screen show it.": "Dövme yaptırınca artık sende olmayan dövmeler iki kat sık çıkıyor: aynı dövmeden daha az kopya gelir, tarzın daha erken gelir. Ekrandaki çıkma şansları bunu gösteriyor.",
- "Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.": "Seviyesi 4 ve üstü olan bir dövmeye mürekkep dökmek artık daha ucuz (dörtte bir az, yukarı yuvarlanır): son seviyeler en uzun sürüyordu."
+ "Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.": "Seviyesi 4 ve üstü olan bir dövmeye mürekkep dökmek artık daha ucuz (dörtte bir az, yukarı yuvarlanır): son seviyeler en uzun sürüyordu.",
+ "Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count": "Nadir, epik ya da destansı bir dövme seç: kendi sayacıyla 50 dövme içinde gelir",
+ "This tattoo comes within 50 inks": "Bu dövme 50 dövme içinde gelir",
+ "WISH has its own count now: your wished tattoo comes within 50 inks, and the mythic guarantee keeps its own 50 as well. A random mythic no longer pushes your wish back.": "DİLEK artık kendi sayacına sahip: dilediğin dövme 50 dövme içinde gelir, destansı garantisi de kendi 50'sini ayrıca sayar. Rastgele çıkan bir destansı artık dileğini geciktirmiyor.",
+ "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Dokunuşu canının yarısını ya da daha fazlasını alacak düşmanlar artık kırmızı parlıyor: önce onları hallet."
 }

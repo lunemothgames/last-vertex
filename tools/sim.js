@@ -32,7 +32,7 @@ const opt=(a,b)=>{try{return cut(a,b);}catch(e){return '';}};   // a part an old
 const ECON_SRC=[opt('const tatPool=','function doPull'),opt('const pityRar=','\n'),opt('// ── QUESTS','const weekStartMs'),
   opt('// ── LIFETIME STATS','function achCheck'),opt('const DAILY=','function renderDailyDot')].join('\n');
 const ECON_OUT=['tatPool','rollType','pityRar','addTatCopy','tatOf','TAT_SLOT_PRICES','MAX_SLOTS','MAX_ACTIVE','makeQuest','QUEST','DAILY','dailyCoins',
-  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY','slotSync','slotPrice','pourPig','PIG_VAL','pourCost','tatMelted','TAT_MAX'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
+  'ACHS','achDone','MUTATORS','WEEKLY_REWARDS','weeklyKeys','AUTO_RETRY','maxUnlockedTier','giftLeft','giftTier','giftOptsNow','wishOk','PITY','WISH_PITY','slotSync','slotPrice','pourPig','PIG_VAL','pourCost','tatMelted','TAT_MAX'].map(n=>n+':typeof '+n+'==="undefined"?null:'+n).join(',');
 const save={settings:{},perm:{},tatCol:{},equipped:[],tatSlots:5,temp:{},tierBest:{1:0},tier:1,bestWave:0,coins:0,gems:0,tatV6:1,permV6:1};
 const G=new Function('save','GH','runTier',[cut('const SUFFIX=','// ── AUDIO'),cut('// ── ECONOMY','// ── STATE'),ECON_SRC,
   "return{"+ECON_OUT+",setMods:m=>{runMods=m;},GRENADE:typeof GRENADE===\"undefined\"?null:GRENADE,fmtN,ECO,TIERS,ENEMY_TYPES,PERM_UPGRADES,PU,TT,permVal,coinValueAt,upCost,stats,tb,totalStars,MASTERY,setTier:t=>{runTier=t;},TAT_TYPES,NOMODS,combineMods,BURST:typeof BURST===\"undefined\"?null:BURST,EVENTS:typeof EVENTS===\"undefined\"?null:EVENTS,eventFor:typeof eventFor===\"undefined\"?null:eventFor,EV_TUNE:typeof EV_TUNE===\"undefined\"?null:EV_TUNE,bossKindFor:typeof bossKindFor===\"undefined\"?null:bossKindFor,boostPrice:typeof boostPrice===\"undefined\"?null:boostPrice,crowdK:typeof crowdK===\"undefined\"?null:crowdK};"].join('\n'))(save,1,1);
@@ -827,7 +827,8 @@ const spendGems=()=>{
     const n=save.gems>=ECO.pull10Cost?10:save.gems>=ECO.pullCost&&own<save.tatSlots?1:0;
     if(!n||!G.tatPool().length)break;
     const c=n===10?ECO.pull10Cost:ECO.pullCost;save.gems-=c;SPENT.ink+=c;save.life.pulls+=n;
-    for(let i=0;i<n;i++){const top=G.pityRar(),hit=(save.pity||0)>=G.PITY-1,t=G.rollType();if(!t)break;save.pity=hit||t.rar===top?0:(save.pity||0)+1;G.addTatCopy(t.id);}
+    for(let i=0;i<n;i++){if(G.WISH_PITY){const t=G.rollType();if(!t)break;G.addTatCopy(t.id);continue;}   // 0.7.6+: rollType moves both counters (mythic, WISH)
+      const top=G.pityRar(),hit=(save.pity||0)>=G.PITY-1,t=G.rollType();if(!t)break;save.pity=hit||t.rar===top?0:(save.pity||0)+1;G.addTatCopy(t.id);}
   }
   equipBest();pigment();};
 // v0.7.4 PIGMENT (game pourPig): every owned tattoo that is neither equipped nor one of the build's own is marked MELT (its later copies

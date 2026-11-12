@@ -733,7 +733,6 @@
  "Every new tier you open gives one free tattoo of your choice": "Cada tier novo que você abre dá uma tatuagem grátis à sua escolha",
  "GIFT": "PRESENTE",
  "NO WISH SET · TAP TO PICK ONE": "SEM DESEJO · TOQUE PARA ESCOLHER",
- "Pick a rare, epic or mythic tattoo: the guaranteed ink gives you that one": "Escolha uma tatuagem rara, épica ou mítica: a tatuagem garantida será essa",
  "Pick one tattoo, it is free": "Escolha uma tatuagem, é grátis",
  "TAKE": "PEGAR",
  "TIER {0} GIFT": "PRESENTE DO TIER {0}",
@@ -742,7 +741,6 @@
  "WISH": "DESEJO",
  "WISH: {0}": "DESEJO: {0}",
  "WISH: {0} · TAP TO CHANGE": "DESEJO: {0} · TOQUE PARA MUDAR",
- "Your guaranteed ink gives this tattoo": "Sua tatuagem garantida será esta",
  "UPDATE 0.7.4": "ATUALIZAÇÃO 0.7.4",
  "Every new tier you open now gives you one free tattoo of your choice. In Tier 2 you pick from every epic tattoo you do not have yet, so you can play the style you want much sooner. Tiers you have already opened count too: their gifts are waiting in TATTOOS.": "Cada tier novo que você abre agora dá uma tatuagem grátis à sua escolha. No Tier 2 você escolhe entre todas as tatuagens épicas que ainda não tem, então joga o estilo que quer muito antes. Os tiers que você já abriu também contam: os presentes esperam em TATUAGENS.",
  "WISH: under the ink buttons, pick one rare, epic or mythic tattoo. Your guaranteed ink (within 50) gives you that one.": "DESEJO: abaixo dos botões de tatuar, escolha uma tatuagem rara, épica ou mítica. Sua tatuagem garantida (em 50) será essa.",
@@ -781,5 +779,9 @@
  "Boosts cost twice as much as before: buying all of them every run had become the normal way to play.": "Os reforços custam o dobro de antes: comprar todos em cada partida tinha virado o jeito normal de jogar.",
  "Tattoos you do not have yet come twice as often": "Tatuagens que você ainda não tem saem duas vezes mais",
  "Inks now give tattoos you do not have yet twice as often, so fewer copies of the same ones and your style comes sooner. The chances on the ink screen show it.": "Ao tatuar, as tatuagens que você ainda não tem saem agora duas vezes mais: menos cópias das mesmas e seu estilo chega antes. As chances na tela mostram isso.",
- "Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.": "Despejar pigmento numa tatuagem de nível 4 ou mais custa menos (um quarto a menos, arredondado para cima): os últimos níveis eram os que mais demoravam."
+ "Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.": "Despejar pigmento numa tatuagem de nível 4 ou mais custa menos (um quarto a menos, arredondado para cima): os últimos níveis eram os que mais demoravam.",
+ "Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count": "Escolha uma tatuagem rara, épica ou mítica: ela vem em 50 tatuagens, com sua própria contagem",
+ "This tattoo comes within 50 inks": "Esta tatuagem vem em 50 tatuagens",
+ "WISH has its own count now: your wished tattoo comes within 50 inks, and the mythic guarantee keeps its own 50 as well. A random mythic no longer pushes your wish back.": "O DESEJO agora tem sua própria contagem: sua tatuagem desejada vem em 50 tatuagens, e a garantia mítica continua contando seus próprios 50. Uma mítica aleatória não atrasa mais o seu desejo.",
+ "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Inimigos cujo toque tiraria metade da sua vida ou mais agora brilham em vermelho: cuide deles primeiro."
 }

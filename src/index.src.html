@@ -817,7 +817,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
         <b>NEW</b><span>Tattoos you do not have yet come twice as often</span>
         <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
-        <b>WISH</b><span>Pick a rare, epic or mythic tattoo: the guaranteed ink gives you that one</span>
+        <b>WISH</b><span>Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count</span>
         <b>GIFT</b><span>Every new tier you open gives one free tattoo of your choice</span>
         <b>◆</b><span>Active tattoo: adds a button in runs</span>
         <b>SLOTS</b><span>Unlock more slots with gems</span>
@@ -1320,6 +1320,7 @@ const ECO={
   coinDropSecs:30, coinDropMinKills:10, // a coin drop pays 30s of this run's income
   adGems:5,       adCooldown:900,  adDailyCap:10,
   pullCost:20,    pull10Cost:200,
+  dangerHit:.5,   // 0.7.6: enemies whose touch takes this share of max health (or more) glow red
   tempCostGrowth:1.06,  autoBoostShare:.2,   // AUTO spends at most this share of your coins on boosts before a run
   rangeBase:.5,   rangeMin:.33,         // range line y as a fraction of screen height (it never goes above ~1/3 from the top: the top third stays a safe zone; the rest turns into damage)
   kbPush:2.6,     slowTime:4,  multiExtra:2,  bigHunt:.5,     executeAt:.5,
@@ -3026,7 +3027,9 @@ function drawPlay(){
   // enemies
   // enemies fade in as they cross the bottom edge of the HUD band
   const TOP=GH*HUD_TOP;
-  enemies.forEach(e=>drawEnemy(e,TOP));
+  // 0.7.6: an enemy whose touch would take half your max health or more glows red (sudden deaths come with a warning)
+  const dangAtk=st.maxHp*ECO.dangerHit/Math.max(1e-9,st.dmgTaken);
+  enemies.forEach(e=>drawEnemy(e,TOP,dangAtk));
 
   // drops: drawn over the enemies so a crowd can never hide one
   pickups.forEach(g=>{
@@ -3092,7 +3095,7 @@ function drawPlay(){
 }
 
 const VIR_DASH=[2,4];
-function drawEnemy(e,TOP){
+function drawEnemy(e,TOP,dangAtk){
   const fa=Math.max(0,Math.min(1,(e.y-(TOP-e.sz))/(e.sz*.8)));
   if(fa<=0)return;
   const frozen=e.frozenT>0;
@@ -3114,6 +3117,9 @@ function drawEnemy(e,TOP){
   cx.strokeStyle=col;cx.lineWidth=e.boss||e.type==='tank'?2.5:e.elite?2.2:1.6;if(e.phased)cx.setLineDash([3,3]);cx.stroke();cx.setLineDash([]);
   if(e.armorThr&&e.type!=='armored'){cx.save();cx.setLineDash([]);cx.lineWidth=1;cx.globalAlpha*=.8;enemyPath(e.type,s*1.22);cx.stroke();cx.restore();}
   if(e.elite){cx.strokeStyle=hexA(C.a2,.5);cx.lineWidth=1;cx.setLineDash([3,3]);enemyPath(e.type,s*1.18);cx.stroke();cx.setLineDash([]);}
+  if(!e.boss&&dangAtk&&e.atk*Math.sqrt(riseF(e))>=dangAtk){   // danger glow: pulsing red outline
+    cx.save();cx.globalAlpha=ga*(.55+.35*Math.sin(lastTime*.012));cx.strokeStyle=C.hot;cx.lineWidth=2;cx.setLineDash([]);
+    if(!fxLow()){cx.shadowColor=C.hot;cx.shadowBlur=GW*.03;}enemyPath(e.type,s*1.32);cx.stroke();cx.restore();}
   cx.shadowBlur=0;cx.globalAlpha=.6*ga;cx.lineWidth=1;
   enemyInner(e.type,s);
   if(e.gooT>0){cx.globalAlpha=ga*.9;cx.strokeStyle=C.a;cx.lineWidth=2;cx.beginPath();cx.arc(0,0,s*1.45,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(0,e.gooT/GRENADE.goo.t));cx.stroke();}   // countdown ring
@@ -3895,15 +3901,19 @@ function giftOptsNow(){
   if(!save.tgOpts.ids.length){save.tgDone=maxUnlockedTier();save.tgOpts=null;return [];}   // every tattoo maxed: nothing left to give
   return save.tgOpts.ids;
 }
+// 0.7.6: the WISH has its own counter (save.wishN), apart from the mythic one (save.pity): it counts the inks while a wish is set and
+// starts again only when the wished tattoo comes (by luck or by the counter). A random mythic no longer pushes the wish back.
+const WISH_PITY=50;
+const wishN=()=>save.wishN??(save.wishN=save.pity||0);   // saves from before 0.7.6: the shared counter's progress carries over
+// one ink: the WISH tattoo when its counter is full, else the rarest tier still in the pool when the mythic counter is full, else random;
+// both counters are moved here
 function rollType(){
   const pool=tatPool();if(!pool.length)return null;
-  // pity: the PITY-th summon without an epic is always the rarest tier still in the pool, or the WISH tattoo when one is set
-  if((save.pity||0)>=PITY-1){
-    if(wishOk(save.wish))return TT[save.wish];
-    const top=Math.max(...pool.map(t=>t.rar)),src=pool.filter(t=>t.rar===top);
-    return pickW(src);
-  }
-  return pickW(pool);
+  const wOn=wishOk(save.wish),wHit=wOn&&wishN()>=WISH_PITY-1,top=pityRar(),hit=!wHit&&(save.pity||0)>=PITY-1;
+  const t=wHit?TT[save.wish]:hit?pickW(pool.filter(x=>x.rar===top)):pickW(pool);
+  save.pity=hit||t.rar===top?0:(save.pity||0)+1;   // the mythic counter resets on the rarest tier still in the pool (epics may all be maxed late on)
+  if(wOn)save.wishN=t.id===save.wish?0:wishN()+1;
+  return t;
 }
 // 0.7.6: tattoos not owned yet weigh twice as much (fewer copies of what you already have, the missing style cores come sooner)
 const inkW=t=>t.w*(tatOf(t.id).lv?1:2);
@@ -3923,8 +3933,7 @@ function doPull(count){
   save.gems-=cost;if(freeOne)save.freeInk=2;LIFE().pulls+=count;snd('summon');track('summon',{count});if(cost)gemSpend('ink',cost);
   const results=[];
   for(let i=0;i<count;i++){
-    const top=pityRar(),hit=(save.pity||0)>=PITY-1,t=rollType();if(!t)break;   // the pity counter resets on the rarest tier still in the pool (epics may all be maxed late on) and on the guaranteed ink itself (a WISH epic)
-    save.pity=hit||t.rar===top?0:(save.pity||0)+1;
+    const t=rollType();if(!t)break;   // rollType moves both counters (mythic and WISH)
     const r=addTatCopy(t.id);results.push({t,...r,lv:tatOf(t.id).lv});
   }
   persist();achCheck();
@@ -3956,7 +3965,7 @@ function openPick(mode){
   const ids=pickIds();if(!ids.length){renderTattoos();return;}
   snd('click');
   $('pickTitle').textContent=mode==='gift'?T('TIER {0} GIFT',giftTier()):T('WISH');
-  $('pickSub').textContent=mode==='gift'?T('Pick one tattoo, it is free'):T('Your guaranteed ink gives this tattoo');
+  $('pickSub').textContent=mode==='gift'?T('Pick one tattoo, it is free'):T('This tattoo comes within 50 inks');
   const cards=$('pickCards');cards.className='gcards pick'+(ids.length<=3?' three':'');
   cards.innerHTML=ids.map((id,i)=>{const t=TT[id],c=tatOf(id);return `<div class="gc r${t.rar}" data-id="${id}" style="--rc:var(--r${t.rar});--rc-rgb:var(--r${t.rar}-rgb);animation-delay:${(i*.06).toFixed(2)}s">
       <span class="new">${c.lv?'LV'+c.lv:T('NEW')}</span>${I(t.icon)}<span class="n">${T(t.name)}</span><span class="lv">${T(RAR_NAMES[t.rar])}</span></div>`;}).join('');
@@ -4062,8 +4071,8 @@ function renderTattoos(){
   const fi=save.freeInk===1;$('pull1Cost').textContent=fi?T('FREE'):ECO.pullCost;$('gachaSingle').querySelector('.c svg').style.display=fi?'none':'';$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
   $('oddsBox').innerHTML=oddsGrid();
-  const pr=wishOk(save.wish)?T(TT[save.wish].name):T(RAR_NAMES[pityRar()]);
-  $('pityNote').innerHTML='> '+(done?T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):left<=1?T('NEXT INK: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} INKS',pr,`<b>${left}</b>`));
+  const gLine=(pr,n)=>'> '+(n<=1?T('NEXT INK: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} INKS',pr,`<b>${n}</b>`));
+  $('pityNote').innerHTML=done?'> '+T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):gLine(T(RAR_NAMES[pityRar()]),left)+(wishOk(save.wish)?'<br>'+gLine(T(TT[save.wish].name),WISH_PITY-wishN()):'');
   $('wishBtn').style.display=done?'none':'';
   $('wishBtn').innerHTML=wishOk(save.wish)?T('WISH: {0} · TAP TO CHANGE','<b>'+T(TT[save.wish].name)+'</b>'):T('NO WISH SET · TAP TO PICK ONE');
   const gl=giftLeft();$('giftBar').style.display=gl?'':'none';
@@ -4898,6 +4907,8 @@ const INBOX=[
     {text:'CRIT POWER from the shop now goes up to x3.00 (was x3.50), and DAMAGE gives 10% more at every level: crit was still doing most of the damage in most styles. Levels above the new limit were refunded in coins.'},
     {text:'Boosts cost twice as much as before: buying all of them every run had become the normal way to play.'},
     {text:'Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.'},
+    {text:'WISH has its own count now: your wished tattoo comes within 50 inks, and the mythic guarantee keeps its own 50 as well. A random mythic no longer pushes your wish back.'},
+    {text:'Enemies whose touch would take half your health or more now glow red: deal with them first.'},
     {text:'Inks now give tattoos you do not have yet twice as often, so fewer copies of the same ones and your style comes sooner. The chances on the ink screen show it.'}]},
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
     {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},

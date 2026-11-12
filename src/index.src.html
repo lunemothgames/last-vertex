@@ -1473,13 +1473,13 @@ const boostPrice=(base,eff)=>Math.ceil(base*Math.pow(ECO.tempCostGrowth,eff));
 const PERM_CATS=[['atk','ATTACK','bullet'],['def','DEFENSE','shield'],['util','UTILITY','coins']];
 const PERM_UPGRADES=[
   // ── attack
-  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'bullet', base:8,   p:2.1,  max:1e6,  start:1,  step:.25,  ms:[200,1.1,5000], fx:v=>f2(v),
+  {id:'damage',    cat:'atk', name:'DAMAGE',     icon:'bullet', base:8,   p:2.1,  max:1e6,  start:1.1,step:.275, ms:[200,1.1,5000], fx:v=>f2(v),   // 0.7.6: x1.1 (pays for the lower CRIT POWER max)
    info:'Damage of every bullet your triangle fires. Every 200 levels (up to level 5000) the total is also multiplied by 1.1.'},
   {id:'fireRate',  cat:'atk', name:'FIRE RATE',  icon:'stream',  base:40,  g:1.12, max:100,  start:1,  step:.02,  fx:v=>v.toFixed(2)+'/s',
    info:'How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.'},
   {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.09, max:100,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. The shop goes up to 50%; tattoos can take it to 80%, and crit chance above that turns into crit power.'},
-  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:100,  start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),
+  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:75,   start:1.5,step:.02,   // 0.7.6: x3.5 → x3.0  fx:v=>'x'+v.toFixed(2),
    info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
   {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.17, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.'},
@@ -1703,6 +1703,12 @@ if(!save.critV74){
   for(const id of ['critChance','critMult']){const u=PERM_UPGRADES.find(x=>x.id===id),lv=save.perm[id]||0;
     if(lv>u.max){let c=0;for(let i=u.max;i<lv;i++)c+=upCost(u,i);save.coins=(save.coins||0)+c;save.perm[id]=u.max;}}
   save.critV74=1;
+}
+// v0.7.6: CRIT POWER x3.5 → x3.0 (DAMAGE x1.1 instead); levels above the new max are refunded the same way
+if(!save.critV76){
+  const u=PERM_UPGRADES.find(x=>x.id==='critMult'),lv=save.perm.critMult||0;
+  if(lv>u.max){let c=0;for(let i=u.max;i<lv;i++)c+=upCost(u,i);save.coins=(save.coins||0)+c;save.perm.critMult=u.max;}
+  save.critV76=1;
 }
 // RANGE left the shop in 0.7.0 (levels refunded then) and came back in 0.7.1: saves that skipped 0.7.0 simply keep their levels
 if(save.perm.slow){save.perm.slowAmt=(save.perm.slowAmt||0)+save.perm.slow;}
@@ -3688,13 +3694,13 @@ function attachHold(el,onTap,onHold){
 // ── SHOP ─────────────────────────────────────────────────────────────────────
 // next-run boosts: price grows with your best wave so they never become free
 const TEMP_UPGRADES=[
-  {id:'power',     name:'POWER SURGE',icon:'flame',  desc:'x1.5 damage',          base:30,info:'Multiplies bullet damage by 1.5 for one run.'},
-  {id:'rapid',     name:'RAPID FIRE', icon:'bolt2',  desc:'x1.25 fire rate',      base:25,info:'Multiplies fire rate by 1.25 for one run.'},
-  {id:'shield',    name:'SHIELD UP',  icon:'shieldp',desc:'x1.4 max HP',          base:10,info:'Multiplies max health by 1.4 for one run.'},
-  {id:'lucky',     name:'LUCKY',      icon:'clover', desc:'x1.5 coins',           base:35,info:'Multiplies all coins earned by 1.5 for one run.'},
-  {id:'berserk',   name:'BERSERK',    icon:'swords', desc:'x1.25 dmg · x1.2 spd', base:45,info:'x1.25 damage and x1.2 fire rate for one run.'},
-  {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:10,info:'Adds 8% critical hit chance for one run.'},
-  {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:20,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
+  {id:'power',     name:'POWER SURGE',icon:'flame',  desc:'x1.5 damage',          base:60,info:'Multiplies bullet damage by 1.5 for one run.'},
+  {id:'rapid',     name:'RAPID FIRE', icon:'bolt2',  desc:'x1.25 fire rate',      base:50,info:'Multiplies fire rate by 1.25 for one run.'},
+  {id:'shield',    name:'SHIELD UP',  icon:'shieldp',desc:'x1.4 max HP',          base:20,info:'Multiplies max health by 1.4 for one run.'},
+  {id:'lucky',     name:'LUCKY',      icon:'clover', desc:'x1.5 coins',           base:70,info:'Multiplies all coins earned by 1.5 for one run.'},
+  {id:'berserk',   name:'BERSERK',    icon:'swords', desc:'x1.25 dmg · x1.2 spd', base:90,info:'x1.25 damage and x1.2 fire rate for one run.'},
+  {id:'focus',     name:'FOCUS',      icon:'eye',    desc:'+8% crit chance',      base:20,info:'Adds 8% critical hit chance for one run.'},
+  {id:'invincible',name:'GUARDIAN',   icon:'star',   desc:'x1.5 HP · heal 15%/wave',base:40,info:'Multiplies max health by 1.5 and heals 15% of max HP after every wave clear.'},
 ];
 const tempCost=u=>boostPrice(u.base,bestEffWave());
 // boosts marked AUTO are bought right before a run, if affordable
@@ -4884,7 +4890,9 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
   {id:'0.7.6',date:'2026-11-12',name:'UPDATE 0.7.6',lines:[
-    {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'}]},
+    {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'},
+    {text:'CRIT POWER from the shop now goes up to x3.00 (was x3.50), and DAMAGE gives 10% more at every level: crit was still doing most of the damage in most styles. Levels above the new limit were refunded in coins.'},
+    {text:'Boosts cost twice as much as before: buying all of them every run had become the normal way to play.'}]},
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
     {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},
     {text:'LANCE throws its lance less often at the higher levels (every 5th shot at level 7, was every 3rd): at the top level it was as strong as a mythic tattoo.'}]},

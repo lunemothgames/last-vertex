@@ -783,5 +783,11 @@
  "Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count": "Nadir, epik ya da destansı bir dövme seç: kendi sayacıyla 50 dövme içinde gelir",
  "This tattoo comes within 50 inks": "Bu dövme 50 dövme içinde gelir",
  "WISH has its own count now: your wished tattoo comes within 50 inks, and the mythic guarantee keeps its own 50 as well. A random mythic no longer pushes your wish back.": "DİLEK artık kendi sayacına sahip: dilediğin dövme 50 dövme içinde gelir, destansı garantisi de kendi 50'sini ayrıca sayar. Rastgele çıkan bir destansı artık dileğini geciktirmiyor.",
- "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Dokunuşu canının yarısını ya da daha fazlasını alacak düşmanlar artık kırmızı parlıyor: önce onları hallet."
+ "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Dokunuşu canının yarısını ya da daha fazlasını alacak düşmanlar artık kırmızı parlıyor: önce onları hallet.",
+ "each more burst on the same enemy within {0}s does half": "aynı düşmana {0} sn içinde gelen her ek patlama yarım hasar verir",
+ "SECOND WIND: when your health drops below {0}, it heals {1} of your max health over {2}s (once every {3}s)": "İKİNCİ NEFES: canın {0} altına düşünce {2} sn içinde maksimum canının {1} kadarını iyileştirir ({3} sn'de bir)",
+ "SECOND WIND": "İKİNCİ NEFES",
+ "LOGIC, GOO and VIRUS BOMB cover a bigger area, and VIRUS BOMB is ready sooner: bombs did less for their own style than any other main tattoo.": "MANTIK, ÇAMUR ve VİRÜS BOMBASI daha geniş bir alana etki ediyor, VİRÜS BOMBASI daha çabuk hazır oluyor: bombalar kendi tarzlarına diğer ana dövmelerden daha az katkı veriyordu.",
+ "GOO BOMB keeps its chain of bursts, but every more burst on the same enemy within 1 second does half: in big crowds the bursts piled up far beyond every other bomb.": "ÇAMUR BOMBASI patlama zincirini koruyor, ama aynı düşmana 1 saniye içinde gelen her ek patlama yarım hasar veriyor: büyük kalabalıklarda patlamalar üst üste binip diğer bütün bombaların çok üstüne çıkıyordu.",
+ "The REGEN tattoo now has SECOND WIND: when your health drops below 30%, it heals a big share of your max health over 3 seconds (once every 20 seconds).": "CAN YENİLEME dövmesinin artık İKİNCİ NEFES'i var: canın %30'un altına düşünce 3 saniye içinde maksimum canının büyük bir kısmını iyileştirir (20 saniyede bir)."
 }

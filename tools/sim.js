@@ -156,7 +156,7 @@ function run0(tier,maxW,o){
   const LINE=.83,TRI=.9,BY=TRI-.03,BU=G.BURST&&save.mode==='burst'?G.BURST:null;
   const A={};for(const id of save.equipped)if(TT[id].act||TT[id].auto)A[id]={...tb(id),cd:0,left:0};
   let lanceC=0,novaC=0;   // game lanceCount / novaCharge
-  const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
+  const FS={y:0,n:0,l:0,k:0},HN={n:0,d:0};let ky=0,kn=0,hp=st.maxHp,coins=0,ck=0,cb=0,dropC=0,gems=0,t=0,w=0,swT=0,swCD=0,aegis=0,shock=0,shots=0,triX=GWH/2;let tdAll=0;const dt=+process.env.SIM_DT||.1,evSeed=Math.floor(Math.random()*1e6);
   const TRACE=process.env.SIM_TRACE==='1';const SALV={n:0};let tkills=0,tdmg=0,tcontacts=0,tdealt=0,tc0=0;
   // the field lives across waves, like the game's: when the wave timer runs out the next wave starts and the leftovers stay
   // (a boss that is not killed walks on into the next waves). Everything below that depends on the wave is set at its start.
@@ -182,7 +182,7 @@ function run0(tier,maxW,o){
     // game vsDmg(): BOSS HUNTER + SLAYER on bosses, SLAYER alone on elites and big types (e.big)
     var vsD=e=>e.boss?st.bossDmg:e.big?(st.bigDmg||1):e.T===ENEMY_TYPES.warden?(st.wardDmg||1):1;   // 0.7.4: SLAYER on WARDEN
     const HD=st.dmg*st.pellet,vul=e=>vsD(e)*(e.slow>0||e.frz>0?st.frostVuln:1);   // game: st.hitDmg, bombVuln()
-    const gooBurst=e=>{const R=G.GRENADE.goo.r*GWH;e.gooT=0;for(const o of E)if(o.hp>0&&(o===e||inBlast(o,e.x,e.y,R)))hit(o,e.gooD*vul(o),'goo_bomb');};
+    const GD=(G.GRENADE||{}).goo||{};const gooBurst=e=>{const R=GD.r*GWH;e.gooT=0;for(const o of E)if(o.hp>0&&(o===e||inBlast(o,e.x,e.y,R))){let k=0;if(GD.dimT){o.gk=t-(o.gl??-99)<GD.dimT?(o.gk||0)+1:0;o.gl=t;k=o.gk;}hit(o,e.gooD*vul(o)*Math.pow(GD.dim||1,k),'goo_bomb');}};   // game gooBurst (0.7.6: close bursts on one enemy fade)
     // game killEnemy(): GOO bursts, VIRUS jumps to the neighbours, SHATTER queues a burst, coins, SPLITTER leaves 2 shards
     // SALVAGE (game killEnemy): an enemy dying within ECO.salvZone above the perimeter heals st.salv of max health (bosses x ECO.salvBoss)
     const kill=e=>{const c0=coins;ky+=e.y;kn++;{const y=e.y+e.h/2,s=(y>LINE-ECO.salvZone?st.salv:0)+(ECO.salvZoneT&&y>LINE-ECO.salvZoneT?st.salvT||0:0);if(s>0){hp=Math.min(st.maxHp,hp+st.maxHp*s*(e.boss?ECO.salvBoss:1));SALV.n++;}}if(TRACE&&e.boss)console.log('  boss down in wave '+w+', '+(left>0?(dur-left).toFixed(1)+' s in':'in the break'));
@@ -327,6 +327,7 @@ function run0(tier,maxW,o){
         s.hit=1;const h=Math.min(st.maxHp*ECO.spitCap,s.atk*ECO.spitK*st.dmgTaken);hp-=h;tdmg+=h;tdAll+=h;ouch('spitter',h,1);}SPIT=SPIT.filter(s=>!s.hit);}
       if(BURN.length){let d=0;for(const b of BURN){d+=b.d*Math.min(dt,b.l);b.l-=dt;}BURN=BURN.filter(b=>b.l>0);hp-=d;tdmg+=d;tdAll+=d;ouch('scorcher burn',d);}
       hp=Math.min(st.maxHp,hp+(st.regen+(st.regenT||0)*(1+(ECO.regenLow||0)*(1-hp/st.maxHp)))*dt);cd-=dt;   // REGEN tattoo: faster when low (game updatePlay)
+      if(st.regenSW>0){swCD=Math.max(0,swCD-dt);if(swCD<=0&&hp>0&&hp<st.maxHp*ECO.swAt){swT=ECO.swT;swCD=ECO.swCD;}if(swT>0){const k=Math.min(dt,swT);swT-=dt;hp=Math.min(st.maxHp,hp+st.maxHp*st.regenSW/ECO.swT*k);}}   // SECOND WIND (game updatePlay)
       // field drops (game updatePlay): one may appear once its cooldown is over, the player taps it at once.
       // A coin drop pays 30 s of this run's income (drops not counted), at least 10 kills' worth
       if(!AUTO){const wall=DROP.t+t/st.speed;

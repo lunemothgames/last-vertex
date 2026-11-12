@@ -783,5 +783,11 @@
  "Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count": "Escolha uma tatuagem rara, épica ou mítica: ela vem em 50 tatuagens, com sua própria contagem",
  "This tattoo comes within 50 inks": "Esta tatuagem vem em 50 tatuagens",
  "WISH has its own count now: your wished tattoo comes within 50 inks, and the mythic guarantee keeps its own 50 as well. A random mythic no longer pushes your wish back.": "O DESEJO agora tem sua própria contagem: sua tatuagem desejada vem em 50 tatuagens, e a garantia mítica continua contando seus próprios 50. Uma mítica aleatória não atrasa mais o seu desejo.",
- "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Inimigos cujo toque tiraria metade da sua vida ou mais agora brilham em vermelho: cuide deles primeiro."
+ "Enemies whose touch would take half your health or more now glow red: deal with them first.": "Inimigos cujo toque tiraria metade da sua vida ou mais agora brilham em vermelho: cuide deles primeiro.",
+ "each more burst on the same enemy within {0}s does half": "cada explosão extra no mesmo inimigo em {0}s causa metade",
+ "SECOND WIND: when your health drops below {0}, it heals {1} of your max health over {2}s (once every {3}s)": "SEGUNDO FÔLEGO: quando sua vida cai abaixo de {0}, cura {1} da sua vida máxima em {2}s (uma vez a cada {3}s)",
+ "SECOND WIND": "SEGUNDO FÔLEGO",
+ "LOGIC, GOO and VIRUS BOMB cover a bigger area, and VIRUS BOMB is ready sooner: bombs did less for their own style than any other main tattoo.": "A BOMBA LÓGICA, a BOMBA VISCOSA e a BOMBA DE VÍRUS cobrem uma área maior, e a BOMBA DE VÍRUS fica pronta mais cedo: as bombas ajudavam seu próprio estilo menos do que qualquer outra tatuagem principal.",
+ "GOO BOMB keeps its chain of bursts, but every more burst on the same enemy within 1 second does half: in big crowds the bursts piled up far beyond every other bomb.": "A BOMBA VISCOSA mantém sua corrente de explosões, mas cada explosão extra no mesmo inimigo em 1 segundo causa metade: em grandes multidões as explosões se acumulavam muito acima de qualquer outra bomba.",
+ "The REGEN tattoo now has SECOND WIND: when your health drops below 30%, it heals a big share of your max health over 3 seconds (once every 20 seconds).": "A tatuagem REGENERAÇÃO agora tem SEGUNDO FÔLEGO: quando sua vida cai abaixo de 30%, ela cura uma grande parte da sua vida máxima em 3 segundos (uma vez a cada 20 segundos)."
 }

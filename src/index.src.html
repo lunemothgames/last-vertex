@@ -815,6 +815,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
         <b>HOLD</b><span>Equip or unequip it</span>
         <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
         <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
+        <b>NEW</b><span>Tattoos you do not have yet come twice as often</span>
         <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
         <b>WISH</b><span>Pick a rare, epic or mythic tattoo: the guaranteed ink gives you that one</span>
         <b>GIFT</b><span>Every new tier you open gives one free tattoo of your choice</span>
@@ -3903,9 +3904,11 @@ function rollType(){
   }
   return pickW(pool);
 }
+// 0.7.6: tattoos not owned yet weigh twice as much (fewer copies of what you already have, the missing style cores come sooner)
+const inkW=t=>t.w*(tatOf(t.id).lv?1:2);
 function pickW(list){
-  let r=Math.random()*list.reduce((s,t)=>s+t.w,0);
-  for(const t of list){r-=t.w;if(r<0)return t;}
+  let r=Math.random()*list.reduce((s,t)=>s+inkW(t),0);
+  for(const t of list){r-=inkW(t);if(r<0)return t;}
   return list[list.length-1];
 }
 function doPull(count){
@@ -4502,13 +4505,13 @@ function firstMeet(k){
 }
 // odds shown to the player come from the live pool, so they stay true once tattoos max out and leave it
 function oddsGrid(){
-  const pool=tatPool(),tot=pool.reduce((s,t)=>s+t.w,0),by=[0,0,0,0];pool.forEach(t=>by[t.rar]+=t.w);
+  const pool=tatPool(),tot=pool.reduce((s,t)=>s+inkW(t),0),by=[0,0,0,0];pool.forEach(t=>by[t.rar]+=inkW(t));
   return `<span>${T('CHANCE PER INK')}</span><div>${RAR_NAMES.map((n,i)=>
     `<i class="${by[i]?'':'out'}" style="--rc:var(--r${i})"><small>${T(n)}</small><b>${by[i]?(by[i]/tot*100).toFixed(1)+'%':'—'}</b></i>`).join('')}</div>`;
 }
 function tatChance(t){
   const pool=tatPool();if(!pool.includes(t))return 0;
-  return t.w/pool.reduce((s,x)=>s+x.w,0);
+  return inkW(t)/pool.reduce((s,x)=>s+inkW(x),0);
 }
 const pityRar=()=>{const p=tatPool();return p.length?Math.max(...p.map(t=>t.rar)):3;};
 // topics: [id, icon, title, () => HTML]
@@ -4892,7 +4895,8 @@ const INBOX=[
   {id:'0.7.6',date:'2026-11-12',name:'UPDATE 0.7.6',lines:[
     {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'},
     {text:'CRIT POWER from the shop now goes up to x3.00 (was x3.50), and DAMAGE gives 10% more at every level: crit was still doing most of the damage in most styles. Levels above the new limit were refunded in coins.'},
-    {text:'Boosts cost twice as much as before: buying all of them every run had become the normal way to play.'}]},
+    {text:'Boosts cost twice as much as before: buying all of them every run had become the normal way to play.'},
+    {text:'Inks now give tattoos you do not have yet twice as often, so fewer copies of the same ones and your style comes sooner. The chances on the ink screen show it.'}]},
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
     {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},
     {text:'LANCE throws its lance less often at the higher levels (every 5th shot at level 7, was every 3rd): at the top level it was as strong as a mythic tattoo.'}]},

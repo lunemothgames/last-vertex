@@ -1628,8 +1628,9 @@ function tatOf(type){return save.tatCol[type]||{lv:0,copies:0};}
 // pigment (save.pig) instead, and pigment pours into any other tattoo as copies. A melted copy gives PIG_VAL[rarity] (about the inverse of
 // how often one specific tattoo of that rarity comes out of an ink); a poured copy costs PIG_POUR times that. Pouring 1:1 let every junk
 // copy land on one core (FROST Lv7 by ~day 80, 168 h pace x1.11, control/shatter x1.5); x2 with the weaker shop crit pair keeps the pace (x1.005).
-const PIG_VAL=[1,2,3,8],PIG_POUR=2;
-const pourCost=id=>PIG_VAL[TT[id].rar]*PIG_POUR;
+// 0.7.6: from Lv4 up a poured copy costs x1.5 (rounded up) instead of x2: the last levels took the longest (late dry spells of 9-12 days).
+const PIG_VAL=[1,2,3,8],PIG_POUR=2,PIG_POUR_HI=1.5,PIG_HI_LV=4;
+const pourCost=id=>Math.ceil(PIG_VAL[TT[id].rar]*(tatOf(id).lv>=PIG_HI_LV?PIG_POUR_HI:PIG_POUR));
 const tatMelted=id=>!!(save.tatMelt&&save.tatMelt[id]);
 // one copy of pigment into tattoo `id` (owned, not marked, not maxed); returns addTatCopy's result or null
 function pourPig(id){const c=tatOf(id),v=pourCost(id);
@@ -4896,6 +4897,7 @@ const INBOX=[
     {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'},
     {text:'CRIT POWER from the shop now goes up to x3.00 (was x3.50), and DAMAGE gives 10% more at every level: crit was still doing most of the damage in most styles. Levels above the new limit were refunded in coins.'},
     {text:'Boosts cost twice as much as before: buying all of them every run had become the normal way to play.'},
+    {text:'Pouring pigment into a tattoo of level 4 or more costs less (a quarter less, rounded up): the last levels took the longest.'},
     {text:'Inks now give tattoos you do not have yet twice as often, so fewer copies of the same ones and your style comes sooner. The chances on the ink screen show it.'}]},
   {id:'0.7.5',date:'2026-11-11',name:'UPDATE 0.7.5',lines:[
     {text:'ARMOR is simpler: it only blocks its share of every hit. The small flat block and the limit on how much one hit can take are gone, so MAX HP always counts in full: twice the health lasts twice as many hits. Defence styles had pulled ahead of every other style; now they stand level with the best of them.'},

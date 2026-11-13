@@ -23,3 +23,6 @@ GUIDE.md
 LAUNCH.md
 IAP-PLAN.md
 REVIEW-*.md
+
+# real player data downloaded by tools/stats.js (npm run stats): never committed
+stats-data/

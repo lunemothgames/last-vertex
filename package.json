@@ -25,7 +25,8 @@
     "ask": "node tools/sim-ask.js",
     "home": "node tools/sim-home.js",
     "map": "node tools/wave-map.js",
-    "wallet-test": "node tools/wallet-test.mjs"
+    "wallet-test": "node tools/wallet-test.mjs",
+    "stats": "node tools/stats.js"
   },
   "engines": {
     "node": ">=18"

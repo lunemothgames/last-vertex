@@ -901,7 +901,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <div class="srow link" id="setAdPriv" style="display:none"><div class="sl"><span>AD PRIVACY OPTIONS</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setTheme"><div class="sl"><span>THEME</span><b id="themeName">ICE BLUE</b></div><i class="theme-swat" id="themeSwat"></i><svg class="i"><use href="#i-next"/></svg></div>
       <div class="srow link" id="setCloud"><div class="sl"><span>CLOUD SAVE</span><b id="cloudState">OFF</b></div><svg class="i"><use href="#i-next"/></svg></div>
-      <div class="srow link" id="setRedeem" style="margin-top:34px"><div class="sl"><span>REDEEM GIFT CODE</span></div><svg class="i"><use href="#i-next"/></svg></div>
       <div class="plinks"><a class="plink" href="privacy.html" target="_blank" rel="noopener">PRIVACY POLICY</a><a class="plink" href="https://lunemothgames.github.io/" target="_blank" rel="noopener">WEBSITE</a></div>
       <div class="ver" id="verTxt">LAST VERTEX // SYS OK</div>
       <div class="ver" style="margin-top:6px">© 2026 LUNEMOTH GAMES</div>
@@ -946,7 +945,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     <div class="row2"><button class="btn" id="awAd"><svg class="i"><use href="#i-tv"/></svg>x2</button><button class="btn pri" id="awGet">COLLECT</button></div></div></div>
   <div class="ovl" id="confirmUI" style="z-index:31"><div class="mbox"><h4 id="cfTitle"></h4><p id="cfBody"></p>
     <div class="row2"><button class="btn" id="cfNo">CANCEL</button><button class="btn hot" id="cfYes">OK</button></div></div></div>
-  <div id="modal"><div class="mbox"><h4 id="mdTitle"></h4><p id="mdBody"></p><textarea id="mdText" spellcheck="false"></textarea><div class="row2"><button class="btn" id="mdClose">CLOSE</button><button class="btn pri" id="mdAct">OK</button></div></div></div>
   <div id="toast"></div>
 </div>
 <div id="crt"></div>
@@ -4353,7 +4351,7 @@ $('questList').addEventListener('click',e=>{
 });
 setInterval(()=>{refreshQuests();if($('questPanel').classList.contains('open')&&questTab==='q')renderQuestTimers();},1000);
 
-// ── CONFIRM / GIFT-CODE WINDOW ────────────────────────────────────────────────
+// ── CONFIRM WINDOW ────────────────────────────────────────────────
 // a yes/no question in its own window on top of everything
 let _confirmYes=null,_confirmNo=null;
 function confirmBox(title,body,yesLabel,onYes,onNo){
@@ -4363,61 +4361,7 @@ function confirmBox(title,body,yesLabel,onYes,onNo){
 }
 $('cfNo').addEventListener('click',()=>{snd('click');$('confirmUI').classList.remove('show');const f=_confirmNo;_confirmYes=null;_confirmNo=null;if(f)f();});
 $('cfYes').addEventListener('click',()=>{$('confirmUI').classList.remove('show');const f=_confirmYes;_confirmYes=null;_confirmNo=null;if(f)f();});
-function openModal(){
-  const ta=$('mdText');
-  $('mdTitle').textContent=T('REDEEM GIFT CODE');
-  $('mdBody').textContent=T('Paste a gift code from the developer to receive its rewards. Each code works once per save.');
-  ta.value='';ta.readOnly=false;$('mdAct').textContent=T('REDEEM');
-  $('modal').classList.add('show');snd('click');
-}
-$('mdClose').addEventListener('click',()=>{$('modal').classList.remove('show');snd('click');});
-$('mdAct').addEventListener('click',()=>redeemGift($('mdText').value));
-
-// ── GIFT CODES ───────────────────────────────────────────────────────────────
-// LVG-<payload>.<signature>: payload is base64url JSON {i:id, g:gems, c:coins, t:{tattoo:copies}, th:[theme ids]|'all', x:expiry day}.
-// Signed with the developer's private key (tools/make-code.js); the game only has the public key to check it.
-const GIFT_PUBLIC_KEY='MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8ECbZdOSashFmBlSC83fKpyZdrBvw67/JNzRoGgZc9vKjaOJg6F9gceq7qHBKw7En9MyOSEz1zDBwQv98oDSPg==';
-const b64uDec=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((s.length+3)%4)),c=>c.charCodeAt(0));
-let _giftKey=null;
-function giftKey(){
-  return _giftKey||(_giftKey=crypto.subtle.importKey('spki',Uint8Array.from(atob(GIFT_PUBLIC_KEY),c=>c.charCodeAt(0)),
-    {name:'ECDSA',namedCurve:'P-256'},false,['verify']));
-}
-async function readGift(code){
-  const m=/^LVG-([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)$/.exec(code.replace(/\s+/g,''));
-  if(!m||!window.crypto||!crypto.subtle)return null;
-  try{
-    const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await giftKey(),b64uDec(m[2]),new TextEncoder().encode(m[1]));
-    if(!ok)return null;
-    const r=JSON.parse(new TextDecoder().decode(b64uDec(m[1])));
-    return r&&typeof r.i==='string'?r:null;
-  }catch(e){return null;}
-}
-async function redeemGift(text){
-  const r=await readGift(text);
-  if(!r){snd('deny');toast(T('INVALID CODE'),true);return;}
-  if(!Array.isArray(save.redeemed))save.redeemed=[];
-  if(save.redeemed.includes(r.i)){snd('deny');toast(T('CODE ALREADY USED'),true);return;}
-  if(r.x&&Math.floor(gameNow()/864e5)>r.x){snd('deny');toast(T('CODE EXPIRED'),true);return;}
-  const got=[];
-  if(r.g>0){save.gems+=Math.floor(r.g);gemEarn('code',Math.floor(r.g));got.push(T('{0} GEMS',fmtN(r.g)));}
-  if(r.c>0){save.coins+=Math.floor(r.c);got.push(T('{0} COINS',fmtN(r.c)));}
-  // themes: a list of ids, or 'all'
-  const th=r.th==='all'?THEMES.map(t=>t.id):Array.isArray(r.th)?r.th:[];
-  const newTh=th.filter(id=>THEMES.some(t=>t.id===id)&&!save.themesOwned.includes(id));
-  newTh.forEach(id=>save.themesOwned.push(id));
-  if(th.length)got.push(newTh.length?T(newTh.length>1?'{0} THEMES':'{0} THEME',newTh.length):T('THEMES (ALREADY OWNED)'));
-  const tats=[];
-  for(const [id,n] of Object.entries(r.t||{})){
-    const t=TT[id];if(!t)continue;
-    for(let k=0;k<Math.min(50,n);k++){if(tatOf(id).lv>=TAT_MAX)break;const x=addTatCopy(id);tats.push({t,...x,lv:tatOf(id).lv});}
-    got.push(`${n}x ${T(t.name)}`);
-  }
-  save.redeemed.push(r.i);persist();achCheck();
-  $('modal').classList.remove('show');snd('gem');toast(T('REDEEMED:')+' '+got.join(' · '));
-  if(tats.length)showGachaResults(tats);
-  if(state===ST.MENU)renderMenu();
-}
+// (gift codes were removed in 0.7.7, after the release: his decision 2026-10-26)
 
 // ── LIFETIME STATS & ACHIEVEMENTS ────────────────────────────────────────────
 const LIFE=()=>save.life||(save.life={kills:0,dmg:0,runs:0,bosses:0,levels:0,quests:0,pulls:0,drops:0,boosts:0});
@@ -4649,7 +4593,7 @@ const HELP_TOPICS=[
     <p>${T('Double-tap the field to hide the HUD. Pause with the button at the top right or your phone\'s back button.')}</p>`],
   ['idle','moon','IDLE INCOME',()=>`<p>${T('While the game is closed you keep earning a share of your average income from recent runs (IDLE INCOME in the shop raises it). Up to 8 hours a day count; collect it when you come back.')}</p>`],
   ['saves','gear','SETTINGS & SAVES',()=>`<p>${T('FX QUALITY: pick MID or LOW if the game feels slow on your phone.')}</p>
-    <p>${T('Your progress is stored on this phone. Turn on CLOUD SAVE to back it up and to continue on another device. Gift codes go in REDEEM GIFT CODE.')}</p>`],
+    <p>${T('Your progress is stored on this phone. Turn on CLOUD SAVE to back it up and to continue on another device.')}</p>`],
 ];
 let helpOpen='';
 function renderHelp(){
@@ -4745,7 +4689,6 @@ $('musToggle').addEventListener('click',()=>{save.settings.musOn=!save.settings.
 $('dmgToggle').addEventListener('click',()=>{save.settings.showDmgNums=!save.settings.showDmgNums;persist();snd('click');renderSettings();});
 $('statOvToggle').addEventListener('click',()=>{save.settings.statOverlay=!save.settings.statOverlay;persist();snd('click');renderSettings();});
 $('setTheme').addEventListener('click',()=>{$('setPanel').classList.remove('open');openShop('theme');});
-$('setRedeem').addEventListener('click',()=>openModal('redeem'));
 $('setAdPriv').addEventListener('click',()=>{const A=AD();if(A)A.showPrivacyOptionsForm().catch(()=>{});});
 
 // ── CLOUD SAVE ───────────────────────────────────────────────────────────────
@@ -5233,7 +5176,6 @@ function handleBack(){
   if(on('dailyUI')){$('dyClose').click();return true;}
   if(on('inboxUI')){$('ibClose').click();return true;}
   if(on('modeUI')){$('mdmClose').click();return true;}
-  if(on('modal')){$('mdClose').click();return true;}
   if(on('away')){$('awGet').click();return true;}
   if(on('weekUI')){$('wkClose').click();return true;}
   if(on('fbUI')){$('fbClose').click();return true;}

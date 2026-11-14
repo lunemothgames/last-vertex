@@ -1589,7 +1589,7 @@ const PERM_UPGRADES=[
    info:'How many bullets your triangle fires per second. The shop goes up to 3.00/s; tattoos and boosts can push it higher.'},
   {id:'critChance',cat:'atk', name:'CRIT CHANCE',icon:'target',base:120, g:1.09, max:100,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a bullet is a critical hit and deals CRIT POWER times its damage. The shop goes up to 50%; tattoos can take it to 80%, and crit chance above that turns into crit power.'},
-  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:75,   start:1.5,step:.02,   // 0.7.6: x3.5 → x3.0  fx:v=>'x'+v.toFixed(2),
+  {id:'critMult',  cat:'atk', name:'CRIT POWER', icon:'burst', base:180, g:1.08, max:75,   start:1.5,step:.02,  fx:v=>'x'+v.toFixed(2),   // 0.7.6: x3.5 → x3.0
    info:'How much a critical hit multiplies a bullet\'s damage: x1.50 means +50%.'},
   {id:'multishot', cat:'atk', name:'MULTISHOT',  icon:'multi', base:450, g:1.17, max:120,  start:0,  step:.005, fx:v=>pc(v),
    info:'Chance that a shot fires 2 extra bullets at the next enemies in range. With no other enemy around they fly off to the sides. In BURST a blast doubles to 10 pellets. Max 60%.'},

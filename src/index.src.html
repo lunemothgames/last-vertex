@@ -242,7 +242,8 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .trow.on{border-style:solid;border-color:var(--a);box-shadow:inset 0 0 18px rgba(var(--a-rgb),0.12)}
 
 /* ── tattoos ── */
-.portal{height:150px;display:grid;place-items:center}
+.portal{height:150px;display:grid;place-items:center;position:relative}
+.tathelp{position:absolute;top:10px;right:14px;width:36px;height:36px;background:none;color:var(--a);cursor:pointer}   /* the tattoo rules (? → three short groups) */
 .pulls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px}
 .pull{height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--a);font-family:'VT323',monospace}
 .pull .l{font-size:17px;letter-spacing:.15em}
@@ -305,14 +306,59 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 .giftbar{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:12px 14px 0;min-height:44px;padding:6px 10px;line-height:1.05;text-align:center;border:1px solid var(--r2);color:var(--r2);
   background:rgba(var(--r2-rgb),0.12);font-family:'VT323',monospace;font-size:19px;letter-spacing:.06em;box-shadow:0 0 12px rgba(var(--r2-rgb),0.5);animation:blink 1.2s steps(1) 3}
 .giftbar svg.i{width:20px;height:20px;stroke:var(--r2)}
-.pigrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
-.pigb{flex:1;min-width:0;background:none;border:1px solid var(--mute);color:var(--a);font-family:inherit;padding:6px 4px;cursor:pointer}
-.pigb.on{border-color:var(--a2);color:var(--a2)}.pigb.no{opacity:.45}
-.pignote{font-size:.85em;color:var(--mute);margin-bottom:4px}
+/* tattoo window: pigment box (amount, MELT switch, POUR button) */
+.pigbox{margin-top:8px;padding:6px 8px 7px;border:1px dashed var(--dim)}
+.pigtop{display:flex;justify-content:space-between;align-items:center;font-family:'VT323',monospace;font-size:17px;letter-spacing:.06em;color:var(--mute);text-shadow:none}
+.pigtop b{display:flex;align-items:center;gap:4px;font-weight:400;font-size:22px;color:var(--a2);text-shadow:0 0 6px var(--glow)}
+.pigtop svg.i{width:15px;height:15px;stroke:var(--a2)}
+.pigr{display:flex;align-items:center;gap:10px;margin-top:7px}
+.pigr>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pigr>div b{font-family:'VT323',monospace;font-weight:400;font-size:18px;letter-spacing:.06em;color:var(--a);line-height:1}
+.pigr small,.pigneed{font-size:10px;line-height:1.35;color:var(--mute);text-shadow:none}
+.pigneed{display:block;margin-top:4px;text-align:right;color:var(--hot)}
+.sw,.pigb{flex-shrink:0;min-width:78px;height:32px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 9px;background:none;
+  font-family:'VT323',monospace;font-size:18px;letter-spacing:.06em;cursor:pointer}
+.sw{border:1px solid var(--mute);color:var(--mute);text-shadow:none}
+.sw i{width:24px;height:13px;border:1px solid currentColor;position:relative;flex-shrink:0}
+.sw i::after{content:'';position:absolute;top:2px;left:2px;width:7px;height:7px;background:currentColor;transition:left .12s}
+.sw.on{border-color:var(--a2);color:var(--a2);text-shadow:0 0 6px var(--a2)}.sw.on i::after{left:13px}
+.pigb{border:1px solid var(--a2);color:var(--a2);background:rgba(var(--a2-rgb),0.1)}
+.pigb.no{border-color:var(--dim);color:var(--mute);background:none;text-shadow:none}
 .ctile.melt{opacity:.55}
 .pill.pig{color:var(--a)}
-.wishbtn{display:block;margin:6px auto 0;background:none;border:0;font-family:inherit;color:var(--mute);cursor:pointer;text-decoration:underline dotted}
-.wishbtn b{color:var(--r2);font-weight:400}
+/* tattoo screen: mythic guarantee and wish counters, one row each with a filling bar */
+.ctrs{display:flex;flex-direction:column;gap:8px;margin:12px 14px 0}
+.ctr{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 10px;padding:7px 10px 8px;border:1px dashed var(--dim)}
+.ctr.w{grid-template-columns:minmax(0,1fr) auto auto}
+.ctr .k{font-family:'VT323',monospace;font-size:17px;letter-spacing:.06em;color:var(--mute);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:none}
+.ctr .k b{font-weight:400;color:var(--rc);text-shadow:0 0 6px var(--rc)}
+.ctr .v{font-family:'VT323',monospace;font-size:19px;color:var(--a);line-height:1}
+.ctr.hot .v{color:var(--hot)}
+.ctr .bar{grid-column:1/-1;height:5px;background:rgba(var(--rc-rgb),0.18)}
+.ctr .bar i{display:block;height:100%;background:var(--rc);box-shadow:0 0 6px var(--rc)}
+.ctr .chg{height:26px;padding:0 8px;background:none;border:1px solid var(--dim);color:var(--a);font-family:'VT323',monospace;font-size:15px;letter-spacing:.06em;cursor:pointer}
+.ctr.done{display:block;text-align:center;font-size:10px;letter-spacing:.06em;color:var(--mute)}
+.wishset{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:42px;padding:4px 10px;border:1px solid var(--r2);color:var(--r2);
+  background:rgba(var(--r2-rgb),0.1);font-family:'VT323',monospace;font-size:19px;letter-spacing:.08em;text-shadow:0 0 6px var(--r2);cursor:pointer}
+.wishset svg.i{width:18px;height:18px;stroke:var(--r2)}
+.wishset{flex-wrap:wrap;row-gap:0}
+.wishset small{flex-basis:100%;font-family:inherit;font-size:14px;color:var(--mute);text-shadow:none}
+/* below the equipped slots: the next gem slot as a real button, and which tiers still give one */
+#slotMore{display:flex;align-items:center;gap:10px;margin:10px 14px 0}
+#slotMore:empty{display:none}
+.slotbuy{flex-shrink:0;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;background:none;border:1px solid var(--a2);color:var(--a2);
+  font-family:'VT323',monospace;font-size:18px;letter-spacing:.06em;text-shadow:0 0 6px var(--a2);cursor:pointer}
+.slotbuy svg.i{width:15px;height:15px}
+.slotbuy.no{border-color:var(--dim);color:var(--mute);text-shadow:none}
+.slotbuy.ask{background:var(--hot);border-color:var(--hot);color:var(--ink);text-shadow:none;animation:blink .8s steps(1) infinite}
+#slotMore small{flex:1;min-width:0;font-size:10px;line-height:1.4;color:var(--mute);text-shadow:none}
+/* active tattoos: a small outlined tag in the top right corner (EQ sits top left) */
+.ctile .act{position:absolute;top:2px;right:3px;font-family:'VT323',monospace;font-size:12px;line-height:1;padding:1px 2px 0;border:1px solid var(--rc);color:var(--rc);text-shadow:none}
+.ctile.locked .act{border-color:var(--dim);color:var(--mute)}
+/* tattoo help (the ? in the title bar) */
+.hlp h5{font-family:'VT323',monospace;font-weight:400;font-size:18px;letter-spacing:.1em;color:var(--mute);margin:10px 0 5px;text-shadow:none}
+.hlp h5:first-child{margin-top:2px}
+.hlp .howto{margin:0;padding:0;border:0;grid-template-columns:70px 1fr}
 
 /* ── settings ── */
 .srow{margin:10px 14px 0;padding:12px;border:1px dashed var(--dim)}
@@ -438,7 +484,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 /* ── tattoo collection ── */
 .inv{grid-template-columns:repeat(4,1fr)}
 .ctile{border:1px solid var(--rc);color:var(--rc);background:rgba(var(--rc-rgb),0.07);display:flex;flex-direction:column;
-  align-items:center;gap:2px;padding:8px 4px 6px;position:relative;cursor:pointer;overflow:hidden;text-shadow:0 0 6px var(--rc);touch-action:manipulation}
+  align-items:center;gap:2px;padding:17px 4px 6px;position:relative;cursor:pointer;overflow:hidden;text-shadow:0 0 6px var(--rc);touch-action:manipulation}
 .ctile svg.i{width:24px;height:24px}
 .ctile .n{font-family:'VT323',monospace;font-size:14px;color:var(--a);white-space:normal;max-width:100%;overflow:hidden;text-align:center;line-height:1}   /* long names (CAN YENİLEME) wrap onto two lines; one long word shrinks via fitText */
 .ctile .lv{font-family:'VT323',monospace;font-size:17px;line-height:1}
@@ -452,10 +498,6 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 .ctile.locked .lv{font-size:12px}
 .ctile.hold::before,.slot.hold::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background:var(--rc,var(--a));opacity:.3;transform-origin:bottom;animation:holdf .45s linear forwards}
 .slot{overflow:hidden}
-.slot.buy-slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px dashed var(--a2);color:var(--a2);font-size:16px;cursor:pointer;text-shadow:0 0 6px var(--a2)}
-.slot.buy-slot span{display:flex;align-items:center;gap:2px}
-.slot.buy-slot svg.i{width:14px;height:14px}
-.slot.buy-slot.ask{background:var(--hot);border-color:var(--hot);color:var(--ink);text-shadow:none;animation:blink .8s steps(1) infinite}
 .slot.locked{opacity:.45}
 .slot.locked svg.i{width:16px;height:16px}
 /* ── first-run hint banner ── */
@@ -538,7 +580,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 /* ── info tip ── */
 #tipWrap{position:absolute;top:0;right:0;bottom:0;left:0;z-index:28;display:none;pointer-events:auto;background:rgba(var(--bg1-rgb),0.45)}
 #tipWrap.show{display:block}
-#tip{position:absolute;left:14px;right:14px;bottom:22px;border:1px solid var(--a);background:var(--bg1);padding:12px 14px;
+#tip{position:absolute;left:14px;right:14px;bottom:22px;max-height:calc(100% - 44px);overflow-y:auto;border:1px solid var(--a);background:var(--bg1);padding:12px 14px;
   box-shadow:0 0 24px var(--glow);animation:lin .15s steps(3)}
 #tip h4{font-family:'VT323',monospace;font-weight:400;font-size:26px;letter-spacing:.06em;margin-bottom:4px;padding-right:30px}
 #tip p{font-size:11px;line-height:1.6}
@@ -790,7 +832,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     </div>
     <div class="scroll">
       <button class="giftbar" id="giftBar" style="display:none"></button>
-      <div class="portal">
+      <div class="portal"><button class="back tathelp" id="tatHelp" aria-label="Help"><svg class="i"><use href="#i-help"/></svg></button>
         <svg viewBox="-100 -100 200 200" width="150" height="150">
           <g class="spin"><circle r="76" fill="none" class="st" stroke-opacity=".5" stroke-width="2" stroke-dasharray="1 7"/></g>
           <g class="spin r"><rect x="-50" y="-50" width="100" height="100" fill="none" class="dm" stroke-width="2" transform="rotate(45)"/></g>
@@ -803,25 +845,12 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
 </span></button>
       </div>
       <div class="odds" id="oddsBox"></div>
-      <div class="note pity" id="pityNote"></div>
-      <button class="note wishbtn" id="wishBtn"></button>
+      <div class="ctrs" id="tatCtrs"></div>
       <div class="lab">EQUIPPED <span id="eqCount">0/1</span></div>
       <div class="slots" id="equippedSlots"></div>
+      <div id="slotMore"></div>
       <div class="lab">COLLECTION <span id="colCount">0/12</span></div>
       <div class="inv" id="invGrid"></div>
-      <div class="lab">HOW TATTOOS WORK</div>
-      <div class="howto">
-        <b>TAP</b><span>See what a tattoo does, level by level</span>
-        <b>HOLD</b><span>Equip or unequip it</span>
-        <b>COPIES</b><span>Extra copies level it up by themselves, up to LV7</span>
-        <b>LV7</b><span>Maxed tattoos leave the ink pool</span>
-        <b>NEW</b><span>Tattoos you do not have yet come twice as often</span>
-        <b>MYTHIC</b><span>One is guaranteed within 50 inks</span>
-        <b>WISH</b><span>Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count</span>
-        <b>GIFT</b><span>Every new tier you open gives one free tattoo of your choice</span>
-        <b>◆</b><span>Active tattoo: adds a button in runs</span>
-        <b>SLOTS</b><span>Unlock more slots with gems</span>
-      </div>
     </div>
   </div>
 
@@ -1497,7 +1526,7 @@ const PERM_UPGRADES=[
   {id:'range',     cat:'atk', name:'RANGE',      icon:'range', base:60,  g:1.18, max:50,   start:0,  step:.006, fx:v=>'+'+(v*100).toFixed(1),
    info:'Your triangle only shoots enemies below the dotted RANGE line. Each level moves the line up, so you start shooting earlier. Once the line is as high as it goes, the rest adds bullet damage.'},
   {id:'cooldown',  cat:'atk', name:'COOLDOWN',   icon:'clock', base:400, g:1.09, max:100,  start:0,  step:.0025,fx:v=>'-'+pc(v),
-   info:'Shortens the cooldown of every active tattoo (◆), bombs included. Max -25%.'},
+   info:'Shortens the cooldown of every active tattoo, bombs included. Max -25%.'},
   // ── defense
   {id:'maxHp',     cat:'def', name:'MAX HP',     icon:'heart', base:8,   p:2.2,  max:1e6,  start:10, step:3,    ms:[200,1.1,5000], fx:v=>fmtN(v)+' HP',
    info:'Your triangle\'s health. Every enemy that reaches the red perimeter deals its attack as damage, then bounces back. Every 200 levels (up to 5000) the total is also multiplied by 1.1.'},
@@ -4000,7 +4029,7 @@ $('pickOk').addEventListener('click',()=>{
   showGachaResults([{t,...r,lv:tatOf(t.id).lv}]);
 });
 $('giftBar').addEventListener('click',()=>openPick('gift'));
-$('wishBtn').addEventListener('click',()=>openPick('wish'));
+$('tatCtrs').addEventListener('click',e=>{if(e.target.closest('[data-wish]'))openPick('wish');});
 function renderTatDot(){slotSync();
   if(save.slotBackMsg){toast(T('+{0} GEMS BACK: TATTOO SLOTS 9-12 NOW OPEN WITH TIERS 4-7',save.slotBackMsg));save.slotBackMsg=0;save.slotMsg=0;persist();}
   else if(save.slotMsg){toast(T('TATTOO SLOT {0} OPENED',save.slotMsg));save.slotMsg=0;persist();}$('mTatDot').style.display=giftLeft()?'':'none';}
@@ -4008,6 +4037,29 @@ let pendingSlot=false;
 function openTattoos(){snd('click');pendingSlot=false;renderTattoos();$('tatPanel').classList.add('open');$('tatPanel').querySelector('.scroll').scrollTop=0;}
 function closeTattoos(){snd('click');$('tatPanel').classList.remove('open');renderMenu();}
 $('tatBack').addEventListener('click',closeTattoos);
+// the ? in the title bar: every tattoo rule in three short groups (getting, levelling up, wearing)
+function tatHelp(){
+  const rows=r=>`<div class="howto">${r.map(([k,v])=>`<b>${k}</b><span>${v}</span>`).join('')}</div>`;
+  const body=`<div class="hlp"><h5>${T('GETTING TATTOOS')}</h5>`+rows([
+      [T('INK'),T('Spend gems: a random tattoo comes out')],
+      [T('NEW'),T('Tattoos you do not have yet come twice as often')],
+      [T('MYTHIC'),T('One is guaranteed within 50 inks')],
+      [T('WISH'),T('Pick a rare, epic or mythic tattoo: it comes within 50 inks, on its own count')],
+      [T('GIFT'),T('Every new tier you open gives one free tattoo of your choice')]])+
+    `<h5>${T('LEVELLING UP')}</h5>`+rows([
+      [T('COPIES'),T('Extra copies level it up by themselves, up to LV7')],
+      [T('LV7'),T('Maxed tattoos leave the ink pool')],
+      [T('MELT'),T('Turn it on for a tattoo you do not want: its new copies become pigment')],
+      [T('POUR'),T('Pigment buys a copy of the tattoo you choose. Rarer tattoos give and cost more')]])+
+    `<h5>${T('WEARING THEM')}</h5>`+rows([
+      [T('TAP'),T('See what a tattoo does, level by level')],
+      [T('HOLD'),T('Equip or unequip it')],
+      [T('EQ'),T('Equipped')],
+      [T('ACTIVE'),T('Active tattoo: adds a button in runs')],
+      [T('SLOTS'),T('More slots with gems, and one from each of Tiers 4 to 7')]])+`</div>`;
+  pigFor=null;showTip(T('HOW TATTOOS WORK'),body,'',true);
+}
+$('tatHelp').addEventListener('click',tatHelp);
 
 // level chart columns per tattoo: [effect key, header, format]
 const TAT_COLS={
@@ -4049,11 +4101,16 @@ function tatInfo(t){
   const odds=c.lv<TAT_MAX?`<div class="tchance"><span>${T('INK CHANCE')}</span><b>${(tatChance(t)*100).toFixed(2)}%</b></div>`:'';
   if(!c.lv){showTip(T('??? · LOCKED'),esc(T('An undiscovered {0} tattoo. Ink to find it.',T(RAR_NAMES[t.rar]).toLocaleLowerCase(LANG||'en')))+odds,'',true);return;}
   const status=c.lv<TAT_MAX?T('{0}/{1} COPIES TO LV{2}',c.copies,tatReq(c.lv),c.lv+1):T('MAX LEVEL · OUT OF THE INK POOL');
-  const melt=tatMelted(t.id),v=PIG_VAL[t.rar],pcost=pourCost(t.id);
-  // MELT switch (every later copy becomes pigment) and POUR (pigment → one copy); taps on these do not close the window
-  const pig=`<div class="pigrow"><button class="pigb${melt?' on':''}" data-pig="melt">${melt?T('MELT: ON'):T('MELT: OFF')}</button>`+
-    (c.lv<TAT_MAX&&!melt?`<button class="pigb${(save.pig||0)<pcost?' no':''}" data-pig="pour">${T('+1 COPY · {0} PIGMENT',pcost)}</button>`:'')+
-    `</div><div class="pignote">${melt?T('New copies of this tattoo melt into {0} pigment each.',v):T('Melt ON: new copies of this tattoo become {0} pigment each, to pour into other tattoos.',v)} ${T('PIGMENT: {0}',fmtN(save.pig||0))}</div>`;
+  const melt=tatMelted(t.id),v=PIG_VAL[t.rar],pcost=pourCost(t.id),have=save.pig||0;
+  // pigment box: how much you have, the MELT switch (every later copy becomes pigment) and POUR (pigment → one copy);
+  // taps on these do not close the window. A maxed tattoo gets no more copies: nothing to melt or pour.
+  const pig=c.lv>=TAT_MAX&&!melt?'':`<div class="pigbox"><div class="pigtop"><span>${T('YOUR PIGMENT')}</span><b>${I('spark')}${fmtN(have)}</b></div>`+
+    `<div class="pigr"><div><b>${T('MELT')}</b><small>${T('Each new copy of it → {0} pigment',v)}</small></div>`+
+    `<button class="sw${melt?' on':''}" data-pig="melt"><i></i>${melt?T('ON'):T('OFF')}</button></div>`+
+    (melt?`<div class="pigr"><div><small>${T('Turn MELT off to pour pigment into it')}</small></div></div>`
+      :`<div class="pigr"><div><b>${T('POUR')}</b><small>${T('{0} pigment → +1 copy',pcost)}</small></div>`+
+       `<button class="pigb${have<pcost?' no':''}" data-pig="pour">${T('POUR')}</button></div>`+
+       (have<pcost?`<span class="pigneed">${T('NEED {0} · YOU HAVE {1}',pcost,fmtN(have))}</span>`:''))+`</div>`;
   const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('EQUIPPED')})</b>`:'')+odds+pig+tatChart(t,c.lv);
   pigFor=t;
   showTip(`${T(t.name)} · LV${c.lv}`,body,`${T(RAR_NAMES[t.rar])}${t.act?' · '+T('ACTIVE'):t.auto?' · '+T('AUTOMATIC'):''}
@@ -4080,42 +4137,50 @@ function renderTattoos(){
   const fi=save.freeInk===1;$('pull1Cost').textContent=fi?T('FREE'):ECO.pullCost;$('gachaSingle').querySelector('.c svg').style.display=fi?'none':'';$('pull10Cost').textContent=ECO.pull10Cost;
   const left=PITY-(save.pity||0),done=!tatPool().length;
   $('oddsBox').innerHTML=oddsGrid();
-  const gLine=(pr,n)=>'> '+(n<=1?T('NEXT INK: {0}',`<b>${T('{0} GUARANTEED',pr)}</b>`):T('{0} GUARANTEED WITHIN {1} INKS',pr,`<b>${n}</b>`));
-  $('pityNote').innerHTML=done?'> '+T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED'):gLine(T(RAR_NAMES[pityRar()]),left)+(wishOk(save.wish)?'<br>'+gLine(T(TT[save.wish].name),WISH_PITY-wishN()):'');
-  $('wishBtn').style.display=done?'none':'';
-  $('wishBtn').innerHTML=wishOk(save.wish)?T('WISH: {0} · TAP TO CHANGE','<b>'+T(TT[save.wish].name)+'</b>'):T('NO WISH SET · TAP TO PICK ONE');
+  // two counters, each with its own bar: the guarantee of the rarest tier still in the pool, and the WISH (or a button to set one)
+  const ctr=(rar,label,n,max,extra)=>`<div class="ctr${extra?' w':''}${max-n<=1?' hot':''}" style="--rc:var(--r${rar});--rc-rgb:var(--r${rar}-rgb)">`+
+    `<span class="k">${label}</span><span class="v">${max-n<=1?T('NEXT INK'):n+'/'+max}</span>${extra||''}<span class="bar"><i style="width:${Math.min(100,n/max*100)}%"></i></span></div>`;
+  const pr=pityRar();
+  $('tatCtrs').innerHTML=done?`<div class="ctr done">${T('COLLECTION COMPLETE · EVERY TATTOO IS MAXED')}</div>`
+    :ctr(pr,T('{0} GUARANTEE',`<b>${T(RAR_NAMES[pr])}</b>`),Math.max(0,PITY-left),PITY)+
+     (wishOk(save.wish)?ctr(TT[save.wish].rar,T('WISH · {0}',`<b>${T(TT[save.wish].name)}</b>`),wishN(),WISH_PITY,`<button class="chg" data-wish="1">${T('CHANGE')}</button>`)
+       :`<button class="wishset" data-wish="1">${I('star')}${T('SET A WISH')}<small>${T('RARE · EPIC · MYTHIC')}</small></button>`);
   const gl=giftLeft();$('giftBar').style.display=gl?'':'none';
   if(gl)$('giftBar').innerHTML=I('gift')+T('TIER {0} GIFT · PICK A TATTOO',giftTier())+(gl>1?' (+'+(gl-1)+')':'');
   $('gachaSingle').classList.toggle('no',!fi&&save.gems<ECO.pullCost);
   $('gachaMulti').classList.toggle('no',save.gems<ECO.pull10Cost);
   $('eqCount').textContent=`${save.equipped.length}/${save.tatSlots}`;
 
+  // only the slots you have; below them the next gem slot as a button and the tiers that still give one
   const eq=$('equippedSlots');eq.innerHTML='';
-  for(let i=0;i<MAX_SLOTS;i++){
+  for(let i=0;i<save.tatSlots;i++){
     const d=document.createElement('div');
-    if(i<save.tatSlots){
-      const t=TAT_TYPES.find(x=>x.id===save.equipped[i]);
-      if(t){
-        const c=tatOf(t.id),rc=`var(--r${t.rar})`;
-        d.className='slot f';d.style.setProperty('--rc',rc);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);d.innerHTML=`${I(t.icon)}<b>${c.lv}</b>`;
-        attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
-      }else{d.className='slot';d.textContent='+';}
-    }else if(i===save.tatSlots&&slotPrice()!==null){
-      const price=slotPrice();
-      d.className='slot buy-slot'+(pendingSlot?' ask':'');
-      d.innerHTML=pendingSlot?`<span>${T('BUY?')}</span>`:`${I('lock')}<span>${I('gem')}${price}</span>`;
-      d.addEventListener('click',()=>{
-        if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
-        if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
-        save.gems-=price;gemSpend('slot',price);save.slotGem++;slotSync();pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
-      });
-    }else if(i>=MAX_SLOTS-(SLOT_TIERS.length-(save.slotTier||0))){
-      // the last slots open with a tier: each shows which one (tap: a hint)
-      const tn=SLOT_TIERS[(save.slotTier||0)+i-(MAX_SLOTS-(SLOT_TIERS.length-(save.slotTier||0)))];
-      d.className='slot locked';d.innerHTML=`${I('lock')}<span>T${tn}</span>`;
-      d.addEventListener('click',()=>{snd('blip');toast(T('OPENS WITH TIER {0}',tn));});
-    }else{d.className='slot locked';d.innerHTML=I('lock');}
+    const t=TAT_TYPES.find(x=>x.id===save.equipped[i]);
+    if(t){
+      const c=tatOf(t.id),rc=`var(--r${t.rar})`;
+      d.className='slot f';d.style.setProperty('--rc',rc);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);d.innerHTML=`${I(t.icon)}<b>${c.lv}</b>`;
+      attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
+    }else{d.className='slot';d.textContent='+';}
     eq.appendChild(d);
+  }
+  const more=$('slotMore');more.innerHTML='';
+  const price=slotPrice();
+  if(price!==null){
+    const b=document.createElement('button');
+    b.className='slotbuy'+(pendingSlot?' ask':save.gems<price?' no':'');
+    b.innerHTML=pendingSlot?T('BUY?'):`${T('NEW SLOT')} ${I('gem')}${price}`;
+    b.addEventListener('click',()=>{
+      if(save.gems<price){snd('deny');toast(T('NOT ENOUGH GEMS'),true);return;}
+      if(!pendingSlot){pendingSlot=true;snd('blip');renderTattoos();return;}
+      save.gems-=price;gemSpend('slot',price);save.slotGem++;slotSync();pendingSlot=false;persist();snd('buy');toast(T('SLOT {0} UNLOCKED',save.tatSlots));renderTattoos();
+    });
+    more.appendChild(b);
+  }
+  const tiersLeft=SLOT_TIERS.slice(save.slotTier||0);
+  if(tiersLeft.length){
+    const s=document.createElement('small');
+    s.textContent=tiersLeft.length>1?T('TIERS {0} GIVE ONE SLOT EACH',tiersLeft.join(', ')):T('TIER {0} GIVES ONE MORE SLOT',tiersLeft[0]);
+    more.appendChild(s);
   }
 
   const inv=$('invGrid');inv.innerHTML='';
@@ -4126,11 +4191,12 @@ function renderTattoos(){
       found++;
       const isEq=save.equipped.includes(t.id),maxed=c.lv>=TAT_MAX,p=maxed?100:c.copies/tatReq(c.lv)*100;
       d.className='ctile'+(isEq?' eq':'')+(tatMelted(t.id)?' melt':'');d.dataset.id=t.id;d.style.setProperty('--rc',`var(--r${t.rar})`);d.style.setProperty('--rc-rgb',`var(--r${t.rar}-rgb)`);
-      d.innerHTML=`${I(t.icon)}<span class="n">${t.act?'◆':''}${T(t.name)}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
+      d.innerHTML=`${I(t.icon)}<span class="n">${T(t.name)}</span><span class="lv">LV${c.lv}</span><span class="pb"><i style="width:${p}%"></i></span><span class="cp">${maxed?'MAX':`${c.copies}/${tatReq(c.lv)}`}</span>`;
     }else{
       d.className='ctile locked';
-      d.innerHTML=`${I('lock')}<span class="n">${t.act?'◆':''}???</span><span class="lv">${T(RAR_NAMES[t.rar])}</span>`;
+      d.innerHTML=`${I('lock')}<span class="n">???</span><span class="lv">${T(RAR_NAMES[t.rar])}</span>`;
     }
+    if(t.act)d.insertAdjacentHTML('beforeend',`<span class="act">${T('ACTIVE')}</span>`);
     attachHold(d,()=>tatInfo(t),()=>toggleEquip(t));
     inv.appendChild(d);
   });
@@ -4570,7 +4636,7 @@ const HELP_TOPICS=[
   ['shop','bag','SHOP',()=>`<p>${T('PERMANENT upgrades last forever, sorted into ATTACK, DEFENSE and UTILITY. Tap an icon to see exactly what it does; x1 / x5 / x10 / MAX choose how many levels you buy at once.')}</p>
     <p>${T('NEXT RUN boosts last a single run; switch on AUTO to buy them before every run. THEMES recolor the whole game.')}</p>`],
   ['tattoos','spark','TATTOOS',()=>`<p>${T('Get tattoos inked with gems and equip them in your slots; each one changes how you play. Extra copies level a tattoo up, to LV7 at most.')}</p>
-    <p>${T('ACTIVE tattoos (◆) add a button to the battle: tap it when it glows. AUTOMATIC tattoos (NOVA, MIDAS) work by themselves, AUTO RETRY runs included. A mythic tattoo is guaranteed within 50 inks.')
+    <p>${T('ACTIVE tattoos add a button to the battle: tap it when it glows. AUTOMATIC tattoos (NOVA, MIDAS) work by themselves, AUTO RETRY runs included. A mythic tattoo is guaranteed within 50 inks.')
 }</p>
     <p>${T('BOMBS are active tattoos you aim: tap the bomb button, then tap the field where it should land. Tap below the perimeter to cancel. The cooldown starts at the throw and runs on game time.')}</p>
     <div class="odds">${oddsGrid()}</div>`],
@@ -4911,6 +4977,10 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 // Patch notes and announcements, newest first. A new message = a new entry at the top with a new id; it shows a red dot
 // until the player opens the inbox. Every line is one bullet point (translated on its own).
 const INBOX=[
+  {id:'0.7.7',date:'2026-11-14',name:'UPDATE 0.7.7',lines:[
+    {text:'The tattoo screen is clearer: the mythic guarantee and your wish each have their own bar, WISH is a real button, and the ? button explains every tattoo rule in three short groups.'},
+    {text:'When you tap a tattoo you now see how much pigment you have, how much melting it gives and what pouring costs.'},
+    {text:'Only the slots you have are shown; the next one is a button with its price, and a line tells which tiers still give one. Active tattoos carry an ACTIVE tag.'}]},
   {id:'0.7.6',date:'2026-11-12',name:'UPDATE 0.7.6',lines:[
     {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'},
     {text:'CRIT POWER from the shop now goes up to x3.00 (was x3.50), and DAMAGE gives 10% more at every level: crit was still doing most of the damage in most styles. Levels above the new limit were refunded in coins.'},
@@ -5122,7 +5192,7 @@ $('statsToggle').addEventListener('click',()=>{
 // ── FEEDBACK (Google Form) ───────────────────────────────────────────────────
 // form: the form's address. infoEntry: id of the form's "game info" question (entry.123…) so it is pre-filled.
 // Both come from the form's "Get pre-filled link". Empty form = the button says it is coming soon.
-const GAME_VERSION='0.7.6';
+const GAME_VERSION='0.7.7';
 const FEEDBACK={form:'https://docs.google.com/forms/d/e/1FAIpQLScfPJe5KIe60iQrgL_XiJCzRnUz61sVs7-EteRIBa0mTPPD7A/viewform',infoEntry:'entry.1154642170'};
 function gameInfo(){
   const ua=navigator.userAgent,dev=(ua.match(/Android[^;)]*;\s*([^;)]+)/)||[])[1]||(/iPhone|iPad/.test(ua)?'iOS':'desktop');

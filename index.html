@@ -3649,7 +3649,7 @@ $('tNext').addEventListener('click',()=>{
   if(!tierUnlocked(save.tier+1)){snd('deny');toast(T('REACH WAVE {0} IN TIER {1}',TIERS.unlockWave,save.tier),true);return;}
   save.tier++;persist();snd('blip');renderTierSel();
 });
-const PLAY_URL='';   // https://play.google.com/store/apps/details?id=com.lunemoth.lastvertex  (fill in once the app is live)
+const PLAY_URL='https://play.google.com/store/apps/details?id=com.lunemoth.lastvertex';   // live on Play since 2026-11-14
 function renderMenuAd(){
   // the ad button only exists while an ad is available
   $('mAd').style.display=IS_APP&&adCooldown()<=0?'':'none';   // the browser has no ads, so no gem button either

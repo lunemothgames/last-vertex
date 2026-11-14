@@ -4050,7 +4050,7 @@ function tatHelp(){
       [T('COPIES'),T('Extra copies level it up by themselves, up to LV7')],
       [T('LV7'),T('Maxed tattoos leave the ink pool')],
       [T('MELT'),T('Turn it on for a tattoo you do not want: its new copies become pigment')],
-      [T('POUR'),T('Pigment buys a copy of the tattoo you choose. Rarer tattoos give and cost more')]])+
+      [T('GET COPY'),T('Pigment buys a copy of the tattoo you choose. Rarer tattoos give and cost more')]])+
     `<h5>${T('WEARING THEM')}</h5>`+rows([
       [T('TAP'),T('See what a tattoo does, level by level')],
       [T('HOLD'),T('Equip or unequip it')],
@@ -4107,9 +4107,9 @@ function tatInfo(t){
   const pig=c.lv>=TAT_MAX&&!melt?'':`<div class="pigbox"><div class="pigtop"><span>${T('YOUR PIGMENT')}</span><b>${I('spark')}${fmtN(have)}</b></div>`+
     `<div class="pigr"><div><b>${T('MELT')}</b><small>${T('Each new copy of it → {0} pigment',v)}</small></div>`+
     `<button class="sw${melt?' on':''}" data-pig="melt"><i></i>${melt?T('ON'):T('OFF')}</button></div>`+
-    (melt?`<div class="pigr"><div><small>${T('Turn MELT off to pour pigment into it')}</small></div></div>`
-      :`<div class="pigr"><div><b>${T('POUR')}</b><small>${T('{0} pigment → +1 copy',pcost)}</small></div>`+
-       `<button class="pigb${have<pcost?' no':''}" data-pig="pour">${T('POUR')}</button></div>`+
+    (melt?`<div class="pigr"><div><small>${T('Turn MELT off to get copies of it with pigment')}</small></div></div>`
+      :`<div class="pigr"><div><b>${T('GET COPY')}</b><small>${T('{0} pigment → +1 copy',pcost)}</small></div>`+
+       `<button class="pigb${have<pcost?' no':''}" data-pig="pour">${I('spark')}${pcost}</button></div>`+
        (have<pcost?`<span class="pigneed">${T('NEED {0} · YOU HAVE {1}',pcost,fmtN(have))}</span>`:''))+`</div>`;
   const body=esc(t.desc(tatFx(t,c.lv)))+(save.equipped.includes(t.id)?` <b>(${T('EQUIPPED')})</b>`:'')+odds+pig+tatChart(t,c.lv);
   pigFor=t;
@@ -4979,7 +4979,7 @@ $('dyClose').addEventListener('click',()=>{snd('click');$('dailyUI').classList.r
 const INBOX=[
   {id:'0.7.7',date:'2026-11-14',name:'UPDATE 0.7.7',lines:[
     {text:'The tattoo screen is clearer: the mythic guarantee and your wish each have their own bar, WISH is a real button, and the ? button explains every tattoo rule in three short groups.'},
-    {text:'When you tap a tattoo you now see how much pigment you have, how much melting it gives and what pouring costs.'},
+    {text:'When you tap a tattoo you now see how much pigment you have, how much melting it gives and what a copy costs in pigment.'},
     {text:'Only the slots you have are shown; the next one is a button with its price, and a line tells which tiers still give one. Active tattoos carry an ACTIVE tag.'}]},
   {id:'0.7.6',date:'2026-11-12',name:'UPDATE 0.7.6',lines:[
     {text:'The DEFENSE tattoo is simpler: it only cuts the damage of perimeter hits. Its extra heal bonus is gone: it did very little and was hard to follow, and defence styles were still a little ahead of the others.'},

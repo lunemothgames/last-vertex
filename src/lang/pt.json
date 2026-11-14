@@ -779,9 +779,7 @@
  "The REGEN tattoo now has SECOND WIND: when your health drops below 30%, it heals a big share of your max health over 3 seconds (once every 20 seconds).": "A tatuagem REGENERAÇÃO agora tem SEGUNDO FÔLEGO: quando sua vida cai abaixo de 30%, ela cura uma grande parte da sua vida máxima em 3 segundos (uma vez a cada 20 segundos).",
  "YOUR PIGMENT": "SEU PIGMENTO",
  "MELT": "DERRETER",
- "POUR": "COLOCAR",
  "Each new copy of it → {0} pigment": "Cada cópia nova → {0} de pigmento",
- "Turn MELT off to pour pigment into it": "Desligue DERRETER para colocar pigmento nela",
  "{0} pigment → +1 copy": "{0} de pigmento → +1 cópia",
  "NEED {0} · YOU HAVE {1}": "PRECISA DE {0} · VOCÊ TEM {1}",
  "NEXT INK": "PRÓXIMA TATUAGEM",
@@ -804,7 +802,9 @@
  "Equipped": "Equipada",
  "More slots with gems, and one from each of Tiers 4 to 7": "Mais espaços com gemas, e um de cada Tier do 4 ao 7",
  "The tattoo screen is clearer: the mythic guarantee and your wish each have their own bar, WISH is a real button, and the ? button explains every tattoo rule in three short groups.": "A tela de tatuagens está mais clara: a garantia mítica e o seu desejo têm cada um a sua barra, DESEJO é um botão de verdade e o botão ? explica todas as regras em três grupos curtos.",
- "When you tap a tattoo you now see how much pigment you have, how much melting it gives and what pouring costs.": "Ao tocar numa tatuagem agora você vê quanto pigmento tem, quanto ela dá ao derreter e quanto custa colocar.",
  "Only the slots you have are shown; the next one is a button with its price, and a line tells which tiers still give one. Active tattoos carry an ACTIVE tag.": "Só aparecem os espaços que você tem; o próximo é um botão com o preço e uma linha diz quais tiers ainda dão um. Tatuagens ativas têm a etiqueta ATIVO.",
- "UPDATE 0.7.7": "ATUALIZAÇÃO 0.7.7"
+ "UPDATE 0.7.7": "ATUALIZAÇÃO 0.7.7",
+ "GET COPY": "PEGAR CÓPIA",
+ "Turn MELT off to get copies of it with pigment": "Desligue DERRETER para pegar cópias com pigmento",
+ "When you tap a tattoo you now see how much pigment you have, how much melting it gives and what a copy costs in pigment.": "Ao tocar numa tatuagem agora você vê quanto pigmento tem, quanto ela dá ao derreter e quanto pigmento custa uma cópia."
 }

@@ -243,7 +243,7 @@ body.eco #hint,body.eco #coachTip,body.eco #toast{display:none!important}   /* n
 
 /* ── tattoos ── */
 .portal{height:150px;display:grid;place-items:center;position:relative}
-.tathelp{position:absolute;top:10px;right:14px;width:36px;height:36px;background:none;color:var(--a);cursor:pointer}   /* the tattoo rules (? → three short groups) */
+.tathelp{position:absolute;top:4px;right:8px;min-width:44px;height:44px;padding:0 6px;background:none;border:0;font-family:'VT323',monospace;font-size:24px;color:var(--a);text-shadow:0 0 6px var(--glow);cursor:pointer}   /* the tattoo rules: [?] in the same terminal style as the [X] of popups */
 .pulls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px}
 .pull{height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--a);font-family:'VT323',monospace}
 .pull .l{font-size:17px;letter-spacing:.15em}
@@ -832,7 +832,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
     </div>
     <div class="scroll">
       <button class="giftbar" id="giftBar" style="display:none"></button>
-      <div class="portal"><button class="back tathelp" id="tatHelp" aria-label="Help"><svg class="i"><use href="#i-help"/></svg></button>
+      <div class="portal"><button class="tathelp" id="tatHelp" aria-label="Help">[?]</button>
         <svg viewBox="-100 -100 200 200" width="150" height="150">
           <g class="spin"><circle r="76" fill="none" class="st" stroke-opacity=".5" stroke-width="2" stroke-dasharray="1 7"/></g>
           <g class="spin r"><rect x="-50" y="-50" width="100" height="100" fill="none" class="dm" stroke-width="2" transform="rotate(45)"/></g>

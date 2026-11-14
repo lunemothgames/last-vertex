@@ -79,6 +79,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-
 /* ── main menu ── */
 .topbar{display:flex;gap:8px;align-items:center;padding:14px 14px 0}
 .sidebtn{position:absolute;right:14px;z-index:3}   /* under the settings gear: help, then bug report */
+.qbtn{font-family:'VT323',monospace;font-size:28px;line-height:1;color:var(--a);text-shadow:0 0 6px var(--glow);padding-bottom:2px}   /* help: a terminal-font ? (the round icon did not fit the theme) */
 /* ── help panel: one topic open at a time ── */
 .hrow{border:1px dashed var(--dim)}
 .hrow.open{border-style:solid;border-color:var(--a)}
@@ -745,7 +746,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:20px;border:0;border-radiu
       <button class="adbtn" id="mGet" style="display:none"><svg class="i"><use href="#i-play"/></svg><span id="mGetTxt">GET THE APP</span></button>
       <div class="sp"></div>
       <button class="icon-btn" id="mGear" aria-label="Settings"><svg class="i"><use href="#i-gear"/></svg></button>
-      <button class="icon-btn sidebtn" id="mHelp" aria-label="How to play" style="top:54px"><svg class="i"><use href="#i-help"/></svg></button>
+      <button class="icon-btn sidebtn qbtn" id="mHelp" aria-label="How to play" style="top:54px">?</button>
       <button class="icon-btn sidebtn" id="mBug" aria-label="Bug report / talk to dev" style="top:94px"><svg class="i"><use href="#i-bug"/></svg></button>
       <button class="icon-btn sidebtn" id="mDaily" aria-label="Daily reward" style="top:134px"><svg class="i"><use href="#i-gift"/></svg><i class="dot" id="mDailyDot"></i></button>
       <button class="icon-btn sidebtn" id="mInbox" aria-label="Inbox" style="top:174px"><svg class="i"><use href="#i-mail"/></svg><i class="dot" id="mInboxDot"></i></button>

@@ -3,7 +3,7 @@
 //   node tools/play-upload.js production --yes-production aab=<file> code=<versionCode> name=<versionName> notes=<file>
 //       production only with the flag, an explicit .aab (the REAL ADS build) and release notes (<en-US>\ntext\n</en-US> blocks),
 //       and only when Ahmet asked for it in this conversation
-// Raise versionCode in android/app/build.gradle and run `node tools/build-app.js release` first.
+// Raise versionCode by 2 in android/app/build.gradle and run `node tools/build-app.js pair` first (LIVE = code, test = code+1).
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 const root=path.join(__dirname,'..'),pkg='com.lunemoth.lastvertex',track=process.argv[2]||'alpha';
 const arg=k=>(process.argv.find(a=>a.startsWith(k+'='))||'').slice(k.length+1);

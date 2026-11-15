@@ -5,6 +5,22 @@
 //   node tools/build-app.js release live   same, but with REAL ads (every other build shows Google's test ads; use live for Production only)
 const fs=require('fs'),path=require('path'),{execSync}=require('child_process');
 const root=path.join(__dirname,'..'),www=path.join(root,'www'),run=(c,cwd=root)=>execSync(c,{cwd,stdio:'inherit'});
+// node tools/build-app.js pair   the two files of a new version at once, into ../LastVertex-app:
+//   LIVE (real ads) gets the versionCode in build.gradle, the test build (alpha) gets one MORE. Play gives a tester the
+//   highest code of any track, so testers stay on the test-ads build even after the LIVE file goes to production
+//   (found 2026-11-15: production vc 18 > alpha vc 17 put real ads on his phone). Raise versionCode by 2 per version.
+if(process.argv[2]==='pair'){
+  const g=path.join(root,'android/app/build.gradle'),out=path.join(root,'..','LastVertex-app');
+  const gs=fs.readFileSync(g,'utf8'),code=+gs.match(/versionCode\s+(\d+)/)[1],name=gs.match(/versionName\s+"([^"]+)"/)[1];
+  const setCode=c=>fs.writeFileSync(g,fs.readFileSync(g,'utf8').replace(/versionCode\s+\d+/,'versionCode '+c));
+  const aab=path.join(root,'android/app/build/outputs/bundle/release/app-release.aab');
+  run('node tools/build-app.js release live');fs.copyFileSync(aab,path.join(out,`LastVertex-${name}-LIVE.aab`));
+  setCode(code+1);
+  run('node tools/build-app.js release');fs.copyFileSync(aab,path.join(out,`LastVertex-${name}-erken-erisim.aab`));
+  run('node tools/build-app.js debug');fs.copyFileSync(path.join(root,'android/app/build/outputs/apk/debug/app-debug.apk'),path.join(out,'LastVertex-test.apk'));
+  console.log(`pair done: LIVE ${name} code ${code}, test ${name} code ${code+1} (build.gradle now ${code+1}, android/ on test ads)`);
+  process.exit(0);
+}
 run('node tools/build.js');
 fs.rmSync(www,{recursive:true,force:true});fs.mkdirSync(www);
 // no service worker in the app: every file is already on the phone

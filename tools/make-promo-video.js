@@ -21,7 +21,7 @@ const SAVE={coins:4.2e7,gems:340,tier:6,tierBest:{1:78,2:62,3:51,4:44,5:36,6:21}
     max_hp:{lv:5,copies:0},regen:{lv:3,copies:2},coin_mult:{lv:4,copies:1},frost:{lv:2,copies:0},aegis:{lv:1,copies:0},thorns:{lv:3,copies:0}},
   equipped:['twin','nova','overdrive','arc'],
   // fxAsked: frames come at a steady 30 fps, which would otherwise pop the "SLOW DEVICE?" question mid-video
-  fxAsked:1,settings:{fx:'high',target:0},coach:Object.fromEntries(['play','shop','buy','again','help','tattoo','summon','equip','quests','tier','weekly'].map(k=>[k,1])),hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
+  fxAsked:1,settings:{fx:'high',target:0},coach:Object.fromEntries(['play','shop','buy','again','help','freeink','tattoo','summon','equip','bomb','bombequip','quests','tier','theme','themepick','weekly'].map(k=>[k,1])),hints:HINTS,qNextDaily:Date.now()+3e6,qNextWeekly:Date.now()+8e7};
 const GACHA=[['ricochet',{isNew:1,lv:1}],['attack_speed',{lv:3}],['nova',{leveled:1,lv:5}],['luck',{lv:2}],['crit_mult',{lv:4}],
   ['max_hp',{leveled:1,lv:6}],['frost',{lv:2}],['twin',{leveled:1,lv:4}],['regen',{lv:3}],['shatter',{isNew:1,lv:1}]];
 
@@ -91,6 +91,8 @@ async function render(b,lang){
   const until=(cond,max)=>p.evaluate((cond,max)=>{const f=new Function('return ('+cond+')');__rec=false;for(let i=0;i<max&&!f();i++)__step(1);__rec=true;},cond,max);
   const T=TEXT[lang];
 
+  // the triangle must never die on camera or while fast-forwarding (one late hit can be bigger than the whole health since 0.7.5)
+  await p.evaluate(()=>{window.triggerDeath=()=>{hp=stats().maxHp;};});
   // 1 · a busy field, OVERDRIVE then NOVA                                           (6 s)
   await p.evaluate(()=>{startRun(false);waveNum=24;waveTimer=.01;});
   await until('enemies.filter(e=>e.y>GH*.14&&e.y<GH*.78).length>=14',1200);

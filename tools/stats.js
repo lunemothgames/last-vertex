@@ -9,6 +9,7 @@
 // real archive; a day is downloaded again only when Google changed its table (late events arrive for up to 3 days).
 // The robot is play-uploader@last-vertex (BigQuery Data Viewer + Job User); reading a day costs a few MB of the free monthly quota.
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
+require("dns").setDefaultResultOrder("ipv4first"); // 2026-11-16: this PC times out on Google over IPv6 ("fetch failed")
 const ROOT=path.join(__dirname,'..'),DATA=process.env.STATS_DATA||path.join(ROOT,'stats-data'),EV=path.join(DATA,'events');
 const KEY=process.env.STATS_KEY||path.join(ROOT,'keys','play-service-account.json'),PROJ='last-vertex';
 const SRC=fs.readFileSync(path.join(ROOT,'src','index.src.html'),'utf8'),SIMSRC=fs.readFileSync(path.join(__dirname,'sim.js'),'utf8');

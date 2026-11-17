@@ -370,10 +370,11 @@ function run0(tier,maxW,o){
         // GOO and VIRUS keep ticking on a frozen enemy (game updatePlay)
         if(e.gooT>0){e.gooT-=dt;if(e.gooT<=0&&e.hp>0)gooBurst(e);}
         if(e.virT>0&&e.hp>0){e.virT-=dt;e.virA=(e.virA||0)+dt;if(e.virA>=.5-1e-9){hit(e,e.virD*e.virA,'virus_bomb');e.virA=0;}}
+        if(e.mendT>0)e.mendT-=dt;   // game: MENDER heals do not stack (one a second per enemy) and skip bosses
         if(e.frz>0){e.frz-=dt;if(FROZEN_KB)e.y+=kb0*KI;continue;}   // game: knockback moves frozen enemies too
         if(e.rg&&e.hp>0)e.hp=Math.min(e.max,e.hp+e.max*e.rg*dt);
         if(e.bz&&!e.bzOn&&e.hp>0&&e.hp<e.max*EVT.berserkAt){e.bzOn=1;e.atk*=EVT.berserkAtk;}
-        if(e.heal&&e.hp>0){e.ht-=dt;if(e.ht<=0){e.ht=1;const r2=(.25*GWH)**2;for(const o of E)if(o.hp>0&&d2(o,e.x,e.y)<r2)o.hp=Math.min(o.max,o.hp+o.max*e.heal);}}
+        if(e.heal&&e.hp>0){e.ht-=dt;if(e.ht<=0){e.ht=1;const r2=(.25*GWH)**2,md=!e.boss;for(const o of E)if(o.hp>0&&d2(o,e.x,e.y)<r2){if(md){if(o.boss||o.mendT>0)continue;o.mendT=.9;}o.hp=Math.min(o.max,o.hp+o.max*e.heal);}}}
         if(e.blink&&e.hp>0){e.bt-=dt;if(e.bt<=0&&e.y>.1){e.bt=e.blink;e.y=Math.min(LINE-e.h,e.y+.1);}}
         if(e.spit&&e.hp>0&&e.y>.1){e.spT-=dt;if(e.spT<=0){e.spT=e.spit;if(e.y>=ECO.spitStop)e.spN=(e.spN||0)+1;SPIT.push({x:e.x,y:e.y+e.h*.5,atk:e.atk});}}   // game: SPITTER
         if(e.gh&&e.hp>0&&e.y>.1){e.gt-=dt;if(e.gt<=0){e.ph=!e.ph;e.gt=e.gh*(e.ph?.4:1);}}

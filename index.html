@@ -1587,7 +1587,7 @@ const ENEMY_TYPES={
   mini:    {name:'SHARD',   hp:.35,spd:1.25,atk:.5, sz:.03, coin:0,  from:Infinity,w:0,  ci:0},
   // later tier bands: a shield that halves bullets, a healer, a teleporter
   warden:  {name:'WARDEN',  hp:1.2,spd:.8,  atk:1.2,sz:.056,coin:1.5,from:60,      w:2,  ci:2,shield:1.2},   // shield starts at half strength and reaches full by wave 150 (see makeEnemy)
-  mender:  {name:'MENDER',  hp:.8, spd:.7,  atk:.6, sz:.05, coin:1.5,from:175,     w:1.5,ci:1,heal:.05},
+  mender:  {name:'MENDER',  hp:.8, spd:.7,  atk:.6, sz:.05, coin:1.5,from:175,     w:1.5,ci:1,heal:.03},   // 0.7.9: was .05, see the MENDER pulse (no stacking, no boss heal)
   blinker: {name:'BLINKER', hp:.9, spd:.9,  atk:1.3,sz:.044,coin:1.5,from:250,     w:2.5,ci:3,blink:3},
 };
 const enemyCol=e=>e.boss?C.hot:C.r[ENEMY_TYPES[e.type]?.ci??1];
@@ -2899,12 +2899,18 @@ function updatePlay(dt){
     // wave events: MENDING TIDE heals the enemy itself, BERSERK triggers once it is wounded
     if(e.regen&&!frozen&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*e.regen*dt);
     if(e.ev&&e.ev.berserk&&!e.berserk&&e.hp>0&&e.hp<e.maxHp*EV_TUNE.berserkAt){e.berserk=true;e.atk*=EV_TUNE.berserkAtk;burst(e.x,e.y,C.hot,6,GH*.05);}
-    // MENDER: heals everything around it every second
+    // MENDER: heals everything around it every second (REGENERATOR boss: same pulse with its own healAmt)
+    // 0.7.9: mender heals do not stack (an enemy takes at most one mender heal a second, e.mendT) and never reach a boss:
+    // stacked menders out-healed a single-target build (beam) and kept bosses topped up at 4x the REGENERATOR's rate
+    if(e.mendT>0)e.mendT-=dt;
     if(e.healT!==undefined&&!frozen&&e.hp>0){
       e.healT-=dt;
       if(e.healT<=0){
-        e.healT=1;e.pulse=1;const r2=(GW*.25)**2,h=e.healAmt??ENEMY_TYPES.mender.heal;
-        for(const o of enemies)if(o.hp>0&&(o.x-e.x)**2+(o.y-e.y)**2<r2)o.hp=Math.min(o.maxHp,o.hp+o.maxHp*h);
+        e.healT=1;e.pulse=1;const r2=(GW*.25)**2,mender=e.healAmt===undefined,h=mender?ENEMY_TYPES.mender.heal:e.healAmt;
+        for(const o of enemies)if(o.hp>0&&(o.x-e.x)**2+(o.y-e.y)**2<r2){
+          if(mender){if(o.boss||o.mendT>0)continue;o.mendT=.9;}
+          o.hp=Math.min(o.maxHp,o.hp+o.maxHp*h);
+        }
       }
     }
     // BLINKER: jumps forward every few seconds (never past the perimeter)
